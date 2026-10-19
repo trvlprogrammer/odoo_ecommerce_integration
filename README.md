@@ -1,6 +1,6 @@
 # Odoo eCommerce Integration Core
 
-Shared, provider-neutral integration framework for native Odoo 19 eCommerce
+Shared, provider-neutral integration framework for native Odoo 17 eCommerce
 connectors.
 
 ## Features
@@ -16,10 +16,10 @@ connectors.
 
 ## Dependencies
 
-Odoo 19 modules: `base`, `mail`, `sale_management`, `stock`, `account`,
+Odoo 17 modules: `base`, `mail`, `sale_management`, `stock`, `account`,
 `delivery`, and OCA `queue_job`.
 
-Install OCA `queue_job` as an independent addon from the OCA/queue `19.0`
+Install OCA `queue_job` as an independent addon from the OCA/queue `17.0`
 branch. Odoo does not download Git dependencies automatically.
 
 ## License
