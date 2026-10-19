@@ -41,13 +41,14 @@ Protected repository baseline remains unchanged:
 
 ## Branch / commit evidence
 
-| Branch | Core | Connector |
+| Branch | Core implementation commit | Connector implementation commit |
 | --- | --- | --- |
-| `19.0` | `0955592` (HEAD) | `359f8a9` (HEAD) |
-| `18.0` | `c377ddb` (HEAD) | `77f5183` (HEAD) |
-| `17.0` | `f5588e8` (HEAD) | `1112cd2` (HEAD) |
+| `19.0` | `0001d76` | `16f14a3` (plus later `359f8a9` retry fix) |
+| `18.0` | `37e3455` | `6cb9d00` (plus later `77f5183` retry fix) |
+| `17.0` | `e32647d` | `b533513` (plus later `1112cd2` retry fix) |
 
-All commits are local. Nothing was pushed.
+All commits are local. Nothing was pushed. Documentation-only commits after these
+implementation commits are not listed individually.
 
 ## Milestone results
 
