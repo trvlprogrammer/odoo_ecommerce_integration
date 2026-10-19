@@ -4,7 +4,7 @@
         <field name="name">ecommerce.sync.state.list</field>
         <field name="model">ecommerce.sync.state</field>
         <field name="arch" type="xml">
-            <list string="Sync States">
+            <tree string="Sync States">
                 <field name="store_id"/>
                 <field name="resource"/>
                 <field name="direction"/>
@@ -13,7 +13,7 @@
                 <field name="last_success_at"/>
                 <field name="last_completed_at"/>
                 <field name="last_error"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -21,7 +21,7 @@
         <field name="name">ecommerce.sync.event.list</field>
         <field name="model">ecommerce.sync.event</field>
         <field name="arch" type="xml">
-            <list string="Events" create="false" edit="false">
+            <tree string="Events" create="false" edit="false">
                 <field name="occurred_at"/>
                 <field name="store_id"/>
                 <field name="severity"/>
@@ -30,7 +30,7 @@
                 <field name="entity_model"/>
                 <field name="entity_id"/>
                 <field name="external_reference"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -69,7 +69,7 @@
         <field name="name">ecommerce.sync.issue.list</field>
         <field name="model">ecommerce.sync.issue</field>
         <field name="arch" type="xml">
-            <list string="Issues">
+            <tree string="Issues">
                 <field name="last_seen_at"/>
                 <field name="store_id"/>
                 <field name="severity"/>
@@ -78,7 +78,7 @@
                 <field name="status"/>
                 <field name="occurrence_count"/>
                 <field name="reason_code"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -123,16 +123,16 @@
     <record id="action_ecommerce_sync_state" model="ir.actions.act_window">
         <field name="name">Sync States</field>
         <field name="res_model">ecommerce.sync.state</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
     <record id="action_ecommerce_sync_event" model="ir.actions.act_window">
         <field name="name">Events</field>
         <field name="res_model">ecommerce.sync.event</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
     <record id="action_ecommerce_sync_issue" model="ir.actions.act_window">
         <field name="name">Issues</field>
         <field name="res_model">ecommerce.sync.issue</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>
