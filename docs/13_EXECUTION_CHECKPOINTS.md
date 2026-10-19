@@ -43,9 +43,9 @@ Protected repository baseline remains unchanged:
 
 | Branch | Core | Connector |
 | --- | --- | --- |
-| `19.0` | `0001d76` `feat: add shared eCommerce integration core for Odoo 19` | `16f14a3` `feat: add native Magento connector for Odoo 19` |
-| `18.0` | `37e3455` `feat: port shared integration core to Odoo 18` | `6cb9d00` `feat: port Magento connector to Odoo 18` |
-| `17.0` | `e32647d` `feat: port shared integration core to Odoo 17` | `b533513` `feat: port Magento connector to Odoo 17` |
+| `19.0` | `0955592` (HEAD) | `359f8a9` (HEAD) |
+| `18.0` | `c377ddb` (HEAD) | `77f5183` (HEAD) |
+| `17.0` | `f5588e8` (HEAD) | `1112cd2` (HEAD) |
 
 All commits are local. Nothing was pushed.
 
@@ -87,9 +87,9 @@ Implemented:
 
 Evidence:
 
-- Odoo 19 clean install: 0 failed, 0 errors; combined 19 tests.
-- Odoo 18: 0 failed, 0 errors; combined 18 tests.
-- Odoo 17: 0 failed, 0 errors; combined 18 tests.
+- Odoo 19 clean install: 0 failed, 0 errors; combined 20 tests.
+- Odoo 18: 0 failed, 0 errors; combined 19 tests.
+- Odoo 17: 0 failed, 0 errors; combined 19 tests.
 
 ### M3 — Magento authentication/scope: PARTIAL
 
@@ -202,7 +202,7 @@ Evidence:
 Passed:
 
 - clean database install of `queue_job`, core, and connector
-- combined 19 module tests: 0 failed, 0 errors
+- combined 20 module tests: 0 failed, 0 errors
 - real jobrunner test
 - security/company tests
 - secret scan of source tree
@@ -224,7 +224,7 @@ Passed:
 - `_sql_constraints` port, removal of Odoo 19-only `models.Index`,
   `models.UniqueIndex`, and `models.Constraint`
 - OCA queue 18.0 installed in isolated addons path
-- install and combined 18 tests pass: 0 failed, 0 errors
+- install and combined 19 tests pass: 0 failed, 0 errors
 - connector functional tests pass, including order/finance/inventory/shipment
 
 Known 18-specific difference:
@@ -241,7 +241,7 @@ Passed:
 - Odoo 17 `<tree>` view port
 - Odoo 17 storable product type (`product`) adaptation
 - OCA queue 17.0 installed in isolated addons path
-- install and combined 18 tests pass: 0 failed, 0 errors
+- install and combined 19 tests pass: 0 failed, 0 errors
 - connector functional tests pass
 
 Known 17-specific difference:
@@ -262,7 +262,7 @@ odoo-bin -c /home/ridho/Data/odoo-dev/19/config/odoo.conf \
   --stop-after-init
 ```
 
-Result: `0 failed, 0 error(s) of 19 tests`.
+Result: `0 failed, 0 error(s) of 20 tests`.
 
 Odoo 18:
 
@@ -274,7 +274,7 @@ odoo-bin -c /home/ridho/Data/odoo-dev/18/config/odoo.conf \
   --stop-after-init
 ```
 
-Result: `0 failed, 0 error(s) of 18 tests`.
+Result: `0 failed, 0 error(s) of 19 tests`.
 
 Odoo 17:
 
@@ -286,7 +286,7 @@ odoo-bin -c /home/ridho/Data/odoo-dev/17/config/odoo.conf \
   --stop-after-init
 ```
 
-Result: `0 failed, 0 error(s) of 18 tests`.
+Result: `0 failed, 0 error(s) of 19 tests`.
 
 ## Known limitations
 
