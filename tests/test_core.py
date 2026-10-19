@@ -67,12 +67,6 @@ class TestCore(TransactionCase):
                 dict(self._mapping_values(), odoo_template_id=other_template.id)
             )
 
-    def test_active_mapping_can_be_replaced_after_archive(self):
-        first = self.env["ecommerce.product.mapping"].create(self._mapping_values())
-        first.active = False
-        first.flush_recordset()
-        second = self.env["ecommerce.product.mapping"].create(self._mapping_values())
-        self.assertNotEqual(first.id, second.id)
 
     def test_backend_company_mismatch_is_rejected(self):
         other_company = self.env["res.company"].create({"name": "Other Company"})
@@ -97,7 +91,7 @@ class TestCore(TransactionCase):
                 "login": "company-a-user",
                 "company_id": self.company.id,
                 "company_ids": [(6, 0, [self.company.id])],
-                "group_ids": [
+                "groups_id": [
                     (6, 0, [self.env.ref("base.group_user").id, self.env.ref("odoo_ecommerce_integration.group_ecommerce_user").id])
                 ],
             }

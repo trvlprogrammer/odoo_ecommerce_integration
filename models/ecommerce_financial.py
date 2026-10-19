@@ -28,14 +28,11 @@ class EcommerceInvoiceMapping(models.Model):
     content_fingerprint = fields.Char()
     posted_at = fields.Datetime()
 
-    _external_uniq = models.UniqueIndex(
-        "(store_id, external_id)",
-        "Invoice external identity must be unique per store.",
-    )
-    _order_uniq = models.UniqueIndex(
-        "(order_mapping_id)",
-        "Only one invoice mapping is allowed per order in V1.",
-    )
+
+    _sql_constraints = [
+        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Invoice external identity must be unique per store.'),
+        ('order_uniq', 'UNIQUE (order_mapping_id)', 'Only one invoice mapping is allowed per order in V1.'),
+    ]
 
 
 class EcommercePaymentMapping(models.Model):
@@ -70,14 +67,11 @@ class EcommercePaymentMapping(models.Model):
         index=True,
     )
 
-    _external_uniq = models.UniqueIndex(
-        "(store_id, external_id)",
-        "Payment evidence must be unique per store.",
-    )
-    _payment_uniq = models.UniqueIndex(
-        "(store_id, odoo_payment_id) WHERE odoo_payment_id IS NOT NULL",
-        "An Odoo payment can be mapped only once per store.",
-    )
+
+    _sql_constraints = [
+        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Payment evidence must be unique per store.'),
+        ('payment_uniq', 'UNIQUE (store_id, odoo_payment_id)', 'An Odoo payment can be mapped only once per store.'),
+    ]
 
 
 class EcommerceShipmentMapping(models.Model):
@@ -108,14 +102,11 @@ class EcommerceShipmentMapping(models.Model):
         index=True,
     )
 
-    _picking_uniq = models.UniqueIndex(
-        "(store_id, odoo_picking_id)",
-        "A picking can be mapped only once per store.",
-    )
-    _external_uniq = models.UniqueIndex(
-        "(store_id, external_id)",
-        "Shipment external identity must be unique per store.",
-    )
+
+    _sql_constraints = [
+        ('picking_uniq', 'UNIQUE (store_id, odoo_picking_id)', 'A picking can be mapped only once per store.'),
+        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Shipment external identity must be unique per store.'),
+    ]
 
 
 class EcommerceRefundMapping(models.Model):
@@ -149,11 +140,8 @@ class EcommerceRefundMapping(models.Model):
         index=True,
     )
 
-    _external_uniq = models.UniqueIndex(
-        "(store_id, external_id)",
-        "Credit memo external identity must be unique per store.",
-    )
-    _credit_note_uniq = models.UniqueIndex(
-        "(store_id, odoo_credit_note_id) WHERE odoo_credit_note_id IS NOT NULL",
-        "An Odoo credit note can be mapped only once per store.",
-    )
+
+    _sql_constraints = [
+        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Credit memo external identity must be unique per store.'),
+        ('credit_note_uniq', 'UNIQUE (store_id, odoo_credit_note_id)', 'An Odoo credit note can be mapped only once per store.'),
+    ]

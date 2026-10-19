@@ -57,14 +57,11 @@ class EcommerceSyncState(models.Model):
     last_error = fields.Char()
     metadata = fields.Json(default=dict)
 
-    _state_uniq = models.UniqueIndex(
-        "(store_id, resource, direction)",
-        "Sync state must be unique per store, resource, and direction.",
-    )
-    _overlap_check = models.Constraint(
-        "CHECK (overlap_seconds >= 0)",
-        "Overlap cannot be negative.",
-    )
+
+    _sql_constraints = [
+        ('state_uniq', 'UNIQUE (store_id, resource, direction)', 'Sync state must be unique per store, resource, and direction.'),
+        ('overlap_check', 'CHECK (overlap_seconds >= 0)', 'Overlap cannot be negative.'),
+    ]
 
 
 class EcommerceSyncEvent(models.Model):
@@ -111,12 +108,10 @@ class EcommerceSyncEvent(models.Model):
         index=True,
     )
 
-    _dedupe_uniq = models.UniqueIndex(
-        "(dedupe_key) WHERE dedupe_key IS NOT NULL",
-        "Event dedupe key must be unique.",
-    )
-    _store_time_idx = models.Index("(store_id, occurred_at)")
-    _store_type_idx = models.Index("(store_id, event_type, occurred_at)")
+
+    _sql_constraints = [
+        ('dedupe_uniq', 'UNIQUE (dedupe_key)', 'Event dedupe key must be unique.'),
+    ]
 
 
 class EcommerceSyncIssue(models.Model):
@@ -174,13 +169,6 @@ class EcommerceSyncIssue(models.Model):
     last_event_id = fields.Many2one("ecommerce.sync.event", ondelete="set null")
     details = fields.Json(default=dict)
 
-    _fingerprint_uniq = models.UniqueIndex(
-        "(fingerprint)",
-        "Issue fingerprint must be unique.",
-    )
-    _store_status_idx = models.Index("(store_id, status, severity)")
-    _store_type_idx = models.Index("(store_id, issue_type, status)")
-    _store_seen_idx = models.Index("(store_id, last_seen_at)")
 
     @api.model
     def _record(
@@ -240,3 +228,7 @@ class EcommerceSyncIssue(models.Model):
                 "resolved_at": fields.Datetime.now(),
             }
         )
+
+    _sql_constraints = [
+        ('fingerprint_uniq', 'UNIQUE (fingerprint)', 'Issue fingerprint must be unique.'),
+    ]

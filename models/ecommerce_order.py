@@ -55,16 +55,11 @@ class EcommerceOrderMapping(models.Model):
     create_attempted_at = fields.Datetime()
     imported_at = fields.Datetime()
 
-    _external_uniq = models.UniqueIndex(
-        "(store_id, external_id)",
-        "Order external identity must be unique per store.",
-    )
-    _sale_uniq = models.UniqueIndex(
-        "(store_id, odoo_sale_order_id) WHERE odoo_sale_order_id IS NOT NULL",
-        "A sale order can be mapped only once per store.",
-    )
-    _import_status_idx = models.Index("(store_id, import_status)")
-    _imported_idx = models.Index("(company_id, imported_at)")
+
+    _sql_constraints = [
+        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Order external identity must be unique per store.'),
+        ('sale_uniq', 'UNIQUE (store_id, odoo_sale_order_id)', 'A sale order can be mapped only once per store.'),
+    ]
 
 
 class EcommerceOrderLineMapping(models.Model):
@@ -91,8 +86,7 @@ class EcommerceOrderLineMapping(models.Model):
         "res.currency", related="order_mapping_id.currency_id", store=True, readonly=True
     )
 
-    _line_uniq = models.UniqueIndex(
-        "(order_mapping_id, external_line_id)",
-        "Order item must be unique within an order.",
-    )
-    _child_idx = models.Index("(order_mapping_id, external_child_line_id)")
+
+    _sql_constraints = [
+        ('line_uniq', 'UNIQUE (order_mapping_id, external_line_id)', 'Order item must be unique within an order.'),
+    ]

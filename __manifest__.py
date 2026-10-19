@@ -1,7 +1,7 @@
 {
     "name": "eCommerce Integration Core",
     "summary": "Shared backend, mapping, synchronization, and monitoring framework",
-    "version": "19.0.1.0.0",
+    "version": "18.0.1.0.0",
     "category": "Sales/Integration",
     "author": "trvlprogrammer",
     "website": "https://github.com/trvlprogrammer/odoo_ecommerce_integration",
