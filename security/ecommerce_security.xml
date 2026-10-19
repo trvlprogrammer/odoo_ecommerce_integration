@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_ecommerce_user" model="res.groups">
+        <field name="name">eCommerce User</field>
+        <field name="comment">Read-only access to eCommerce integration records.</field>
+    </record>
+    <record id="group_ecommerce_operator" model="res.groups">
+        <field name="name">eCommerce Operator</field>
+        <field name="implied_ids" eval="[(4, ref('group_ecommerce_user'))]"/>
+        <field name="comment">Run synchronization and maintain mappings.</field>
+    </record>
+    <record id="group_ecommerce_manager" model="res.groups">
+        <field name="name">eCommerce Manager</field>
+        <field name="implied_ids" eval="[(4, ref('group_ecommerce_operator'))]"/>
+        <field name="comment">Configure backends, credentials, and schedules.</field>
+    </record>
+
+    <record id="rule_company_ecommerce_backend" model="ir.rule">
+        <field name="name">ecommerce.backend: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_backend"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_store" model="ir.rule">
+        <field name="name">ecommerce.store: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_store"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_product_mapping" model="ir.rule">
+        <field name="name">ecommerce.product.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_product_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_variant_mapping" model="ir.rule">
+        <field name="name">ecommerce.variant.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_variant_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_attribute_mapping" model="ir.rule">
+        <field name="name">ecommerce.attribute.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_attribute_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_attribute_value_mapping" model="ir.rule">
+        <field name="name">ecommerce.attribute.value.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_attribute_value_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_customer_mapping" model="ir.rule">
+        <field name="name">ecommerce.customer.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_customer_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_order_mapping" model="ir.rule">
+        <field name="name">ecommerce.order.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_order_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_order_line_mapping" model="ir.rule">
+        <field name="name">ecommerce.order.line.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_order_line_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_invoice_mapping" model="ir.rule">
+        <field name="name">ecommerce.invoice.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_invoice_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_payment_mapping" model="ir.rule">
+        <field name="name">ecommerce.payment.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_payment_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_shipment_mapping" model="ir.rule">
+        <field name="name">ecommerce.shipment.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_shipment_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_refund_mapping" model="ir.rule">
+        <field name="name">ecommerce.refund.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_refund_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_inventory_source_mapping" model="ir.rule">
+        <field name="name">ecommerce.inventory.source.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_inventory_source_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_carrier_mapping" model="ir.rule">
+        <field name="name">ecommerce.carrier.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_carrier_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_payment_method_mapping" model="ir.rule">
+        <field name="name">ecommerce.payment.method.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_payment_method_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_sync_state" model="ir.rule">
+        <field name="name">ecommerce.sync.state: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_sync_state"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_sync_event" model="ir.rule">
+        <field name="name">ecommerce.sync.event: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_sync_event"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+    <record id="rule_company_ecommerce_sync_issue" model="ir.rule">
+        <field name="name">ecommerce.sync.issue: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_sync_issue"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
+</odoo>

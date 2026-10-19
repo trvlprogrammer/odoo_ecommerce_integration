@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+        id="menu_ecommerce_root"
+        name="eCommerce"
+        groups="group_ecommerce_user"
+        sequence="60"
+    />
+    <menuitem
+        id="menu_ecommerce_configuration"
+        name="Configuration"
+        parent="menu_ecommerce_root"
+        groups="group_ecommerce_user"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_ecommerce_backends"
+        name="Backends"
+        parent="menu_ecommerce_configuration"
+        action="action_ecommerce_backend"
+        groups="group_ecommerce_manager"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_ecommerce_stores"
+        name="Stores"
+        parent="menu_ecommerce_configuration"
+        action="action_ecommerce_store"
+        groups="group_ecommerce_manager"
+        sequence="20"
+    />
+    <menuitem
+        id="menu_ecommerce_mappings"
+        name="Mappings"
+        parent="menu_ecommerce_root"
+        groups="group_ecommerce_user"
+        sequence="20"
+    />
+    <menuitem
+        id="menu_ecommerce_product_mappings"
+        name="Product Mappings"
+        parent="menu_ecommerce_mappings"
+        action="action_ecommerce_product_mapping"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_ecommerce_variant_mappings"
+        name="Variant Mappings"
+        parent="menu_ecommerce_mappings"
+        action="action_ecommerce_variant_mapping"
+        sequence="20"
+    />
+    <menuitem
+        id="menu_ecommerce_customer_mappings"
+        name="Customer Mappings"
+        parent="menu_ecommerce_mappings"
+        action="action_ecommerce_customer_mapping"
+        sequence="30"
+    />
+    <menuitem
+        id="menu_ecommerce_order_mappings"
+        name="Order Mappings"
+        parent="menu_ecommerce_mappings"
+        action="action_ecommerce_order_mapping"
+        sequence="40"
+    />
+    <menuitem
+        id="menu_ecommerce_monitoring"
+        name="Monitoring"
+        parent="menu_ecommerce_root"
+        groups="group_ecommerce_user"
+        sequence="30"
+    />
+    <menuitem
+        id="menu_ecommerce_sync_states"
+        name="Sync States"
+        parent="menu_ecommerce_monitoring"
+        action="action_ecommerce_sync_state"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_ecommerce_events"
+        name="Events"
+        parent="menu_ecommerce_monitoring"
+        action="action_ecommerce_sync_event"
+        sequence="20"
+    />
+    <menuitem
+        id="menu_ecommerce_issues"
+        name="Issues"
+        parent="menu_ecommerce_monitoring"
+        action="action_ecommerce_sync_issue"
+        sequence="30"
+    />
+</odoo>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ecommerce_sync_state_list" model="ir.ui.view">
+        <field name="name">ecommerce.sync.state.list</field>
+        <field name="model">ecommerce.sync.state</field>
+        <field name="arch" type="xml">
+            <list string="Sync States">
+                <field name="store_id"/>
+                <field name="resource"/>
+                <field name="direction"/>
+                <field name="status"/>
+                <field name="cursor_value"/>
+                <field name="last_success_at"/>
+                <field name="last_completed_at"/>
+                <field name="last_error"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ecommerce_sync_event_list" model="ir.ui.view">
+        <field name="name">ecommerce.sync.event.list</field>
+        <field name="model">ecommerce.sync.event</field>
+        <field name="arch" type="xml">
+            <list string="Events" create="false" edit="false">
+                <field name="occurred_at"/>
+                <field name="store_id"/>
+                <field name="severity"/>
+                <field name="event_type"/>
+                <field name="title"/>
+                <field name="entity_model"/>
+                <field name="entity_id"/>
+                <field name="external_reference"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ecommerce_sync_event_form" model="ir.ui.view">
+        <field name="name">ecommerce.sync.event.form</field>
+        <field name="model">ecommerce.sync.event</field>
+        <field name="arch" type="xml">
+            <form string="Event" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="occurred_at"/>
+                            <field name="store_id"/>
+                            <field name="severity"/>
+                            <field name="event_type"/>
+                            <field name="source"/>
+                        </group>
+                        <group>
+                            <field name="entity_model"/>
+                            <field name="entity_id"/>
+                            <field name="external_reference"/>
+                            <field name="dedupe_key"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="title"/>
+                        <field name="message"/>
+                        <field name="details"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ecommerce_sync_issue_list" model="ir.ui.view">
+        <field name="name">ecommerce.sync.issue.list</field>
+        <field name="model">ecommerce.sync.issue</field>
+        <field name="arch" type="xml">
+            <list string="Issues">
+                <field name="last_seen_at"/>
+                <field name="store_id"/>
+                <field name="severity"/>
+                <field name="issue_type"/>
+                <field name="title"/>
+                <field name="status"/>
+                <field name="occurrence_count"/>
+                <field name="reason_code"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ecommerce_sync_issue_form" model="ir.ui.view">
+        <field name="name">ecommerce.sync.issue.form</field>
+        <field name="model">ecommerce.sync.issue</field>
+        <field name="arch" type="xml">
+            <form string="Issue">
+                <header>
+                    <button name="action_resolve" type="object" string="Resolve" invisible="status != 'open'"/>
+                    <field name="status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="store_id"/>
+                            <field name="issue_type"/>
+                            <field name="severity"/>
+                            <field name="reason_code"/>
+                            <field name="entity_model"/>
+                            <field name="entity_id"/>
+                        </group>
+                        <group>
+                            <field name="occurrence_count"/>
+                            <field name="first_seen_at"/>
+                            <field name="last_seen_at"/>
+                            <field name="resolved_at"/>
+                            <field name="fingerprint"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="title"/>
+                        <field name="summary"/>
+                        <field name="details"/>
+                        <field name="resolution_note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ecommerce_sync_state" model="ir.actions.act_window">
+        <field name="name">Sync States</field>
+        <field name="res_model">ecommerce.sync.state</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_ecommerce_sync_event" model="ir.actions.act_window">
+        <field name="name">Events</field>
+        <field name="res_model">ecommerce.sync.event</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_ecommerce_sync_issue" model="ir.actions.act_window">
+        <field name="name">Issues</field>
+        <field name="res_model">ecommerce.sync.issue</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

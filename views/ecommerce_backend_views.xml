@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ecommerce_backend_list" model="ir.ui.view">
+        <field name="name">ecommerce.backend.list</field>
+        <field name="model">ecommerce.backend</field>
+        <field name="arch" type="xml">
+            <list string="Backends">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="provider"/>
+                <field name="company_id"/>
+                <field name="base_url"/>
+                <field name="state"/>
+                <field name="last_test_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ecommerce_backend_form" model="ir.ui.view">
+        <field name="name">ecommerce.backend.form</field>
+        <field name="model">ecommerce.backend</field>
+        <field name="arch" type="xml">
+            <form string="Backend">
+                <header>
+                    <button name="action_set_draft" type="object" string="Reset to Draft"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,ready,error"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="provider"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="base_url"/>
+                            <field name="access_token" widget="password"/>
+                            <field name="verify_ssl"/>
+                            <field name="allow_insecure_http"/>
+                            <field name="timeout_seconds"/>
+                            <field name="job_user_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="last_test_at"/>
+                        <field name="last_test_error"/>
+                        <field name="capabilities"/>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ecommerce_backend_search" model="ir.ui.view">
+        <field name="name">ecommerce.backend.search</field>
+        <field name="model">ecommerce.backend</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <separator/>
+                <filter name="provider" string="Provider" context="{'group_by':'provider'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_ecommerce_backend" model="ir.actions.act_window">
+        <field name="name">Backends</field>
+        <field name="res_model">ecommerce.backend</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

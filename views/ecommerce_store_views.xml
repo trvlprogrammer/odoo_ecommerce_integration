@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ecommerce_store_list" model="ir.ui.view">
+        <field name="name">ecommerce.store.list</field>
+        <field name="model">ecommerce.store</field>
+        <field name="arch" type="xml">
+            <list string="Stores">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="backend_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="external_store_view_code"/>
+                <field name="warehouse_id"/>
+                <field name="last_preflight_error"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ecommerce_store_form" model="ir.ui.view">
+        <field name="name">ecommerce.store.form</field>
+        <field name="model">ecommerce.store</field>
+        <field name="arch" type="xml">
+            <form string="Store">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="backend_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="external_website_id"/>
+                            <field name="external_website_code"/>
+                            <field name="external_store_view_id"/>
+                            <field name="external_store_view_code"/>
+                            <field name="warehouse_id"/>
+                            <field name="stock_location_id"/>
+                            <field name="pricelist_id"/>
+                            <field name="currency_id"/>
+                            <field name="shipping_product_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Conversions">
+                            <group>
+                                <field name="auto_confirm_orders"/>
+                                <field name="auto_post_invoice"/>
+                                <field name="auto_register_payment"/>
+                            </group>
+                        </page>
+                        <page string="Inventory">
+                            <group>
+                                <field name="inventory_use_on_hand"/>
+                                <field name="inventory_subtract_reserved"/>
+                                <field name="inventory_safety_stock"/>
+                            </group>
+                        </page>
+                        <page string="Schedules">
+                            <group>
+                                <field name="order_sync_interval_minutes"/>
+                                <field name="customer_sync_interval_minutes"/>
+                                <field name="catalog_sync_interval_minutes"/>
+                                <field name="inventory_sync_interval_minutes"/>
+                                <field name="shipment_sync_interval_minutes"/>
+                            </group>
+                        </page>
+                        <page string="Preflight">
+                            <group>
+                                <field name="last_preflight_at"/>
+                                <field name="last_preflight_error"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ecommerce_store_search" model="ir.ui.view">
+        <field name="name">ecommerce.store.search</field>
+        <field name="model">ecommerce.store</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="backend_id"/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <separator/>
+                <filter name="backend" string="Backend" context="{'group_by':'backend_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_ecommerce_store" model="ir.actions.act_window">
+        <field name="name">Stores</field>
+        <field name="res_model">ecommerce.store</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
