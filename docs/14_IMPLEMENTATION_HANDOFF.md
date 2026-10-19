@@ -205,7 +205,9 @@ If a future session has no conversation history:
 - Tests and acceptance gates measurable.
 - Handoff complete.
 
-**Phase status: documentation complete. Final verification passed: 15 documents,
-only `docs/` added to the core repository, connector clean, protected
-repositories clean, no secrets found. Implementation is not authorized by this
-document; M1 starts only on explicit operator approval.**
+**Phase status: implementation executed on Odoo 19, 18, and 17 branches.
+Core and connector install and pass their mocked/ORM/queue tests on all three
+versions. A real OCA jobrunner executed a queued job successfully. Live Magento
+acceptance is blocked because no Magento installation or Adobe Composer
+credentials exist. Odoo 19/18/17 are therefore not commercially accepted, and no
+version support claim beyond the recorded tests is made.**
