@@ -33,6 +33,8 @@
         "views/ecommerce_store_views.xml",
         "views/ecommerce_mapping_views.xml",
         "views/ecommerce_sync_views.xml",
+        "views/ecommerce_product_sync_wizard_views.xml",
+        "views/product_views.xml",
         "views/ecommerce_menus.xml",
     ],
 }

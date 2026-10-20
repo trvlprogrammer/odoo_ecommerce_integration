@@ -45,6 +45,36 @@
         </field>
     </record>
 
+
+    <record id="view_ecommerce_category_mapping_form" model="ir.ui.view">
+        <field name="name">ecommerce.category.mapping.form</field>
+        <field name="model">ecommerce.category.mapping</field>
+        <field name="arch" type="xml">
+            <form string="eCommerce Category Mapping">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="backend_id"/>
+                            <field name="store_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="external_id"/>
+                            <field name="external_name"/>
+                            <field name="external_parent_id"/>
+                            <field name="external_level"/>
+                        </group>
+                        <group>
+                            <field name="odoo_category_id"/>
+                            <field name="sync_state"/>
+                            <field name="last_synced_at"/>
+                            <field name="last_error"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
     <record id="view_ecommerce_customer_mapping_list" model="ir.ui.view">
         <field name="name">ecommerce.customer.mapping.list</field>
         <field name="model">ecommerce.customer.mapping</field>
