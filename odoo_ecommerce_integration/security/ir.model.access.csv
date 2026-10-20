@@ -57,3 +57,6 @@ acl_manager_16,ecommerce.payment.method.mapping_manager,model_ecommerce_payment_
 acl_manager_17,ecommerce.sync.state_manager,model_ecommerce_sync_state,group_ecommerce_manager,1,1,1,1
 acl_manager_18,ecommerce.sync.event_manager,model_ecommerce_sync_event,group_ecommerce_manager,1,1,1,1
 acl_manager_19,ecommerce.sync.issue_manager,model_ecommerce_sync_issue,group_ecommerce_manager,1,1,1,1
+acl_user_wizard,ecommerce.product.sync.wizard_user,model_ecommerce_product_sync_wizard,group_ecommerce_user,1,1,1,1
+acl_operator_wizard,ecommerce.product.sync.wizard_operator,model_ecommerce_product_sync_wizard,group_ecommerce_operator,1,1,1,1
+acl_manager_wizard,ecommerce.product.sync.wizard_manager,model_ecommerce_product_sync_wizard,group_ecommerce_manager,1,1,1,1

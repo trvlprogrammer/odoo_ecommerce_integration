@@ -47,8 +47,8 @@ class EcommerceBackend(models.Model):
         required=True,
         index=True,
     )
-    last_test_at = fields.Datetime()
-    last_test_error = fields.Char()
+    last_test_at = fields.Datetime(readonly=True)
+    last_test_error = fields.Char(readonly=True)
     capabilities = fields.Json(default=dict)
     notes = fields.Text()
 
@@ -66,6 +66,23 @@ class EcommerceBackend(models.Model):
         for backend in self:
             if backend.job_user_id and backend.company_id not in backend.job_user_id.company_ids:
                 raise ValidationError("The job user must have access to the backend company.")
+
+    @api.model
+    def _ecommerce_provider_registry(self):
+        """Return provider capabilities registered by installed connectors.
+
+        Each entry is a dict with at least ``code`` and ``label``.
+        Connector addons extend this method with ``super()``.
+        """
+        return []
+
+    @api.model
+    def _ecommerce_provider_selection(self):
+        return [
+            (item["code"], item["label"])
+            for item in self._ecommerce_provider_registry()
+            if item.get("code") and item.get("label")
+        ]
 
     def action_set_draft(self):
         self.write({"state": "draft", "last_test_error": False})

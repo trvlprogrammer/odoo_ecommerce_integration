@@ -1,5 +1,5 @@
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 
 class EcommerceStore(models.Model):
@@ -96,6 +96,20 @@ class EcommerceStore(models.Model):
                 raise ValidationError("Pricelist must belong to the store company.")
             if store.website_id and store.website_id.company_id != store.company_id:
                 raise ValidationError("Website must belong to the store company.")
+
+
+    def _ecommerce_supports_product_sync(self):
+        """Whether this store can enqueue product export/update jobs."""
+        return False
+
+    def _ecommerce_enqueue_product_sync(self, product_ids, operation):
+        """Connector hook: enqueue bounded product synchronization jobs.
+
+        Connectors override this method. The free core never imports connector
+        code and never calls an external API directly.
+        """
+        self.ensure_one()
+        raise UserError("This store's provider does not support product synchronization.")
 
 
 class EcommerceMappingMixin(models.AbstractModel):
@@ -272,6 +286,7 @@ class EcommerceCategoryMapping(models.Model):
         "product.public.category", required=True, ondelete="restrict", index=True
     )
     external_parent_id = fields.Char(index=True)
+    external_name = fields.Char(index=True)
     external_level = fields.Integer()
     external_path = fields.Char()
     mapping_method = fields.Selection(
