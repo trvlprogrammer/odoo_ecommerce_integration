@@ -92,4 +92,13 @@
         action="action_ecommerce_sync_issue"
         sequence="30"
     />
+
+    <menuitem id="menu_ecommerce_category_mappings" name="Category Mappings" parent="menu_ecommerce_mappings" action="action_ecommerce_category_mapping" sequence="30"/>
+    <menuitem id="menu_ecommerce_inventory_source_mappings" name="Inventory Sources" parent="menu_ecommerce_mappings" action="action_ecommerce_inventory_source_mapping" sequence="60"/>
+    <menuitem id="menu_ecommerce_payment_method_mappings" name="Payment Methods" parent="menu_ecommerce_mappings" action="action_ecommerce_payment_method_mapping" sequence="70"/>
+    <menuitem id="menu_ecommerce_carrier_mappings" name="Carriers" parent="menu_ecommerce_mappings" action="action_ecommerce_carrier_mapping" sequence="80"/>
+    <menuitem id="menu_ecommerce_invoice_mappings" name="Invoice Mappings" parent="menu_ecommerce_monitoring" action="action_ecommerce_invoice_mapping" sequence="40"/>
+    <menuitem id="menu_ecommerce_payment_mappings" name="Payment Mappings" parent="menu_ecommerce_monitoring" action="action_ecommerce_payment_mapping" sequence="50"/>
+    <menuitem id="menu_ecommerce_shipment_mappings" name="Shipment Mappings" parent="menu_ecommerce_monitoring" action="action_ecommerce_shipment_mapping" sequence="60"/>
+    <menuitem id="menu_ecommerce_refund_mappings" name="Refund Mappings" parent="menu_ecommerce_monitoring" action="action_ecommerce_refund_mapping" sequence="70"/>
 </odoo>
