@@ -55,6 +55,11 @@ an independent addon from the matching branch.
 
 Install order: `queue_job`, then `odoo_ecommerce_integration`.
 
+## Documentation
+
+- [User guide](docs/user_guide/README.md)
+- [Execution checkpoints](docs/13_EXECUTION_CHECKPOINTS.md)
+
 ## License
 
 LGPL-3. See `LICENSE`.
