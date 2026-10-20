@@ -1,5 +1,5 @@
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 
 class EcommerceStore(models.Model):
@@ -83,6 +83,14 @@ class EcommerceStore(models.Model):
         ('batch_check', 'CHECK (stock_batch_size > 0 AND stock_batch_size <= 500 AND shipment_batch_size > 0 AND shipment_batch_size <= 1000)', 'Synchronization batch sizes are out of range.'),
         ('tolerance_check', 'CHECK (rounding_tolerance >= 0 AND rounding_tolerance <= 1)', 'Rounding tolerance must be between 0 and 1.'),
     ]
+
+
+    def _ecommerce_supports_product_sync(self):
+        return False
+
+    def _ecommerce_enqueue_product_sync(self, product_ids, operation):
+        self.ensure_one()
+        raise UserError("This store's provider does not support product synchronization.")
 
 
 class EcommerceMappingMixin(models.AbstractModel):
@@ -240,6 +248,7 @@ class EcommerceCategoryMapping(models.Model):
         "product.public.category", required=True, ondelete="restrict", index=True
     )
     external_parent_id = fields.Char(index=True)
+    external_name = fields.Char(index=True)
     external_level = fields.Integer()
     external_path = fields.Char()
     mapping_method = fields.Selection(
