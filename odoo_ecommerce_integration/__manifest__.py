@@ -8,6 +8,13 @@
     "license": "LGPL-3",
     "application": False,
     "installable": True,
+    "images": [
+        "static/description/banner.png",
+        "static/description/screenshots/backend.png",
+        "static/description/screenshots/store.png",
+        "static/description/screenshots/mappings.png",
+        "static/description/screenshots/queue.png",
+    ],
     "depends": [
         "base",
         "mail",
