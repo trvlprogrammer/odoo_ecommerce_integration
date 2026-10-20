@@ -211,6 +211,41 @@ odoo_ecommerce_magento/
 - No push, tag, deployment, or Odoo Apps publication was performed.
 - Protected repositories remain unchanged.
 
+
+## UX and manual E2E remediation (2026-10-20)
+
+- Magento Admin root cause: nginx served `/static/version.../` without stripping
+  the deployed-version prefix, so `static.php` rejected every asset. Local nginx
+  now rewrites the version prefix and falls back to `static.php?resource=` with
+  the `/static/` prefix removed. Static content was deployed for adminhtml and
+  frontend. Admin CSS/JS, category/product pages, order pages, credit memos,
+  and shipments render with no failed asset requests or page errors.
+- Backend `Last Test At` and `Last Test Error` are model-readonly and populated
+  by the connection workflow; success clears stale errors.
+- Free core now owns a provider-neutral **Sync to eCommerce** transient wizard:
+  provider registry, backend/store selection, Export vs Update, mapping status,
+  company/store validation, and queue_job orchestration. Magento implements the
+  provider hook; no Magento import exists in the free core.
+- Export refuses an already-mapped product; Update refuses a missing mapping.
+  Multi-store selection is supported; batches are bounded at 50 products and
+  duplicate identity keys are deduplicated by queue_job.
+- Navigation is provider-neutral: Configuration (Backends, Stores, Inventory
+  Sources, Payment Methods, Delivery Carriers), Mappings (Products, Variants,
+  Customers, Orders, eCommerce Categories, Payment Transactions, Invoices,
+  Refunds, Shipments), Monitoring (Issues, Queue Jobs, History, States).
+- Category mappings expose external name, identity, parent, Odoo eCommerce
+  category, sync state, and last sync; import/export preserve `external_name`.
+- Manual Magento Admin UI E2E passed: created `UI-CATALOG-2` and `UI Category`
+  through Admin, imported both into Odoo through queue_job, opened orders,
+  credit memos, and shipments without Admin errors. Created
+  `UI-ODOO-EXPORT-1` in Odoo, exported it through the wizard, updated it through
+  Update, and verified one Magento product with the updated price.
+- Regression: Odoo 19 47 tests, Odoo 18 46 tests, Odoo 17 46 tests; all pass.
+- Listing screenshots were replaced for the generic wizard, configurable
+  product, stock, and category views; `Export to Magento` references removed.
+- No push, tag, deployment, or publication was performed. Protected
+  repositories remain unchanged.
+
 ## Known limitations
 
 - Newly created Magento attributes can require one queue retry (60 s) before
