@@ -136,4 +136,226 @@
         <field name="res_model">ecommerce.order.mapping</field>
         <field name="view_mode">list,form</field>
     </record>
+
+    <record id="view_ecommerce_inventory_source_mapping_list" model="ir.ui.view">
+        <field name="name">ecommerce.inventory.source.mapping.list</field>
+        <field name="model">ecommerce.inventory.source.mapping</field>
+        <field name="arch" type="xml">
+            <list string="Inventory Sources">
+                <field name="store_id"/>
+                <field name="external_id"/>
+                <field name="external_source_name"/>
+                <field name="warehouse_id"/>
+                <field name="stock_location_id"/>
+                <field name="active"/>
+                <field name="sync_state"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_ecommerce_inventory_source_mapping_form" model="ir.ui.view">
+        <field name="name">ecommerce.inventory.source.mapping.form</field>
+        <field name="model">ecommerce.inventory.source.mapping</field>
+        <field name="arch" type="xml">
+            <form string="Inventory Source Mapping">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="backend_id"/>
+                            <field name="store_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="external_id"/>
+                            <field name="external_code"/>
+                            <field name="external_source_name"/>
+                        </group>
+                        <group>
+                            <field name="warehouse_id"/>
+                            <field name="stock_location_id"/>
+                            <field name="active"/>
+                            <field name="sync_state"/>
+                            <field name="last_synced_at"/>
+                            <field name="last_error"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_ecommerce_payment_method_mapping_list" model="ir.ui.view">
+        <field name="name">ecommerce.payment.method.mapping.list</field>
+        <field name="model">ecommerce.payment.method.mapping</field>
+        <field name="arch" type="xml">
+            <list string="Payment Methods">
+                <field name="store_id"/>
+                <field name="external_id"/>
+                <field name="external_label"/>
+                <field name="journal_id"/>
+                <field name="active"/>
+                <field name="sync_state"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_ecommerce_payment_method_mapping_form" model="ir.ui.view">
+        <field name="name">ecommerce.payment.method.mapping.form</field>
+        <field name="model">ecommerce.payment.method.mapping</field>
+        <field name="arch" type="xml">
+            <form string="Payment Method Mapping">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="backend_id"/>
+                            <field name="store_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="external_id"/>
+                            <field name="external_code"/>
+                            <field name="external_label"/>
+                        </group>
+                        <group>
+                            <field name="journal_id"/>
+                            <field name="active"/>
+                            <field name="sync_state"/>
+                            <field name="last_synced_at"/>
+                            <field name="last_error"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_ecommerce_carrier_mapping_list" model="ir.ui.view">
+        <field name="name">ecommerce.carrier.mapping.list</field>
+        <field name="model">ecommerce.carrier.mapping</field>
+        <field name="arch" type="xml">
+            <list string="Carriers">
+                <field name="store_id"/>
+                <field name="external_id"/>
+                <field name="external_label"/>
+                <field name="delivery_carrier_id"/>
+                <field name="active"/>
+                <field name="sync_state"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_ecommerce_carrier_mapping_form" model="ir.ui.view">
+        <field name="name">ecommerce.carrier.mapping.form</field>
+        <field name="model">ecommerce.carrier.mapping</field>
+        <field name="arch" type="xml">
+            <form string="Carrier Mapping">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="backend_id"/>
+                            <field name="store_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="external_id"/>
+                            <field name="external_code"/>
+                            <field name="external_label"/>
+                        </group>
+                        <group>
+                            <field name="delivery_carrier_id"/>
+                            <field name="active"/>
+                            <field name="sync_state"/>
+                            <field name="last_synced_at"/>
+                            <field name="last_error"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_ecommerce_invoice_mapping_list" model="ir.ui.view">
+        <field name="name">ecommerce.invoice.mapping.list</field>
+        <field name="model">ecommerce.invoice.mapping</field>
+        <field name="arch" type="xml">
+            <list string="Invoice Mappings" create="false" edit="false">
+                <field name="store_id"/>
+                <field name="external_id"/>
+                <field name="external_increment_id"/>
+                <field name="order_mapping_id"/>
+                <field name="odoo_move_id"/>
+                <field name="status"/>
+                <field name="posted_at"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_ecommerce_payment_mapping_list" model="ir.ui.view">
+        <field name="name">ecommerce.payment.mapping.list</field>
+        <field name="model">ecommerce.payment.mapping</field>
+        <field name="arch" type="xml">
+            <list string="Payment Mappings" create="false" edit="false">
+                <field name="store_id"/>
+                <field name="external_id"/>
+                <field name="order_mapping_id"/>
+                <field name="amount"/>
+                <field name="currency_id"/>
+                <field name="status"/>
+                <field name="odoo_payment_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_ecommerce_shipment_mapping_list" model="ir.ui.view">
+        <field name="name">ecommerce.shipment.mapping.list</field>
+        <field name="model">ecommerce.shipment.mapping</field>
+        <field name="arch" type="xml">
+            <list string="Shipment Mappings" create="false" edit="false">
+                <field name="store_id"/>
+                <field name="order_mapping_id"/>
+                <field name="external_id"/>
+                <field name="odoo_picking_id"/>
+                <field name="tracking_number"/>
+                <field name="tracking_carrier"/>
+                <field name="status"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_ecommerce_refund_mapping_list" model="ir.ui.view">
+        <field name="name">ecommerce.refund.mapping.list</field>
+        <field name="model">ecommerce.refund.mapping</field>
+        <field name="arch" type="xml">
+            <list string="Refund Mappings" create="false" edit="false">
+                <field name="store_id"/>
+                <field name="external_id"/>
+                <field name="external_increment_id"/>
+                <field name="order_mapping_id"/>
+                <field name="amount"/>
+                <field name="currency_id"/>
+                <field name="status"/>
+                <field name="odoo_credit_note_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_ecommerce_inventory_source_mapping" model="ir.actions.act_window">
+        <field name="name">Inventory Sources</field>
+        <field name="res_model">ecommerce.inventory.source.mapping</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_ecommerce_payment_method_mapping" model="ir.actions.act_window">
+        <field name="name">Payment Methods</field>
+        <field name="res_model">ecommerce.payment.method.mapping</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_ecommerce_carrier_mapping" model="ir.actions.act_window">
+        <field name="name">Carriers</field>
+        <field name="res_model">ecommerce.carrier.mapping</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_ecommerce_invoice_mapping" model="ir.actions.act_window">
+        <field name="name">Invoice Mappings</field>
+        <field name="res_model">ecommerce.invoice.mapping</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="action_ecommerce_payment_mapping" model="ir.actions.act_window">
+        <field name="name">Payment Mappings</field>
+        <field name="res_model">ecommerce.payment.mapping</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="action_ecommerce_shipment_mapping" model="ir.actions.act_window">
+        <field name="name">Shipment Mappings</field>
+        <field name="res_model">ecommerce.shipment.mapping</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="action_ecommerce_refund_mapping" model="ir.actions.act_window">
+        <field name="name">Refund Mappings</field>
+        <field name="res_model">ecommerce.refund.mapping</field>
+        <field name="view_mode">list</field>
+    </record>
 </odoo>
