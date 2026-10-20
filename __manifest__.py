@@ -15,6 +15,8 @@
         "stock",
         "account",
         "delivery",
+        "website_sale",
+        "mrp",
         "queue_job",
     ],
     "data": [

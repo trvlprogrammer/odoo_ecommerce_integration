@@ -22,6 +22,7 @@ class EcommerceSyncState(models.Model):
     resource = fields.Selection(
         [
             ("product", "Product"),
+            ("category", "Category"),
             ("customer", "Customer"),
             ("order", "Order"),
             ("invoice", "Invoice"),

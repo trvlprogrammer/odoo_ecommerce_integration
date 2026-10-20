@@ -31,6 +31,20 @@
         </field>
     </record>
 
+    <record id="view_ecommerce_category_mapping_list" model="ir.ui.view">
+        <field name="name">ecommerce.category.mapping.list</field>
+        <field name="model">ecommerce.category.mapping</field>
+        <field name="arch" type="xml">
+            <list string="Category Mappings">
+                <field name="store_id"/>
+                <field name="external_id"/>
+                <field name="external_parent_id"/>
+                <field name="odoo_category_id"/>
+                <field name="sync_state"/>
+            </list>
+        </field>
+    </record>
+
     <record id="view_ecommerce_customer_mapping_list" model="ir.ui.view">
         <field name="name">ecommerce.customer.mapping.list</field>
         <field name="model">ecommerce.customer.mapping</field>
@@ -105,6 +119,11 @@
     <record id="action_ecommerce_variant_mapping" model="ir.actions.act_window">
         <field name="name">Variant Mappings</field>
         <field name="res_model">ecommerce.variant.mapping</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_ecommerce_category_mapping" model="ir.actions.act_window">
+        <field name="name">Category Mappings</field>
+        <field name="res_model">ecommerce.category.mapping</field>
         <field name="view_mode">list,form</field>
     </record>
     <record id="action_ecommerce_customer_mapping" model="ir.actions.act_window">

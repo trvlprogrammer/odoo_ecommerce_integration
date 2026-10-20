@@ -39,6 +39,7 @@
                             <field name="stock_location_id"/>
                             <field name="pricelist_id"/>
                             <field name="currency_id"/>
+                            <field name="website_id" options="{'no_create': True}"/>
                             <field name="shipping_product_id"/>
                         </group>
                     </group>
@@ -48,6 +49,8 @@
                                 <field name="auto_confirm_orders"/>
                                 <field name="auto_post_invoice"/>
                                 <field name="auto_register_payment"/>
+                                <field name="auto_register_refund"/>
+                                <field name="rounding_tolerance"/>
                             </group>
                         </page>
                         <page string="Inventory">
@@ -55,6 +58,7 @@
                                 <field name="inventory_use_on_hand"/>
                                 <field name="inventory_subtract_reserved"/>
                                 <field name="inventory_safety_stock"/>
+                                <field name="stock_batch_size"/>
                             </group>
                         </page>
                         <page string="Schedules">
@@ -62,8 +66,10 @@
                                 <field name="order_sync_interval_minutes"/>
                                 <field name="customer_sync_interval_minutes"/>
                                 <field name="catalog_sync_interval_minutes"/>
+                                <field name="category_sync_interval_minutes"/>
                                 <field name="inventory_sync_interval_minutes"/>
                                 <field name="shipment_sync_interval_minutes"/>
+                                <field name="shipment_batch_size"/>
                             </group>
                         </page>
                         <page string="Preflight">
