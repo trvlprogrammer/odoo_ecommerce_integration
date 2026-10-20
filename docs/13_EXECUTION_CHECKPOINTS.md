@@ -181,6 +181,36 @@ odoo_ecommerce_magento/
   deduplication, uninstall cleanup, and stock jobs were unaffected.
 - Protected repositories remained clean.
 
+
+## Odoo Apps listing preparation (2026-10-20)
+
+- Magento Connector manifest: `price: 280.0`, `currency: USD`, license OPL-1.
+- Free core: no price, license LGPL-3.
+- Both addons received `static/description/icon.png`, `banner.png`,
+  screenshots, and an embedded customer-facing listing page.
+- Magento listing contains the complete 16-step customer setup guide,
+  dependency installation, multi-store configuration, financial and inventory
+  workflows, queue monitoring, troubleshooting, and known limitations.
+- Free core listing explains that it is a framework dependency and does not
+  connect to Magento or Shopify by itself.
+- Four genuine GIF demonstrations were captured from a running Odoo 19
+  environment with synthetic data: product import, order import, configurable
+  product, and delivery workflow.
+- Screenshots use real Odoo views and synthetic data. Credentials are masked.
+  Screenshots from Odoo 19 are reused on 18/17 where the UI and features are
+  equivalent.
+- Local render validation at 1440px and 390px produced no broken image or
+  network requests. GIFs were verified by direct playback and frame extraction.
+- User guides were added under each repository's `docs/user_guide/`.
+- Mapping menus were added for categories, inventory sources, payment methods,
+  carriers, and financial/shipment/refund monitoring.
+- Regression after listing/menu changes:
+  - Odoo 19: 41 tests, 0 failed, 0 errors.
+  - Odoo 18: 40 tests, 0 failed, 0 errors.
+  - Odoo 17: 40 tests, 0 failed, 0 errors.
+- No push, tag, deployment, or Odoo Apps publication was performed.
+- Protected repositories remain unchanged.
+
 ## Known limitations
 
 - Newly created Magento attributes can require one queue retry (60 s) before
