@@ -4,314 +4,177 @@
 
 | Field | Value |
 | --- | --- |
-| Phase | **Autonomous implementation — Odoo 19/18/17 code paths** |
-| Date | 2026-10-19 |
-| Status | Code installed and tests pass on all three Odoo versions; **live Magento acceptance blocked** |
-| Current branch | `19.0` (documentation worktree) |
-| Application code | Implemented in both allowed repositories |
-| Commits | Local only; no push, tag, release, or deployment |
-| Protected repos | Clean; verified after implementation |
-| Next gate | Live Magento `2.4.7-p3` provisioning and acceptance |
+| Date | 2026-10-20 |
+| Phase | V1 remediation, real Magento E2E acceptance, and version ports |
+| Current branch | `18.0` |
+| Application code | Both allowed repositories, branches `19.0`, `18.0`, `17.0` |
+| Protected repositories | Unchanged (verified clean) |
+| Release status | **CONDITIONALLY READY** — see limitations |
+| Next safe action | Human review, optional live configurable-export smoke on 18/17, then release tagging |
 
-## Implementation baseline
+## Verified environment
 
 | Item | Value |
 | --- | --- |
-| Odoo 19 | `20f5882e87e818e94a79ad07ac00530842d7045b`, Python 3.12.15 |
+| Odoo 19 | `20f5882e87e818e94a79ad07ac00530842d7045b`, Python 3.12 |
 | Odoo 18 | `8e50ecb100695e2d4c98bf3bd88463f2cfb53cad` |
 | Odoo 17 | `02d3a1d847bb4c3f784e3b018b581ee4d8f3fe4e` |
-| OCA queue 19.0 | `da2664795eb525698f93dfdd63f6ba5c4c9fccba` (`queue_job 19.0.2.1.6`) |
-| OCA queue 18.0 | `8ece5e3b4af13479e22a8cb282c255aeaed7c626` |
-| OCA queue 17.0 | `983b6adc1aa780c3d69247cd2d5cadc91bcffe82` |
-| PostgreSQL | local `postgres:16` container, loopback |
-| Magento | **not installed**; no Adobe Composer credentials |
-| Test DB 19 | `ecommerce_magento_accept_19` |
-| Test DB 18 | `ecommerce_magento_test_18` |
-| Test DB 17 | `ecommerce_magento_test_17` |
+| OCA queue 19 | `19.0.2.1.6` |
+| OCA queue 18 | `18.0.4.1.1` |
+| OCA queue 17 | `17.0.1.5.4` |
+| PostgreSQL | `postgres:16` on loopback |
+| Magento | Open Source `2.4.7-p3`, PHP 8.3, MySQL 8.0, OpenSearch 2.12, nginx |
+| Magento API | `http://127.0.0.1:8083`, local disposable admin token |
+| Magento MSI | Installed from public `magento/inventory` `1.2.7-p3` source |
+| Test databases | `e2e_final_19`, `port18_test`, `port17_test`, `e2e_accept_19`, `e2e_uninstall_19` |
 
-Protected repository baseline remains unchanged:
+## Commits
 
-| Repository | HEAD | Dirty |
+| Branch | Integration core | Magento connector |
 | --- | --- | --- |
-| `move_line_in_picking_list` | `894691104e74e4ca862bf1502286cf85f602f295` | 0 |
-| `odoo_advance_chatter` | `c6da242a2e4208fbd0e0b78a871d1cbf55c2326e` | 0 |
-| `odoo_sticky_view` | `111afd8d6ad643616d0bfc355c913a522d9cd814` | 0 |
-| `order_line_in_order_list` | `fba4274075ae40b41f3db32d262b9500363c42bc` | 0 |
-| `po_line_in_po_list` | `5f10e48128b55e8c2a4eb5e13be388752dbe2ebc` | 0 |
+| `19.0` | `eb7bc86` + `614528f` | `d1e52a8` + `614528f` |
+| `18.0` | `f0278b9` | `ac13e8d` + `5f26873` |
+| `17.0` | `1ae35d5` | `dc9a51f` |
 
-## Branch / commit evidence
+All commits are local. Nothing was pushed, tagged, or deployed.
 
-| Branch | Core implementation commit | Connector implementation commit |
+## Automated test results
+
+| Version | Command summary | Result |
 | --- | --- | --- |
-| `19.0` | `0001d76` | `16f14a3` (plus later `359f8a9` retry fix) |
-| `18.0` | `37e3455` | `6cb9d00` (plus later `77f5183` retry fix) |
-| `17.0` | `e32647d` | `b533513` (plus later `1112cd2` retry fix) |
-
-All commits are local. Nothing was pushed. Documentation-only commits after these
-implementation commits are not listed individually.
-
-## Milestone results
-
-### M1 — Environment readiness: PARTIAL
-
-Completed:
-
-- Odoo 19/18/17 environments located and verified.
-- PostgreSQL started; dedicated test databases created.
-- OCA `queue_job` installed from pinned 19.0/18.0/17.0 branches in isolated
-  addons directories.
-- `openupgradelib 3.13.7` installed in the Odoo 19 venv.
-- Real OCA jobrunner started with workers > 1 and executed a job successfully:
-  job `650e601f-b62b-4665-8172-b43e5647b8fe` reached state `done` on
-  `ecommerce_magento_test_19`.
-- Isolated addons paths were used for 18/17 so protected repository modules were
-  not loaded or modified.
-
-Blocked:
-
-- No real Magento Open Source `2.4.7-p3` stack exists.
-- `~/.composer/auth.json` is absent, so Adobe's Composer repository cannot be
-  used to install Magento.
-- No live Magento API endpoint, token, or fixture data exists.
-
-### M2 — Shared core: COMPLETE (tests)
-
-Implemented:
-
-- `ecommerce.backend`, `ecommerce.store`
-- product, variant, attribute, attribute-value, customer, order, order-line,
-  invoice, payment, shipment, refund, inventory-source, carrier, and
-  payment-method mappings
-- sync state, event, and issue models
-- company rules, groups, ACLs, views, menus
-- OCA queue dependency and shared event/issue services
-
-Evidence:
-
-- Odoo 19 clean install: 0 failed, 0 errors; combined 20 tests.
-- Odoo 18: 0 failed, 0 errors; combined 19 tests.
-- Odoo 17: 0 failed, 0 errors; combined 19 tests.
-
-### M3 — Magento authentication/scope: PARTIAL
-
-Implemented:
-
-- Bearer integration-token client
-- URL/TLS/loopback validation
-- store-view discovery, MSI source probe, capability flags
-- preflight and connection test
-- queue jobs and channels
-
-Evidence:
-
-- Deterministic fake Magento HTTP server tests for successful auth, bad URL,
-  429, timeout, store scope, MSI probe.
-- **No real Magento authentication test.**
-
-### M4 — Catalog and customers: PARTIAL
-
-Implemented and tested:
-
-- simple product import and replay
-- simple product export
-- configurable parent discovery plus child product import
-- SKU matching/ambiguity failure
-- website-scoped customer import and replay
-- mapping persistence
-
-Limitations:
-
-- Configurable attributes are discovered as child products but full Odoo
-  attribute-line/variant reconstruction and attribute/value mapping records are
-  not completed.
-- No product image, bundle/grouped/virtual/downloadable support.
-- No live Magento payload verification.
-
-### M5 — Orders: PARTIAL
-
-Implemented and tested:
-
-- incremental order discovery by `entity_id`
-- guest/customer partner resolution
-- billing/shipping address partners
-- product line resolution
-- Magento increment ID as Odoo sale-order name
-- total verification and optional confirmation
-- replay idempotency
-
-Evidence:
-
-- Odoo 19/18/17 unit/ORM tests pass for order import and replay.
-- No live Magento order verification.
-
-### M6 — Financial workflows: PARTIAL
-
-Implemented and tested:
-
-- invoice creation/posting
-- payment-method-to-journal mapping
-- payment registration from paid-invoice evidence
-- deterministic payment evidence key and replay prevention
-- credit memo to Odoo credit note
-- duplicate prevention
-
-Evidence:
-
-- Odoo 19/18/17 tests pass for invoice, payment, and credit note replay.
-- No live Magento invoice/payment/credit memo verification.
-- Refund payment automation remains out of V1.
-
-### M7 — Inventory and shipments: PARTIAL
-
-Implemented and tested:
-
-- one active source mapping
-- Odoo stock quant calculation
-- absolute SourceItem push and unchanged-target skip
-- completed outgoing picking shipment creation
-- partial/ordered quantity handling using done move quantities
-- exact shipment adoption and replay prevention
-
-Evidence:
-
-- Odoo 19/18/17 tests pass for inventory and shipment create/replay.
-- No live Magento shipment/SourceItem verification.
-- Post-create tracking update remains unsupported.
-- Multi-source MSI remains out of V1.
-
-### M8 — Queue resilience: PARTIAL/VERIFIED-CORE
-
-Implemented:
-
-- OCA channels and job functions
-- identity keys for duplicate active scans
-- retry patterns
-- transactional advisory lock when running under a real `job_uuid`
-- sanitized issue creation on permanent failures
-- real jobrunner execution test
-
-Evidence:
-
-- Real OCA jobrunner executed a queued job to `done`.
-- Duplicate active catalog job was rejected by identity key.
-- 429/timeout mapping and URL safety tests pass.
-- Full automated crash/requeue and multi-worker concurrency acceptance remains
-  to be run.
-
-### M9 — Odoo 19 acceptance: PARTIAL
-
-Passed:
-
-- clean database install of `queue_job`, core, and connector
-- combined 20 module tests: 0 failed, 0 errors
-- real jobrunner test
-- security/company tests
-- secret scan of source tree
-- protected repositories unchanged
-
-Not passed:
-
-- live Magento connection/API acceptance
-- live catalog/customer/order/finance/inventory/shipment scenarios
-- end-to-end financial and shipment evidence against real Magento
-
-**Odoo 19 is not claimed as commercially accepted.**
-
-### M10 — Odoo 18 port: PARTIAL
-
-Passed:
-
-- `18.0` branch created
-- `_sql_constraints` port, removal of Odoo 19-only `models.Index`,
-  `models.UniqueIndex`, and `models.Constraint`
-- OCA queue 18.0 installed in isolated addons path
-- install and combined 19 tests pass: 0 failed, 0 errors
-- connector functional tests pass, including order/finance/inventory/shipment
-
-Known 18-specific difference:
-
-- Partial unique indexes became full unique constraints; archiving and
-  re-creating the same external mapping is not supported on 18.0.
-- Live Magento acceptance not executed.
-
-### M11 — Odoo 17 port: PARTIAL
-
-Passed:
-
-- `17.0` branch created
-- Odoo 17 `<tree>` view port
-- Odoo 17 storable product type (`product`) adaptation
-- OCA queue 17.0 installed in isolated addons path
-- install and combined 19 tests pass: 0 failed, 0 errors
-- connector functional tests pass
-
-Known 17-specific difference:
-
-- Same full-unique/archive limitation as 18.0.
-- Live Magento acceptance not executed.
-
-## Verified commands and evidence
-
-Odoo 19 clean acceptance install:
-
-```bash
-odoo-bin -c /home/ridho/Data/odoo-dev/19/config/odoo.conf \
-  -d ecommerce_magento_accept_19 \
-  -i queue_job,odoo_ecommerce_integration,odoo_ecommerce_magento \
-  --without-demo \
-  --test-tags=/odoo_ecommerce_integration,/odoo_ecommerce_magento \
-  --stop-after-init
-```
-
-Result: `0 failed, 0 error(s) of 20 tests`.
-
-Odoo 18:
-
-```bash
-odoo-bin -c /home/ridho/Data/odoo-dev/18/config/odoo.conf \
-  --addons-path=<odoo18-core>,<odoo18-addons>,/home/ridho/Data/odoo-dev/18/ecommerce-addons \
-  -d ecommerce_magento_test_18 -u odoo_ecommerce_integration,odoo_ecommerce_magento \
-  --test-enable --test-tags=/odoo_ecommerce_integration,/odoo_ecommerce_magento \
-  --stop-after-init
-```
-
-Result: `0 failed, 0 error(s) of 19 tests`.
-
-Odoo 17:
-
-```bash
-odoo-bin -c /home/ridho/Data/odoo-dev/17/config/odoo.conf \
-  --addons-path=<odoo17-core>,<odoo17-addons>,/home/ridho/Data/odoo-dev/17/ecommerce-addons \
-  -d ecommerce_magento_test_17 -u odoo_ecommerce_integration,odoo_ecommerce_magento \
-  --test-enable --test-tags=/odoo_ecommerce_integration,/odoo_ecommerce_magento \
-  --stop-after-init
-```
-
-Result: `0 failed, 0 error(s) of 19 tests`.
+| Odoo 19 | clean install + `/odoo_ecommerce_integration,/odoo_ecommerce_magento` | **41 tests, 0 failed, 0 errors** |
+| Odoo 18 | clean install, isolated addons path | **40 tests, 0 failed, 0 errors** |
+| Odoo 17 | clean install, isolated addons path | **40 tests, 0 failed, 0 errors** |
+
+Odoo 18/17 tests used isolated addons paths so that protected repositories on
+`19.0` were never loaded or modified.
+
+## Real Magento E2E — Odoo 19
+
+All operations were executed through the real OCA `queue_job` runner with
+`--load=web,queue_job --workers=2`.
+
+| Scenario | Result |
+| --- | --- |
+| Connection, store views, MSI sources | PASS |
+| Category import (Default, Apparel, Tops, Shoes) and hierarchy | PASS |
+| Simple product import/replay | PASS |
+| Configurable parent + Red/Blue child variants + attribute/value mappings | PASS |
+| Order `000000002` import: 2 simple + 1 configurable, 10% tax, 15 shipping | PASS (total 53.50 matched) |
+| Order `000000003` kit parent import | PASS (76.00 matched) |
+| Order `000000004` 10% coupon discount | PASS (49.65 matched, discount 3.50) |
+| Order `000000005` repeat guest (same email/name/address) | PASS (same Odoo partner reused) |
+| Canceled Magento order `000000001` | PASS (skipped intentionally) |
+| Invoice/posting and exact payment amounts (53.50/76.00/49.65/16.00) | PASS |
+| Partial credit memo `26.00` (item + shipping, tax preserved) | PASS |
+| Full credit memo `16.00` | PASS |
+| Credit notes linked to invoice, not auto-reconciled | PASS |
+| No duplicate payments on finance replay | PASS |
+| Partial delivery, backorder, second delivery | PASS |
+| Adopt existing Magento shipments 1 and 2 (no duplicates) | PASS |
+| Create Magento shipments for orders 4/5/6 with tracking | PASS |
+| Kit shipment conversion (2×A + 1×B → 1 kit item) | PASS |
+| Periodic stock cron → bounded queue jobs → absolute quantities | PASS |
+| Event-driven stock change → targeted job → Magento quantity 42 | PASS |
+| Category export with parent/child hierarchy | PASS |
+| Simple product export + update + repeat (price 19.50) | PASS |
+| Configurable product export `ODOO-EXP-CONF6` (parent, 2 children, options) | PASS |
+| Configurable export repeat (no duplicates) | PASS |
+| Second store view order sync (0 cross-store imports) | PASS |
+| Unreachable backend job retry (`pending`, ETA) | PASS |
+| Invalid backend URL permanent failure (`failed`) | PASS |
+| Integration user used as job user | PASS |
+| Module uninstall removes only connector queue jobs (1 → 0) | PASS |
+| Protected repositories unchanged | PASS |
+
+## Real Magento E2E — Odoo 18
+
+| Scenario | Result |
+| --- | --- |
+| Catalog import through real API | PASS (10 product mappings, 6 category mappings) |
+| Order import (`000000002`, `3`, `4`, `6`, `7`) | PASS (all financial checks matched) |
+| Finance: invoices, exact payments, credit note 26.00 linked/open | PASS |
+| Shipment create for order `000000007` with tracking | PASS |
+| Event stock push (31 absolute) | PASS |
+| Job user `ecommerce_integration` | PASS |
+
+## Real Magento E2E — Odoo 17
+
+| Scenario | Result |
+| --- | --- |
+| Catalog import through real API | PASS |
+| Order import (`000000002`, `3`, `4`, `6`, `7`) | PASS (all financial checks matched) |
+| Finance: invoices, exact payments, credit note 26.00 linked/open | PASS (Odoo 17 payment state `posted`) |
+| Shipment adoption (Magento shipment 7, no duplicate) | PASS |
+| Event stock push (27 absolute) | PASS |
+
+## Defects fixed
+
+- Cross-store order discovery now places all filters in one Magento filter group
+  (AND) and revalidates the returned `store_id`.
+- Payment amount is capped at invoice residual; overpayment records an issue.
+- Existing `account.payment` is adopted by deterministic reference.
+- `auto_register_payment` is honored; paid invoices become `skipped` mappings.
+- `auto_confirm_orders` is honored by finance sync.
+- Credit memos import independently of paid invoices; credit notes are linked
+  to the invoice but not auto-reconciled; refund cash is opt-in.
+- Integer Magento invoice state `2` is treated as paid.
+- Configurable order child lines are skipped; kit component moves convert back
+  to the kit order item.
+- Currency mismatch and missing currency now stop the import.
+- Order number collisions stop the import with an actionable error; the
+  Magento `increment_id` is used from creation.
+- SKU ambiguity stops product import instead of creating a duplicate.
+- SSRF: DNS resolution, private/loopback/link-local/metadata rejection, no
+  redirects, TLS verification. `allow_private_network` is an explicit
+  development switch.
+- `job_user_id` is used for every queued job; crons enqueue only and never call
+  Magento directly.
+- Cron records use a dedicated integration user.
+- Module uninstall removes connector queue jobs.
+- Configurable product import creates parent attributes, values, variants, and
+  child mappings; export creates a Magento configurable parent, children,
+  options, and category links.
+- Product categories use `product.public.category` with hierarchy and
+  per-store mapping.
+- Guest deduplication uses normalized email + website scope, with last
+  name/phone/postcode disambiguation and an advisory transaction lock.
+- Shipments use exact `sale_line_id` identity, cap quantities against ordered
+  quantities, never reuse a remote shipment twice, and send tracking.
+- Periodic stock sync enqueues bounded batches; event sync enqueues targeted
+  product jobs; both push absolute stock, including phantom-kit availability.
+- Initial stock push now happens for zero-quantity mappings
+  (`last_pushed_quantity` default `-1`).
 
 ## Known limitations
 
-- No live Magento environment or API evidence.
-- Configurable product attributes are not fully reconstructed into Odoo
-  attribute lines/variants.
-- Simple product export only; no configurable export.
-- No product images or complex Magento product types.
-- No tax-rate mapping; product taxes are cleared on imported products and total
-  mismatches block auto-confirm.
-- No post-import order edits/cancellations.
-- No refund payment automation.
-- No RMA.
-- No multi-source MSI.
-- No post-create tracking updates.
-- Odoo 18/17 do not support archive/recreate of the same external mapping.
-- Full crash/requeue multi-worker acceptance remains open.
+- Newly created Magento attributes can require one queue retry (60 s) before
+  Magento's attribute metadata/cache accepts configurable child links. The
+  connector handles this with `RetryableJobError` and recreates stale children.
+- Magento configurable parent price is `0` by Magento convention; child prices
+  carry the value (children are verified at the configured price).
+- Partial kit availability is defined as complete kits only (minimum component
+  availability). Partial-component shipping is documented, not auto-converted.
+- Refund cash payments are only registered when `auto_register_refund` is on;
+  otherwise the credit note remains open and linked for manual refund.
+- Multi-source MSI routing, RMA, webhooks, product images, bundle/grouped
+  products, and post-import Magento order edits remain out of V1 scope.
+- Performance/throughput and 10k-product benchmarks were not executed.
+- Odoo 18/17 were verified with real catalog/order/finance/shipment/stock
+  flows; live configurable export on 18/17 remains covered by contract tests
+  rather than a second live Magento run.
+
+## Evidence locations
+
+- Odoo 19 final tests: `/home/ridho/Data/magento-e2e/logs/final19b.log`
+- Odoo 19 acceptance install: `/home/ridho/Data/magento-e2e/logs/accept_install.log`
+- Odoo 18 tests: `/home/ridho/Data/magento-e2e/logs/port18e.log`
+- Odoo 17 tests: `/home/ridho/Data/magento-e2e/logs/port17d.log`
+- Real Magento stack and scripts: `/home/ridho/Data/magento-e2e/`
+- Magento API scripts: `/home/ridho/Data/magento-e2e/scripts/`
 
 ## Next safe action
 
-1. Obtain Adobe Composer credentials and provision the isolated Magento
-   `2.4.7-p3` stack from `odoo_ecommerce_magento/tools/magento-compose/`.
-2. Mint a least-privilege Integration token.
-3. Run live connection, catalog, customer, order, finance, inventory, and
-   shipment scenarios.
-4. Fix any contract mismatches and rerun all three version suites.
-5. Only then record M9/M10/M11 as complete and create release tags.
+1. Human review of the local commits and limitations.
+2. Optional live configurable-export run on Odoo 18 and 17.
+3. Only after review, create version tags and push with separate authorization.
