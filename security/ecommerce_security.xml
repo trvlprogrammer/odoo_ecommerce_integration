@@ -57,6 +57,13 @@
         <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
     </record>
 
+    <record id="rule_company_ecommerce_category_mapping" model="ir.rule">
+        <field name="name">ecommerce.category.mapping: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_category_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+
     <record id="rule_company_ecommerce_customer_mapping" model="ir.rule">
         <field name="name">ecommerce.customer.mapping: multi-company</field>
         <field name="model_id" ref="model_ecommerce_customer_mapping"/>

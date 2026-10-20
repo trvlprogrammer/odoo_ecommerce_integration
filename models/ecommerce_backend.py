@@ -20,6 +20,11 @@ class EcommerceBackend(models.Model):
     active = fields.Boolean(default=True)
     base_url = fields.Char(required=True)
     allow_insecure_http = fields.Boolean(default=False)
+    allow_private_network = fields.Boolean(
+        default=False,
+        help="Development only: allow HTTPS endpoints that resolve to a private address. "
+        "Never enable this for a production backend.",
+    )
     verify_ssl = fields.Boolean(default=True)
     timeout_seconds = fields.Integer(default=30)
     job_user_id = fields.Many2one(

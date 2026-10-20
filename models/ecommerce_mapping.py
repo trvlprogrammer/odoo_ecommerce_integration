@@ -32,6 +32,7 @@ class EcommerceStore(models.Model):
     )
     pricelist_id = fields.Many2one("product.pricelist", ondelete="restrict")
     currency_id = fields.Many2one("res.currency", ondelete="restrict")
+    website_id = fields.Many2one("website", ondelete="set null", index=True)
     shipping_product_id = fields.Many2one(
         "product.product",
         ondelete="restrict",
@@ -40,12 +41,17 @@ class EcommerceStore(models.Model):
     auto_confirm_orders = fields.Boolean(default=False)
     auto_post_invoice = fields.Boolean(default=True)
     auto_register_payment = fields.Boolean(default=False)
+    auto_register_refund = fields.Boolean(default=False)
+    rounding_tolerance = fields.Float(default=0.01)
+    stock_batch_size = fields.Integer(default=50)
+    shipment_batch_size = fields.Integer(default=100)
     inventory_use_on_hand = fields.Boolean(default=True)
     inventory_subtract_reserved = fields.Boolean(default=True)
     inventory_safety_stock = fields.Integer(default=0)
     order_sync_interval_minutes = fields.Integer(default=5)
     customer_sync_interval_minutes = fields.Integer(default=30)
     catalog_sync_interval_minutes = fields.Integer(default=60)
+    category_sync_interval_minutes = fields.Integer(default=60)
     inventory_sync_interval_minutes = fields.Integer(default=15)
     shipment_sync_interval_minutes = fields.Integer(default=15)
     last_preflight_at = fields.Datetime()
@@ -67,11 +73,15 @@ class EcommerceStore(models.Model):
                 raise ValidationError("Stock location must belong to the store company.")
             if store.pricelist_id and store.pricelist_id.company_id not in (False, store.company_id):
                 raise ValidationError("Pricelist must belong to the store company.")
+            if store.website_id and store.website_id.company_id != store.company_id:
+                raise ValidationError("Website must belong to the store company.")
 
     _sql_constraints = [
         ('backend_code_uniq', 'UNIQUE (backend_id, code)', 'Store code must be unique per backend.'),
         ('store_view_uniq', 'UNIQUE (backend_id, external_store_view_id)', 'A Magento store view can be bound to only one store.'),
         ('safety_check', 'CHECK (inventory_safety_stock >= 0)', 'Safety stock cannot be negative.'),
+        ('batch_check', 'CHECK (stock_batch_size > 0 AND stock_batch_size <= 500 AND shipment_batch_size > 0 AND shipment_batch_size <= 1000)', 'Synchronization batch sizes are out of range.'),
+        ('tolerance_check', 'CHECK (rounding_tolerance >= 0 AND rounding_tolerance <= 1)', 'Rounding tolerance must be between 0 and 1.'),
     ]
 
 
@@ -159,11 +169,11 @@ class EcommerceVariantMapping(models.Model):
     external_sku = fields.Char()
     external_barcode = fields.Char()
     mapping_method = fields.Selection(
-        [("manual", "Manual"), ("sku_auto", "SKU Auto"), ("export", "Export")],
+        [("manual", "Manual"), ("sku_auto", "SKU Auto"), ("import", "Import"), ("export", "Export")],
         default="manual",
         required=True,
     )
-    last_pushed_quantity = fields.Integer()
+    last_pushed_quantity = fields.Integer(default=-1)
     last_pushed_at = fields.Datetime()
 
 
@@ -183,7 +193,11 @@ class EcommerceAttributeMapping(models.Model):
         "product.attribute", required=True, ondelete="restrict", index=True
     )
     external_attribute_type = fields.Char(default="select")
-
+    mapping_method = fields.Selection(
+        [("manual", "Manual"), ("import", "Import"), ("export", "Export")],
+        default="manual",
+        required=True,
+    )
 
     _sql_constraints = [
         ('external_uniq', 'UNIQUE (store_id, external_id)', 'Attribute mapping external identity must be unique per store.'),
@@ -204,11 +218,39 @@ class EcommerceAttributeValueMapping(models.Model):
         "product.attribute.value", required=True, ondelete="restrict", index=True
     )
     external_label = fields.Char()
-
+    mapping_method = fields.Selection(
+        [("manual", "Manual"), ("import", "Import"), ("export", "Export")],
+        default="manual",
+        required=True,
+    )
 
     _sql_constraints = [
         ('external_uniq', 'UNIQUE (attribute_mapping_id, external_id)', 'Attribute option must be unique per attribute mapping.'),
         ('value_uniq', 'UNIQUE (attribute_mapping_id, odoo_value_id)', 'An Odoo attribute value can be mapped only once per attribute.'),
+    ]
+
+
+class EcommerceCategoryMapping(models.Model):
+    _name = "ecommerce.category.mapping"
+    _description = "eCommerce Category Mapping"
+    _inherit = ["ecommerce.mapping.mixin"]
+    _order = "store_id, external_id"
+
+    odoo_category_id = fields.Many2one(
+        "product.public.category", required=True, ondelete="restrict", index=True
+    )
+    external_parent_id = fields.Char(index=True)
+    external_level = fields.Integer()
+    external_path = fields.Char()
+    mapping_method = fields.Selection(
+        [("manual", "Manual"), ("import", "Import"), ("export", "Export")],
+        default="manual",
+        required=True,
+    )
+
+    _sql_constraints = [
+        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Category mapping external identity must be unique per store.'),
+        ('category_uniq', 'UNIQUE (store_id, odoo_category_id)', 'An eCommerce category can be mapped only once per store.'),
     ]
 
 
@@ -222,16 +264,15 @@ class EcommerceCustomerMapping(models.Model):
         "res.partner", required=True, ondelete="restrict", index=True
     )
     external_website_id = fields.Char(required=True)
+    is_guest = fields.Boolean(default=False, index=True)
     mapping_method = fields.Selection(
-        [("manual", "Manual"), ("import", "Import"), ("email", "Email Match")],
+        [("manual", "Manual"), ("import", "Import"), ("email", "Email Match"), ("guest", "Guest Identity")],
         default="manual",
         required=True,
     )
 
-
     _sql_constraints = [
         ('external_uniq', 'UNIQUE (store_id, external_id)', 'Customer mapping external identity must be unique per store.'),
-        ('partner_uniq', 'UNIQUE (store_id, odoo_partner_id)', 'A partner can be mapped only once per store.'),
     ]
 
 
@@ -259,6 +300,14 @@ class EcommerceInventorySourceMapping(models.Model):
             if count > 1:
                 raise ValidationError("Only one active inventory source is allowed per store.")
 
+    @api.constrains("store_id", "warehouse_id", "stock_location_id")
+    def _check_company_records(self):
+        for record in self:
+            if record.warehouse_id.company_id != record.store_id.company_id:
+                raise ValidationError("Inventory source warehouse must belong to the store company.")
+            if record.stock_location_id.company_id != record.store_id.company_id:
+                raise ValidationError("Inventory source location must belong to the store company.")
+
     _sql_constraints = [
         ('external_uniq', 'UNIQUE (store_id, external_id)', 'Inventory source must be unique per store.'),
     ]
@@ -274,7 +323,11 @@ class EcommerceCarrierMapping(models.Model):
         "delivery.carrier", required=True, ondelete="restrict"
     )
     external_label = fields.Char()
-
+    mapping_method = fields.Selection(
+        [("manual", "Manual"), ("import", "Import"), ("export", "Export")],
+        default="manual",
+        required=True,
+    )
 
     _sql_constraints = [
         ('external_uniq', 'UNIQUE (store_id, external_id)', 'Carrier method must be unique per store.'),
@@ -291,7 +344,11 @@ class EcommercePaymentMethodMapping(models.Model):
         "account.journal", required=True, ondelete="restrict"
     )
     external_label = fields.Char()
-
+    mapping_method = fields.Selection(
+        [("manual", "Manual"), ("import", "Import"), ("export", "Export")],
+        default="manual",
+        required=True,
+    )
 
     _sql_constraints = [
         ('external_uniq', 'UNIQUE (store_id, external_id)', 'Payment method must be unique per store.'),

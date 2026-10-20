@@ -5,7 +5,8 @@ acl_user_3,ecommerce.product.mapping_user,model_ecommerce_product_mapping,group_
 acl_user_4,ecommerce.variant.mapping_user,model_ecommerce_variant_mapping,group_ecommerce_user,1,0,0,0
 acl_user_5,ecommerce.attribute.mapping_user,model_ecommerce_attribute_mapping,group_ecommerce_user,1,0,0,0
 acl_user_6,ecommerce.attribute.value.mapping_user,model_ecommerce_attribute_value_mapping,group_ecommerce_user,1,0,0,0
-acl_user_7,ecommerce.customer.mapping_user,model_ecommerce_customer_mapping,group_ecommerce_user,1,0,0,0
+acl_user_7,ecommerce.category.mapping_user,model_ecommerce_category_mapping,group_ecommerce_user,1,0,0,0
+acl_user_7b,ecommerce.customer.mapping_user,model_ecommerce_customer_mapping,group_ecommerce_user,1,0,0,0
 acl_user_8,ecommerce.order.mapping_user,model_ecommerce_order_mapping,group_ecommerce_user,1,0,0,0
 acl_user_9,ecommerce.order.line.mapping_user,model_ecommerce_order_line_mapping,group_ecommerce_user,1,0,0,0
 acl_user_10,ecommerce.invoice.mapping_user,model_ecommerce_invoice_mapping,group_ecommerce_user,1,0,0,0
@@ -22,7 +23,8 @@ acl_operator_1,ecommerce.product.mapping_operator,model_ecommerce_product_mappin
 acl_operator_2,ecommerce.variant.mapping_operator,model_ecommerce_variant_mapping,group_ecommerce_operator,1,1,1,1
 acl_operator_3,ecommerce.attribute.mapping_operator,model_ecommerce_attribute_mapping,group_ecommerce_operator,1,1,1,1
 acl_operator_4,ecommerce.attribute.value.mapping_operator,model_ecommerce_attribute_value_mapping,group_ecommerce_operator,1,1,1,1
-acl_operator_5,ecommerce.customer.mapping_operator,model_ecommerce_customer_mapping,group_ecommerce_operator,1,1,1,1
+acl_operator_5,ecommerce.category.mapping_operator,model_ecommerce_category_mapping,group_ecommerce_operator,1,1,1,1
+acl_operator_5b,ecommerce.customer.mapping_operator,model_ecommerce_customer_mapping,group_ecommerce_operator,1,1,1,1
 acl_operator_6,ecommerce.order.mapping_operator,model_ecommerce_order_mapping,group_ecommerce_operator,1,1,1,1
 acl_operator_7,ecommerce.order.line.mapping_operator,model_ecommerce_order_line_mapping,group_ecommerce_operator,1,1,1,1
 acl_operator_8,ecommerce.invoice.mapping_operator,model_ecommerce_invoice_mapping,group_ecommerce_operator,1,1,1,1
@@ -41,7 +43,8 @@ acl_manager_3,ecommerce.product.mapping_manager,model_ecommerce_product_mapping,
 acl_manager_4,ecommerce.variant.mapping_manager,model_ecommerce_variant_mapping,group_ecommerce_manager,1,1,1,1
 acl_manager_5,ecommerce.attribute.mapping_manager,model_ecommerce_attribute_mapping,group_ecommerce_manager,1,1,1,1
 acl_manager_6,ecommerce.attribute.value.mapping_manager,model_ecommerce_attribute_value_mapping,group_ecommerce_manager,1,1,1,1
-acl_manager_7,ecommerce.customer.mapping_manager,model_ecommerce_customer_mapping,group_ecommerce_manager,1,1,1,1
+acl_manager_7,ecommerce.category.mapping_manager,model_ecommerce_category_mapping,group_ecommerce_manager,1,1,1,1
+acl_manager_7b,ecommerce.customer.mapping_manager,model_ecommerce_customer_mapping,group_ecommerce_manager,1,1,1,1
 acl_manager_8,ecommerce.order.mapping_manager,model_ecommerce_order_mapping,group_ecommerce_manager,1,1,1,1
 acl_manager_9,ecommerce.order.line.mapping_manager,model_ecommerce_order_line_mapping,group_ecommerce_manager,1,1,1,1
 acl_manager_10,ecommerce.invoice.mapping_manager,model_ecommerce_invoice_mapping,group_ecommerce_manager,1,1,1,1
