@@ -9,8 +9,8 @@
 | Current branch | `18.0` |
 | Application code | Both allowed repositories, branches `19.0`, `18.0`, `17.0` |
 | Protected repositories | Unchanged (verified clean) |
-| Release status | **CONDITIONALLY READY** — see limitations |
-| Next safe action | Human review, optional live configurable-export smoke on 18/17, then release tagging |
+| Release status | **READY FOR RELEASE** |
+| Next safe action | Human review, then version tags and push with separate authorization |
 
 ## Verified environment
 
@@ -32,9 +32,9 @@
 
 | Branch | Integration core | Magento connector |
 | --- | --- | --- |
-| `19.0` | `eb7bc86` + `614528f` | `d1e52a8` + `614528f` |
-| `18.0` | `f0278b9` | `ac13e8d` + `5f26873` |
-| `17.0` | `1ae35d5` | `dc9a51f` |
+| `19.0` | `eb7bc86` + `614528f` + `28843a9` | `d1e52a8` + `614528f` + `3f64a0c` |
+| `18.0` | `f0278b9` + `397128d` | `ac13e8d` + `5f26873` + `1552472` |
+| `17.0` | `1ae35d5` + `997eb61` | `dc9a51f` + `fe4a28d` |
 
 All commits are local. Nothing was pushed, tagged, or deployed.
 
@@ -146,6 +146,41 @@ All operations were executed through the real OCA `queue_job` runner with
 - Initial stock push now happens for zero-quantity mappings
   (`last_pushed_quantity` default `-1`).
 
+
+## Repository restructuring (2026-10-20)
+
+Both repositories now use the repository-container layout:
+
+```text
+odoo_ecommerce_integration/
+  odoo_ecommerce_integration/   # Odoo addon
+odoo_ecommerce_magento/
+  odoo_ecommerce_magento/       # Odoo addon
+```
+
+- `docs/`, `README.md`, `LICENSE`, `.gitignore`, `tools/`, and Odoo Apps
+  description assets remain at repository level.
+- Technical module names are unchanged; imports, manifests, XML/CSV paths,
+  security, views, data, tests, hooks, and queue_job integration are unchanged.
+- `addons_path` must contain each repository root. Local development symlinks
+  under `/home/ridho/Data/odoo-dev/{19,18,17}` were retargeted to the nested
+  addon directories; queue_job symlinks were not changed.
+- `LICENSE` files and `static/description/index.html` assets were added for
+  Odoo Apps distribution.
+- `requests` is declared as an external Python dependency of the connector.
+- Clean nested-layout installations passed:
+  - `restruct19`: **41 tests, 0 failed, 0 errors**
+  - `restruct18`: **40 tests, 0 failed, 0 errors**
+  - `restruct17`: **40 tests, 0 failed, 0 errors**
+- Live Magento configurable export after restructuring:
+  - Odoo 18: parent `RESTRUCT-18-CONF`, 2 simple children at 88.00, two option
+    values, repeat export produced 3 products total.
+  - Odoo 17: parent `RESTRUCT-17-CONF`, 2 simple children at 99.00, two option
+    values, repeat export produced 3 products total.
+- Queue_job dependency, discovery, runner, retry classification/limit, job user,
+  deduplication, uninstall cleanup, and stock jobs were unaffected.
+- Protected repositories remained clean.
+
 ## Known limitations
 
 - Newly created Magento attributes can require one queue retry (60 s) before
@@ -160,9 +195,9 @@ All operations were executed through the real OCA `queue_job` runner with
 - Multi-source MSI routing, RMA, webhooks, product images, bundle/grouped
   products, and post-import Magento order edits remain out of V1 scope.
 - Performance/throughput and 10k-product benchmarks were not executed.
-- Odoo 18/17 were verified with real catalog/order/finance/shipment/stock
-  flows; live configurable export on 18/17 remains covered by contract tests
-  rather than a second live Magento run.
+- Odoo 18/17 live configurable export was verified after the restructure
+  (`RESTRUCT-18-CONF`, `RESTRUCT-17-CONF`) including options, children, prices,
+  category links, repeat export, and no duplicate products.
 
 ## Evidence locations
 
