@@ -1,6 +1,8 @@
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
+from .ecommerce_provider import CAPABILITY_DEFINITIONS
+
 
 class EcommerceBackend(models.Model):
     _name = "ecommerce.backend"
@@ -83,6 +85,22 @@ class EcommerceBackend(models.Model):
             for item in self._ecommerce_provider_registry()
             if item.get("code") and item.get("label")
         ]
+
+    def _ecommerce_provider_definition(self):
+        self.ensure_one()
+        for item in self._ecommerce_provider_registry():
+            if item.get("code") == self.provider:
+                return item
+        return {}
+
+    def _ecommerce_capabilities(self):
+        """Return the installed provider's supported capability codes."""
+        self.ensure_one()
+        definition = self._ecommerce_provider_definition()
+        known = set(CAPABILITY_DEFINITIONS)
+        return frozenset(
+            code for code in definition.get("capabilities", []) if code in known
+        )
 
     def action_set_draft(self):
         self.write({"state": "draft", "last_test_error": False})
