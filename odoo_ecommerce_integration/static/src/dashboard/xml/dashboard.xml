@@ -53,6 +53,7 @@
                     <label>To
                         <input type="date" class="form-control" t-model="state.filters.date_to" t-on-change="onDateChange"/>
                     </label>
+                    <button type="button" class="btn btn-secondary" t-on-click="resetFilters">Reset</button>
                 </div>
             </div>
             <div t-if="state.loading" class="o_ecommerce_dashboard_loading">
