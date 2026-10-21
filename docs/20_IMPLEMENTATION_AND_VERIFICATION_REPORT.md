@@ -52,8 +52,9 @@ Odoo 19: Dashboard loaded with zero JS errors; filters rendered; KPIs reflected
 real mappings/orders; “Mapped Products” drill-down opened Product Mappings with
 store-scoped records. Screenshot: `static/description/screenshots/dashboard.png`.
 
-Odoo 18/17 browser Dashboard rendering was not executed in this run; backend
-Dashboard methods and full test suites passed. This is an explicit evidence gap.
+Odoo 18 and 17 Dashboard rendering was also executed in the browser with zero
+page errors; both showed the expected empty-state because their test databases
+had no active Store.
 
 ## Security and reliability
 
@@ -73,5 +74,4 @@ Dashboard methods and full test suites passed. This is an explicit evidence gap.
   optimization input.
 - Queue Dashboard provider filtering is heuristic because OCA jobs lack a
   provider field.
-- Odoo 18/17 Dashboard browser verification remains pending.
 - No push, tag, deployment, or Odoo Apps publication.
