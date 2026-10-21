@@ -215,7 +215,14 @@ class EcommerceStore(models.Model):
         return super().write(vals)
 
     def _ecommerce_start_run(
-        self, resource, operation, *, total=0, queued=0, cursor_value=None
+        self,
+        resource,
+        operation,
+        *,
+        total=0,
+        queued=0,
+        cursor_value=None,
+        advance_cursor_on_partial=False,
     ):
         self.ensure_one()
         self._ecommerce_require_operator()
@@ -224,6 +231,17 @@ class EcommerceStore(models.Model):
             order="direction",
             limit=1,
         )
+        if not state:
+            state = self.env["ecommerce.sync.state"].create(
+                {
+                    "backend_id": self.backend_id.id,
+                    "store_id": self.id,
+                    "resource": resource,
+                    "direction": "outbound"
+                    if resource in ("inventory", "shipment")
+                    else "inbound",
+                }
+            )
         return self.env["ecommerce.sync.run"].create_for_store(
             self,
             resource,
@@ -232,6 +250,7 @@ class EcommerceStore(models.Model):
             queued=queued,
             sync_state=state,
             cursor_value=cursor_value,
+            advance_cursor_on_partial=advance_cursor_on_partial,
         )
 
     def _ecommerce_enqueue_run_child(
@@ -460,6 +479,8 @@ class EcommerceVariantMapping(models.Model):
     )
     last_pushed_quantity = fields.Integer(default=-1)
     last_pushed_at = fields.Datetime()
+    inventory_dirty = fields.Boolean(default=True, index=True)
+    inventory_dirty_at = fields.Datetime()
 
 
 
