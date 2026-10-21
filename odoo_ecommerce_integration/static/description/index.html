@@ -58,7 +58,7 @@
     <div class="card"><h3>Backend &amp; store identity</h3><p>Separate external systems, websites, store views, companies, warehouses, currencies, and job users without mixing records.</p></div>
     <div class="card"><h3>Store-scoped mappings</h3><p>Persistent links for products, variants, attributes, categories, customers, orders, invoices, payments, shipments, refunds, carriers, payment methods, and inventory sources.</p></div>
     <div class="card"><h3>Synchronization state</h3><p>Incremental cursors, last success, last error, and status per store and resource. Replays are designed to be safe and idempotent.</p></div>
-    <div class="card"><h3>OCA queue_job orchestration</h3><p>Slow API work runs in background jobs with channels, retry policies, deduplication keys, and a dedicated integration user. A provider-neutral Sync to eCommerce product wizard queues explicit Export or Update operations, while Sync Now covers catalog, orders, inventory, shipments, and financial documents.</p></div>
+    <div class="card"><h3>OCA queue_job orchestration</h3><p>Slow API work runs in bounded background coordinator and child jobs with channels, retry policies, deduplication keys, progress runs, and a company-scoped integration user. A provider-neutral Sync to eCommerce product wizard queues explicit Export or Update operations, while Sync Now covers catalog, orders, inventory, shipments, and financial documents.</p></div>
     <div class="card"><h3>Operational monitoring</h3><p>Events, actionable issues, and mapping records make synchronization observable instead of hiding failures in logs.</p></div>
     <div class="card"><h3>Security &amp; isolation</h3><p>Role-based access, manager-only credentials, company record rules, and least-privilege queue execution.</p></div>
   </div>
@@ -72,6 +72,12 @@
     <div class="card"><h3>Run safely</h3><p>Trigger synchronization or let crons enqueue bounded jobs. Monitor every queued operation.</p></div>
     <div class="card"><h3>Diagnose quickly</h3><p>Review sync states, events, and issues with stable fingerprints instead of duplicating the same error.</p></div>
   </div>
+</div>
+
+<div class="section">
+  <h2>eCommerce Dashboard</h2>
+  <figure><img src="screenshots/dashboard.png" alt="eCommerce dashboard"/><figcaption>Provider-neutral dashboard with company-scoped KPIs, mapping coverage, queue health, recent synchronization runs, failed jobs, open issues, and store health.</figcaption></figure>
+  <p>The Dashboard belongs to the free core. It works with core and OCA queue_job alone, shows honest empty states before a provider is configured, and never calls an external API. Provider connectors contribute through the generic capability and mapping contracts.</p>
 </div>
 
 <div class="section">
