@@ -9,7 +9,7 @@
 | Worker restart | Pass (10k) | Pass (500-page run) | Pass (500-page run) |
 | Dashboard KPI exact | Pass | Pass | Pass |
 | Dashboard provider/backend/Store + drill-down | Pass | Pass | Pass |
-| Dashboard date/reset full matrix | Partial | Partial | Partial |
+| Dashboard date/reset/filter/drill-down | Pass | Pass | Pass |
 | Finance cursor logic/test | Pass | Pass | Pass |
 | Inventory generation race test | Pass | Pass | Pass |
 | Scheduler two-process race | Pass | Not repeated | Not repeated |
