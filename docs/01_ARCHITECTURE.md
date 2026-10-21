@@ -143,12 +143,21 @@ its queue methods and implements `_ecommerce_enqueue_sync(resource, operation)`
 plus the product-specific hook. Unsupported combinations are rejected before a
 job is created.
 
+The core also owns the provider-neutral eCommerce Dashboard. It queries only
+authorized Odoo companies and Store scopes, never provider APIs, and renders
+mapping coverage, operations, queue health, and synchronization progress.
+
 The core also owns generic queue enqueue mechanics
 (`_ecommerce_enqueue_job`) using the backend job user. Connector methods,
 channels, identities, batching, retry behavior, and API payloads remain
 provider-specific.
 
 ### 4.6 Generic Store Sync workflow
+
+Synchronization is implemented as a coordinator → bounded child-job pipeline.
+Progress is persisted in `ecommerce.sync.run` and idempotent
+`ecommerce.sync.batch` rows. One core cron discovers due Store operations; it
+only enqueues provider coordinators and never calls provider APIs.
 
 A store has three primary actions: **Test / Preflight**, **Sync Now**, and
 **View Jobs**. `Sync Now` opens the core transient wizard and selects:

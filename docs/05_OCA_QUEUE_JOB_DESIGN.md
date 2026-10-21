@@ -66,7 +66,14 @@ The free core declares `queue_job` in `depends`. The connector does not copy the
 addon. Odoo does not auto-download Git dependencies; customer installation notes
 must say this explicitly.
 
-## 3. Core enqueue helper
+## 3. Coordinator and child jobs
+
+Provider operations use a discovery/coordinator job that creates bounded child
+jobs. The core owns run/batch progress and company-aware enqueuing; providers own
+API pagination, payloads, and per-batch work. One core cron discovers due Store
+operations from provider-neutral schedule hooks.
+
+## 4. Core enqueue helper
 
 `ecommerce.store._ecommerce_enqueue_job(method_name, *args, channel,
 identity_key)` is the only generic queue construction helper. It selects the
@@ -78,7 +85,7 @@ maps a supported capability to the connector's existing queued method. The core
 Store Sync wizard calls that hook. Connectors keep their own `queue.job.function`
 records and cron scheduling because polling semantics are provider-specific.
 
-## 4. Channels
+## 5. Channels
 
 Create child channels from `queue_job.channel_root`:
 
@@ -99,7 +106,7 @@ and duplicate prevention use advisory locks and identity keys.
 Do not put every connector job in `root`; a long catalog import must not starve
 payments.
 
-## 5. Job catalogue
+## 6. Job catalogue
 
 Model/method names are stable API. Renaming requires a migration and review.
 
@@ -137,7 +144,7 @@ discover_orders (bounded)
 Do not make finance a dependency of an unconfirmed order. Finance re-checks the
 order state and refuses with a business error if prerequisites are absent.
 
-## 6. Retry policy
+## 7. Retry policy
 
 ### 5.1 Exception classes
 
@@ -190,7 +197,7 @@ Example shape (not final XML):
 </record>
 ```
 
-## 7. Identity and deduplication
+## 8. Identity and deduplication
 
 Use `identity_key` to prevent duplicate **active** jobs. Example:
 
@@ -207,7 +214,7 @@ Once the job is done, a later job with the same key is allowed. Therefore:
 
 Do not use identity_key as a substitute for a mapping unique constraint.
 
-## 8. Concurrency control
+## 9. Concurrency control
 
 1. Channel capacity limits total parallel work.
 2. A per-store/resource PostgreSQL advisory lock protects stateful workflows:
@@ -221,7 +228,7 @@ Do not use identity_key as a substitute for a mapping unique constraint.
 
 Do not rely on an in-process Python lock; Odoo workers are separate processes.
 
-## 9. Transaction boundaries and recovery
+## 10. Transaction boundaries and recovery
 
 - One job attempt = one Odoo transaction.
 - Remote reads may be repeated safely.
@@ -236,7 +243,7 @@ Do not rely on an in-process Python lock; Odoo workers are separate processes.
 - A killed worker may leave a job `started`; OCA re-queues it. The job must
   re-read all local state and never assume the previous attempt completed.
 
-## 10. Scheduled dispatch
+## 11. Scheduled dispatch
 
 Thin cron methods:
 
@@ -250,7 +257,7 @@ Cron methods must not perform API calls. They must not loop over all stores in a
 single job. Per-store failure must not prevent other stores from being queued.
 Use `job_user_id` for scheduled jobs; do not run as superuser.
 
-## 11. Monitoring and support
+## 12. Monitoring and support
 
 - Standard OCA `queue.job` views are the low-level job monitor.
 - Core `ecommerce.sync.event` records operational facts.
@@ -261,7 +268,7 @@ Use `job_user_id` for scheduled jobs; do not run as superuser.
 - Manual “Retry” on an issue enqueues a new job after state validation.
 - Do not expose a generic “retry any job” button to end users.
 
-## 12. Testing contract
+## 13. Testing contract
 
 For every queued method, test both halves:
 
@@ -276,7 +283,7 @@ Never let the default test suite depend on a live jobrunner.
 Integration test with a real worker at least once per milestone, using an
 isolated database and fake HTTP server. Verify requeue after process kill.
 
-## 13. Version portability
+## 14. Version portability
 
 | Version | queue_job branch | Notes |
 | --- | --- | --- |
@@ -287,7 +294,7 @@ isolated database and fake HTTP server. Verify requeue after process kill.
 Do not share a single `queue_job` checkout across Odoo major versions. Pin each
 branch. Port job function records and tests, not just Python methods.
 
-## 14. Acceptance criteria
+## 15. Acceptance criteria
 
 - `queue_job` is independently installed and visible in Odoo.
 - The jobrunner starts with workers > 1.
