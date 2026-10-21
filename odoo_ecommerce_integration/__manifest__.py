@@ -10,6 +10,7 @@
     "installable": True,
     "images": [
         "static/description/banner.png",
+        "static/description/screenshots/dashboard.png",
         "static/description/screenshots/backend.png",
         "static/description/screenshots/store.png",
         "static/description/screenshots/mappings.png",
