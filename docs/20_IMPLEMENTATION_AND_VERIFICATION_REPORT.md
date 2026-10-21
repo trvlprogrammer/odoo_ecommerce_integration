@@ -8,7 +8,7 @@ Scope: core hardening, queue fan-out, scheduling, security, Dashboard.
 
 | Gate | 19.0 | 18.0 | 17.0 |
 | --- | --- | --- | --- |
-| Full connector tests | 66 pass, 0 fail/error | 66 pass | 66 pass |
+| Full connector tests | 72 pass, 0 fail/error | 72 pass | 72 pass |
 | Core-only install without Magento | Pass | Pass | Pass |
 | Dashboard core-only backend | Pass | Pass | Pass |
 | Core-only install without mrp | Pass | Pass | Pass |
@@ -68,7 +68,9 @@ had no active Store.
 
 ## Remaining limitations
 
-- No full 10k-record Magento E2E; only bounded slicing unit evidence.
+- Full 10k real Magento E2E completed on Odoo 19: 10,043 processed, 101 child
+  jobs, 857 s, 0 failures, worker restart at ~4,300 records, 10,000/10,000
+  scale-product reconciliation. See `docs/22_10K_MAGENTO_E2E_REPORT.md`.
 - Finance and inventory coordinators use broad rescanning; bounded, but repeated
   work is not skipped by durable completion until run records are used as an
   optimization input.

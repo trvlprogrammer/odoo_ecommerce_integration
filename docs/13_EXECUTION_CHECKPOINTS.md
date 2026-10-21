@@ -294,11 +294,16 @@ odoo_ecommerce_magento/
   recent runs, failed jobs, issues, and Store health.
 - Odoo 18/17 now use partial active unique indexes with safe migration; 19 uses
   native partial constraints.
-- Tests: 19.0 66 passed; 18.0 66 passed; 17.0 66 passed. Core-only installs pass
+- Tests: 19.0 72 passed; 18.0 72 passed; 17.0 72 passed. Core-only installs pass
   on all three. Existing DB copies preserve mapping counts/hashes; only the new
   scheduler adds one cron record.
 - Real Magento 19 smoke passed for connection, catalog/category/order/finance/
   inventory/product update through the real jobrunner.
+- 10k real Magento E2E passed: 10,043 records, 101 child jobs, 857 s, 0
+  failures, 0 duplicate mappings, 10,000/10,000 scale-product reconciliation.
+  Worker interruption at ~4,300 records recovered through OCA queue_job.
+- Inventory invalid-record and category missing-parent isolation tests pass;
+  queue provider/backend/Store metadata and deterministic Dashboard filters pass.
 - Dashboard browser rendering passed on Odoo 19, 18, and 17.
 
 ## Known limitations
