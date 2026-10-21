@@ -496,7 +496,17 @@ class EcommerceDashboard(models.TransientModel):
         for group in groups:
             label = mapping.get(group["state"], group["state"] or "unknown")
             values[label] = values.get(label, 0) + group["__count"]
-        return [{"label": label, "count": count} for label, count in values.items()]
+        unclassified = self.env["queue.job"].sudo().search_count(
+            [
+                ("company_id", "in", company_ids),
+                ("channel", "=like", "ecommerce%"),
+                ("ecommerce_provider", "=", False),
+            ]
+        )
+        rows = [{"label": label, "count": count} for label, count in values.items()]
+        if unclassified:
+            rows.append({"label": "unclassified", "count": unclassified})
+        return rows
 
     @api.model
     def _activity_series(self, store_ids, start_dt, end_dt):
