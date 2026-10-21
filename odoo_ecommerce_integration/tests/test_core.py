@@ -140,6 +140,13 @@ class TestCore(TransactionCase):
         )
         self.assertEqual(first.id, second.id)
         self.assertEqual(second.occurrence_count, 2)
+    def test_active_mapping_can_be_replaced_after_archive(self):
+        first = self.env["ecommerce.product.mapping"].create(self._mapping_values())
+        first.active = False
+        first.flush_recordset()
+        second = self.env["ecommerce.product.mapping"].create(self._mapping_values())
+        self.assertNotEqual(first.id, second.id)
+
 
 class FakeProviderAdapter:
     """Test-only provider adapter; never installed in production."""
