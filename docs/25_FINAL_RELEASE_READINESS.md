@@ -9,7 +9,7 @@
 | Magento upgrade | Pass | Pass | Pass |
 | Dashboard KPI accuracy (populated DB) | Pass | Pass | Pass |
 | Dashboard populated browser | Pass | Pass | Pass (hash URL) |
-| Uninstall isolation | Pass | NOT RUN | NOT RUN |
+| Uninstall isolation | Pass | Pass | Pass |
 | 10k real Magento E2E | PASS | N/A (equivalent logic tests) | N/A |
 
 ## 10k evidence
@@ -35,7 +35,6 @@
 - Finance/inventory coordinators still enumerate broad eligible sets on manual
   re-trigger; child accounting is idempotent, but no separate cross-run finance
   cursor exists for late remote changes.
-- Odoo 18/17 Magento uninstall isolation was not executed.
 - Capability-aware wizard options remain validated at execution; unsupported
   options are not dynamically removed from the selection list.
 - Queue jobs created before classification metadata remain explicitly
