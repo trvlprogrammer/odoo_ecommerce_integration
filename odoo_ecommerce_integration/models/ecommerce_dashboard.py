@@ -208,6 +208,19 @@ class EcommerceDashboard(models.TransientModel):
             [("sale_ok", "=", True), ("default_code", "!=", False)]
             + product_company_domain
         )
+        eligible_variants = self.env["product.product"].search_count(
+            [("sale_ok", "=", True), ("default_code", "!=", False)]
+            + product_company_domain
+        )
+        categories = self.env["product.public.category"].search_count([])
+        customers = self.env["res.partner"].search_count(
+            [
+                ("customer_rank", ">", 0),
+                "|",
+                ("company_id", "=", False),
+                ("company_id", "in", company_scope or company_ids),
+            ]
+        )
         mapped_template_count = self._mapped_coverage_count(
             "products", store_ids, company_scope or company_ids
         )

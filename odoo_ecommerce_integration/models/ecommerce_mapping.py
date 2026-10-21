@@ -95,7 +95,6 @@ class EcommerceStore(models.Model):
 
     _sql_constraints = [
         ('backend_code_uniq', 'UNIQUE (backend_id, code)', 'Store code must be unique per backend.'),
-        ('store_view_uniq', 'UNIQUE (backend_id, external_store_view_id)', 'A Magento store view can be bound to only one store.'),
         ('safety_check', 'CHECK (inventory_safety_stock >= 0)', 'Safety stock cannot be negative.'),
         ('batch_check', 'CHECK (stock_batch_size > 0 AND stock_batch_size <= 500 AND shipment_batch_size > 0 AND shipment_batch_size <= 1000 AND product_batch_size > 0 AND product_batch_size <= 500 AND category_batch_size > 0 AND category_batch_size <= 500 AND customer_batch_size > 0 AND customer_batch_size <= 500 AND order_batch_size > 0 AND order_batch_size <= 500 AND finance_batch_size > 0 AND finance_batch_size <= 500)', 'Synchronization batch sizes are out of range.'),
         ('tolerance_check', 'CHECK (rounding_tolerance >= 0 AND rounding_tolerance <= 1)', 'Rounding tolerance must be between 0 and 1.'),
@@ -423,10 +422,6 @@ class EcommerceProductMapping(models.Model):
     external_updated_at = fields.Datetime()
 
 
-    _sql_constraints = [
-        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Product mapping external identity must be unique per store.'),
-        ('template_uniq', 'UNIQUE (store_id, odoo_template_id)', 'An Odoo template can be mapped only once per store.'),
-    ]
 
 
 class EcommerceVariantMapping(models.Model):
@@ -459,10 +454,6 @@ class EcommerceVariantMapping(models.Model):
     last_pushed_at = fields.Datetime()
 
 
-    _sql_constraints = [
-        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Variant mapping external identity must be unique per store.'),
-        ('product_uniq', 'UNIQUE (store_id, odoo_product_id)', 'An Odoo variant can be mapped only once per store.'),
-    ]
 
 
 class EcommerceAttributeMapping(models.Model):
@@ -481,10 +472,6 @@ class EcommerceAttributeMapping(models.Model):
         required=True,
     )
 
-    _sql_constraints = [
-        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Attribute mapping external identity must be unique per store.'),
-        ('attribute_uniq', 'UNIQUE (store_id, odoo_attribute_id)', 'An Odoo attribute can be mapped only once per store.'),
-    ]
 
 
 class EcommerceAttributeValueMapping(models.Model):
@@ -506,10 +493,6 @@ class EcommerceAttributeValueMapping(models.Model):
         required=True,
     )
 
-    _sql_constraints = [
-        ('external_uniq', 'UNIQUE (attribute_mapping_id, external_id)', 'Attribute option must be unique per attribute mapping.'),
-        ('value_uniq', 'UNIQUE (attribute_mapping_id, odoo_value_id)', 'An Odoo attribute value can be mapped only once per attribute.'),
-    ]
 
 
 class EcommerceCategoryMapping(models.Model):
@@ -531,10 +514,6 @@ class EcommerceCategoryMapping(models.Model):
         required=True,
     )
 
-    _sql_constraints = [
-        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Category mapping external identity must be unique per store.'),
-        ('category_uniq', 'UNIQUE (store_id, odoo_category_id)', 'An eCommerce category can be mapped only once per store.'),
-    ]
 
 
 class EcommerceCustomerMapping(models.Model):
@@ -558,9 +537,6 @@ class EcommerceCustomerMapping(models.Model):
         required=True,
     )
 
-    _sql_constraints = [
-        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Customer mapping external identity must be unique per store.'),
-    ]
 
 
 class EcommerceInventorySourceMapping(models.Model):
@@ -595,9 +571,6 @@ class EcommerceInventorySourceMapping(models.Model):
             if record.stock_location_id.company_id != record.store_id.company_id:
                 raise ValidationError("Inventory source location must belong to the store company.")
 
-    _sql_constraints = [
-        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Inventory source must be unique per store.'),
-    ]
 
 
 class EcommerceCarrierMapping(models.Model):
@@ -616,9 +589,6 @@ class EcommerceCarrierMapping(models.Model):
         required=True,
     )
 
-    _sql_constraints = [
-        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Carrier method must be unique per store.'),
-    ]
 
 
 class EcommercePaymentMethodMapping(models.Model):
@@ -637,6 +607,3 @@ class EcommercePaymentMethodMapping(models.Model):
         required=True,
     )
 
-    _sql_constraints = [
-        ('external_uniq', 'UNIQUE (store_id, external_id)', 'Payment method must be unique per store.'),
-    ]
