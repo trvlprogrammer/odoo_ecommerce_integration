@@ -246,6 +246,36 @@ odoo_ecommerce_magento/
 - No push, tag, deployment, or publication was performed. Protected
   repositories remain unchanged.
 
+
+## Core architecture consolidation (2026-10-21)
+
+- Audit: `docs/16_ARCHITECTURE_OWNERSHIP_AUDIT.md`. Generic mapping tables were
+  already core-owned; no populated mapping table was moved or recreated.
+- Core provider contract now publishes capability codes, provider definitions,
+  store support checks, and capability flags. Magento registers product,
+  category, customer, order, inventory, shipment, finance, and preflight
+  capabilities.
+- Core owns the generic queue enqueue helper and a provider-neutral Store Sync
+  wizard. Magento maps the generic hook to its existing queued methods and adds
+  a bounded mapped-product update job.
+- Store UI now has Test / Preflight, Sync Now, and View Jobs; tabs are General,
+  Catalog, Orders & Finance, Inventory & Fulfillment, Scheduling, Diagnostics.
+  Legacy Magento buttons remain under Diagnostics.
+- `mrp` moved from the core manifest to the Magento manifest.
+- Existing DB copy `arch_upgrade_19` upgraded with 30/30 baseline values
+  unchanged (mapping counts and identity hashes, sale orders, invoices, credit
+  notes, payments, pickings, queue jobs, cron, mappings).
+- Test-only fake provider proves discovery, capability filtering, generic
+  enqueue, mapping resolution, and unsupported-operation rejection.
+- Odoo 19: 57 tests passed. Odoo 18: 56 passed. Odoo 17: 56 passed.
+- Core installs without Magento and without `mrp` on all three versions.
+- Real Magento smoke: queued connection test, product export, product update,
+  category import, customer/order import path, inventory export, shipment
+  export, finance import, and Store Sync inventory export all reached `done`.
+  Magento product `ARCH-ODOO-SMOKE-1` updated from 12.34 to 19.87.
+- Listing now uses the compact Store form and Store Sync wizard screenshots.
+- No push, tag, deployment, or publication performed.
+
 ## Known limitations
 
 - Newly created Magento attributes can require one queue retry (60 s) before

@@ -53,14 +53,16 @@ The core **must not import** any Magento module. The connector may import core
 models and services. The connector owns all Magento field names, URLs, payloads,
 and error mappings.
 
-Core dependencies in the eventual manifest:
+Core manifest dependencies:
 
-`base`, `mail`, `sale_management`, `stock`, `account`, `queue_job`
+`base`, `mail`, `sale_management`, `stock`, `account`, `delivery`,
+`website_sale`, `queue_job`
 
-The sale/stock/account dependencies are deliberate: core mappings point to real
-Odoo records (`sale.order`, `stock.picking`, `account.move`, `account.payment`).
-Generic integer links or `ir.model` indirection would weaken referential
-integrity and record rules.
+The sale/stock/account/website dependencies are deliberate: core mappings point
+to real Odoo records (`sale.order`, `stock.picking`, `account.move`,
+`account.payment`, `product.public.category`). Generic integer links or
+`ir.model` indirection would weaken referential integrity and record rules.
+`mrp` is Magento-only because phantom-kit handling belongs to that connector.
 
 The connector manifest depends on `odoo_ecommerce_integration` and declares
 `license: OPL-1`. It does not vendor `queue_job`.
@@ -124,7 +126,44 @@ through OCA `queue_job`:
 A save button may create a job and return immediately. It must not perform an
 unbounded API operation inside the web request.
 
-### 4.5 Transaction boundaries
+### 4.5 Provider adapter contract
+
+The registry entry returned by `_ecommerce_provider_registry()` contains at
+least `code`, `label`, and `capabilities`. Capability codes are neutral:
+
+- `health.preflight`
+- `product.import`, `product.export`, `product.update`
+- `category.import`, `category.export`
+- `customer.import`, `order.import`
+- `inventory.export`, `shipment.export`, `finance.import`
+
+The core owns capability discovery, store-level support checks, and capability
+flags used by the Store UI. It never imports connector code. A connector owns
+its queue methods and implements `_ecommerce_enqueue_sync(resource, operation)`
+plus the product-specific hook. Unsupported combinations are rejected before a
+job is created.
+
+The core also owns generic queue enqueue mechanics
+(`_ecommerce_enqueue_job`) using the backend job user. Connector methods,
+channels, identities, batching, retry behavior, and API payloads remain
+provider-specific.
+
+### 4.6 Generic Store Sync workflow
+
+A store has three primary actions: **Test / Preflight**, **Sync Now**, and
+**View Jobs**. `Sync Now` opens the core transient wizard and selects:
+
+- operation: Import, Export, or Update (Update is limited to mapped products);
+- data type: Products, Categories, Customers, Orders, Inventory, Shipments,
+  or Financial Documents;
+- provider, backend, and eligible stores.
+
+The wizard filters stores by company and capability, rejects unsupported
+direction/data-type pairs, and only enqueues OCA `queue_job` work. It never
+calls a provider API in the web request. Existing Magento action methods remain
+available as secondary actions on the Diagnostics tab for compatibility.
+
+### 4.7 Transaction boundaries
 
 Each queue job runs in its own Odoo transaction. Within a job:
 
