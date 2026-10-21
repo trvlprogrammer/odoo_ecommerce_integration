@@ -1,7 +1,7 @@
 {
     "name": "eCommerce Integration Core",
     "summary": "Shared backend, mapping, synchronization, and monitoring framework",
-    "version": "17.0.1.0.1",
+    "version": "17.0.1.1.0",
     "category": "Sales/Integration",
     "author": "trvlprogrammer",
     "website": "https://github.com/trvlprogrammer/odoo_ecommerce_integration",
@@ -23,7 +23,6 @@
         "account",
         "delivery",
         "website_sale",
-        "mrp",
         "queue_job",
     ],
     "data": [
@@ -34,6 +33,7 @@
         "views/ecommerce_mapping_views.xml",
         "views/ecommerce_sync_views.xml",
         "views/ecommerce_product_sync_wizard_views.xml",
+        "views/ecommerce_store_sync_wizard_views.xml",
         "views/product_views.xml",
         "views/ecommerce_menus.xml",
     ],

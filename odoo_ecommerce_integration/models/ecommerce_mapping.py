@@ -1,6 +1,8 @@
 from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
+from .ecommerce_provider import SYNC_CAPABILITY_MAP
+
 
 class EcommerceStore(models.Model):
     _name = "ecommerce.store"
@@ -56,6 +58,9 @@ class EcommerceStore(models.Model):
     shipment_sync_interval_minutes = fields.Integer(default=15)
     last_preflight_at = fields.Datetime()
     last_preflight_error = fields.Char()
+    can_preflight = fields.Boolean(compute="_compute_capability_flags")
+    can_sync = fields.Boolean(compute="_compute_capability_flags")
+    can_product_sync = fields.Boolean(compute="_compute_capability_flags")
 
 
     @api.constrains("backend_id", "company_id")
@@ -85,12 +90,83 @@ class EcommerceStore(models.Model):
     ]
 
 
+    @api.depends("active", "backend_id.provider")
+    def _compute_capability_flags(self):
+        for store in self:
+            capabilities = (
+                store.backend_id._ecommerce_capabilities()
+                if store.backend_id and store.active
+                else frozenset()
+            )
+            store.can_preflight = "health.preflight" in capabilities
+            store.can_product_sync = "product.export" in capabilities
+            store.can_sync = bool(capabilities - {"health.preflight"})
+
+    def _ecommerce_supports(self, resource, operation):
+        """Whether this store can run a generic resource operation."""
+        self.ensure_one()
+        capability = SYNC_CAPABILITY_MAP.get((operation, resource))
+        return bool(
+            capability
+            and self.active
+            and capability in self.backend_id._ecommerce_capabilities()
+        )
+
     def _ecommerce_supports_product_sync(self):
-        return False
+        """Whether this store can enqueue product export/update jobs."""
+        return self._ecommerce_supports("products", "export")
+
+    def _ecommerce_job_user(self):
+        self.ensure_one()
+        return self.backend_id.job_user_id or self.env.ref("base.user_root")
+
+    def _ecommerce_enqueue_job(self, method_name, *args, channel, identity_key):
+        """Generic queue_job enqueue helper owned by the free core."""
+        self.ensure_one()
+        delayable = self.with_user(self._ecommerce_job_user()).with_delay(
+            channel=channel, identity_key=identity_key
+        )
+        return getattr(delayable, method_name)(*args)
+
+    def _ecommerce_enqueue_sync(self, resource, operation):
+        """Connector hook: enqueue one provider synchronization operation."""
+        self.ensure_one()
+        if not self._ecommerce_supports(resource, operation):
+            raise UserError(
+                "This store does not support %s %s." % (operation, resource)
+            )
+        raise UserError(
+            "The installed connector does not implement this synchronization operation."
+        )
 
     def _ecommerce_enqueue_product_sync(self, product_ids, operation):
+        """Connector hook: enqueue bounded product synchronization jobs."""
         self.ensure_one()
         raise UserError("This store's provider does not support product synchronization.")
+
+    def action_preflight(self):
+        self.ensure_one()
+        raise UserError("This store's provider does not implement preflight.")
+
+    def action_open_ecommerce_sync_wizard(self):
+        self.ensure_one()
+        if not self.can_sync:
+            raise UserError(
+                "The installed eCommerce connector does not support synchronization."
+            )
+        action = self.env["ir.actions.act_window"]._for_xml_id(
+            "odoo_ecommerce_integration.action_ecommerce_store_sync_wizard"
+        )
+        action["context"] = {"default_store_ids": [(6, 0, self.ids)]}
+        return action
+
+    def action_view_jobs(self):
+        action = self.env["ir.actions.act_window"]._for_xml_id(
+            "queue_job.action_queue_job"
+        )
+        action["domain"] = [("channel", "=like", "root.ecommerce%")]
+        action["context"] = {}
+        return action
 
 
 class EcommerceMappingMixin(models.AbstractModel):

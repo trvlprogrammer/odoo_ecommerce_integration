@@ -21,61 +21,91 @@
         <field name="model">ecommerce.store</field>
         <field name="arch" type="xml">
             <form string="Store">
+                <header>
+                    <field name="can_preflight" invisible="1"/>
+                    <field name="can_sync" invisible="1"/>
+                    <button name="action_preflight" type="object" string="Test / Preflight"
+                            invisible="not can_preflight"/>
+                    <button name="action_open_ecommerce_sync_wizard" type="object"
+                            string="Sync Now" class="btn-primary" invisible="not can_sync"/>
+                    <button name="action_view_jobs" type="object" string="View Jobs"/>
+                </header>
                 <sheet>
-                    <group>
-                        <group>
-                            <field name="name"/>
-                            <field name="code"/>
-                            <field name="backend_id"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
-                            <field name="active"/>
-                        </group>
-                        <group>
-                            <field name="external_website_id"/>
-                            <field name="external_website_code"/>
-                            <field name="external_store_view_id"/>
-                            <field name="external_store_view_code"/>
-                            <field name="warehouse_id"/>
-                            <field name="stock_location_id"/>
-                            <field name="pricelist_id"/>
-                            <field name="currency_id"/>
-                            <field name="website_id" options="{'no_create': True}"/>
-                            <field name="shipping_product_id"/>
-                        </group>
-                    </group>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Store name"/></h1>
+                    </div>
                     <notebook>
-                        <page string="Conversions">
+                        <page string="General" name="general">
                             <group>
-                                <field name="auto_confirm_orders"/>
-                                <field name="auto_post_invoice"/>
-                                <field name="auto_register_payment"/>
-                                <field name="auto_register_refund"/>
-                                <field name="rounding_tolerance"/>
+                                <group>
+                                    <field name="code"/>
+                                    <field name="backend_id"/>
+                                    <field name="company_id" groups="base.group_multi_company"/>
+                                    <field name="active"/>
+                                    <field name="external_website_id"/>
+                                    <field name="external_website_code"/>
+                                    <field name="external_store_view_id"/>
+                                    <field name="external_store_view_code"/>
+                                </group>
+                                <group>
+                                    <field name="warehouse_id"/>
+                                    <field name="stock_location_id"/>
+                                    <field name="pricelist_id"/>
+                                    <field name="currency_id"/>
+                                    <field name="website_id" options="{'no_create': True}"/>
+                                    <field name="shipping_product_id"/>
+                                </group>
                             </group>
                         </page>
-                        <page string="Inventory">
+                        <page string="Catalog" name="catalog">
                             <group>
-                                <field name="inventory_use_on_hand"/>
-                                <field name="inventory_subtract_reserved"/>
-                                <field name="inventory_safety_stock"/>
                                 <field name="stock_batch_size"/>
                             </group>
                         </page>
-                        <page string="Schedules">
+                        <page string="Orders &amp; Finance" name="orders_finance">
                             <group>
-                                <field name="order_sync_interval_minutes"/>
-                                <field name="customer_sync_interval_minutes"/>
-                                <field name="catalog_sync_interval_minutes"/>
-                                <field name="category_sync_interval_minutes"/>
-                                <field name="inventory_sync_interval_minutes"/>
-                                <field name="shipment_sync_interval_minutes"/>
-                                <field name="shipment_batch_size"/>
+                                <group>
+                                    <field name="auto_confirm_orders"/>
+                                    <field name="auto_post_invoice"/>
+                                    <field name="auto_register_payment"/>
+                                    <field name="auto_register_refund"/>
+                                    <field name="rounding_tolerance"/>
+                                </group>
                             </group>
                         </page>
-                        <page string="Preflight">
+                        <page string="Inventory &amp; Fulfillment" name="inventory_fulfillment">
                             <group>
-                                <field name="last_preflight_at"/>
-                                <field name="last_preflight_error"/>
+                                <group>
+                                    <field name="inventory_use_on_hand"/>
+                                    <field name="inventory_subtract_reserved"/>
+                                    <field name="inventory_safety_stock"/>
+                                </group>
+                                <group>
+                                    <field name="shipment_batch_size"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Scheduling" name="scheduling">
+                            <group>
+                                <group>
+                                    <field name="order_sync_interval_minutes"/>
+                                    <field name="customer_sync_interval_minutes"/>
+                                    <field name="catalog_sync_interval_minutes"/>
+                                </group>
+                                <group>
+                                    <field name="category_sync_interval_minutes"/>
+                                    <field name="inventory_sync_interval_minutes"/>
+                                    <field name="shipment_sync_interval_minutes"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Diagnostics" name="diagnostics">
+                            <group>
+                                <group>
+                                    <field name="last_preflight_at"/>
+                                    <field name="last_preflight_error"/>
+                                </group>
                             </group>
                         </page>
                     </notebook>

@@ -166,11 +166,18 @@ class EcommerceProductSyncWizard(models.TransientModel):
             raise UserError(
                 "No selected store is available for this backend and user company."
             )
-        unsupported = stores.filtered(lambda store: not store._ecommerce_supports_product_sync())
+        unsupported = stores.filtered(
+            lambda store: not store._ecommerce_supports(
+                "products", self.operation
+            )
+        )
         if unsupported:
             raise UserError(
-                "Product synchronization is not supported by: %s"
-                % ", ".join(unsupported.mapped("display_name"))
+                "Product %s is not supported by: %s"
+                % (
+                    self.operation,
+                    ", ".join(unsupported.mapped("display_name")),
+                )
             )
 
         errors = []
