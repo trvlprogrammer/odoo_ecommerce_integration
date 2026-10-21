@@ -8,7 +8,7 @@ Scope: core hardening, queue fan-out, scheduling, security, Dashboard.
 
 | Gate | 19.0 | 18.0 | 17.0 |
 | --- | --- | --- | --- |
-| Full connector tests | 72 pass, 0 fail/error | 72 pass | 72 pass |
+| Full connector tests | 74 pass, 0 fail/error | 74 pass | 74 pass |
 | Core-only install without Magento | Pass | Pass | Pass |
 | Dashboard core-only backend | Pass | Pass | Pass |
 | Core-only install without mrp | Pass | Pass | Pass |

@@ -295,7 +295,7 @@ odoo_ecommerce_magento/
   recent runs, failed jobs, issues, and Store health.
 - Odoo 18/17 now use partial active unique indexes with safe migration; 19 uses
   native partial constraints.
-- Tests: 19.0 72 passed; 18.0 72 passed; 17.0 72 passed. Core-only installs pass
+- Tests: 19.0 74 passed; 18.0 74 passed; 17.0 74 passed. Core-only installs pass
   on all three. Existing DB copies preserve mapping counts/hashes; only the new
   scheduler adds one cron record.
 - Real Magento 19 smoke passed for connection, catalog/category/order/finance/

@@ -4,7 +4,7 @@
 
 | Gate | 19 | 18 | 17 |
 | --- | --- | --- | --- |
-| Full test suite | 72 pass | 72 pass | 72 pass |
+| Full test suite | 74 pass | 74 pass | 74 pass |
 | Core-only install | Pass | Pass | Pass |
 | Magento upgrade | Pass | Pass | Pass |
 | Dashboard KPI accuracy (populated DB) | Pass | Pass | Pass |
@@ -20,6 +20,13 @@
 - Worker restart during run at ~4,300 processed; OCA resumed and run completed
   with exactly 10,043 processed.
 - 0 duplicate active mappings; 10,000/10,000 scale-product reconciliation.
+
+## Durable cursors
+
+- Finance uses a bounded wrapping order-mapping window with partial-safe cursor
+  advancement and idempotent financial mappings.
+- Inventory uses Store-scoped dirty tracking; no-change reconcile queues zero
+  mappings; manual full resync remains available.
 
 ## Reliability evidence
 
