@@ -58,7 +58,7 @@
     <div class="card"><h3>Backend &amp; store identity</h3><p>Separate external systems, websites, store views, companies, warehouses, currencies, and job users without mixing records.</p></div>
     <div class="card"><h3>Store-scoped mappings</h3><p>Persistent links for products, variants, attributes, categories, customers, orders, invoices, payments, shipments, refunds, carriers, payment methods, and inventory sources.</p></div>
     <div class="card"><h3>Synchronization state</h3><p>Incremental cursors, last success, last error, and status per store and resource. Replays are designed to be safe and idempotent.</p></div>
-    <div class="card"><h3>OCA queue_job orchestration</h3><p>Slow API work runs in background jobs with channels, retry policies, deduplication keys, and a dedicated integration user. A provider-neutral Sync to eCommerce wizard queues explicit Export or Update operations.</p></div>
+    <div class="card"><h3>OCA queue_job orchestration</h3><p>Slow API work runs in background jobs with channels, retry policies, deduplication keys, and a dedicated integration user. A provider-neutral Sync to eCommerce product wizard queues explicit Export or Update operations, while Sync Now covers catalog, orders, inventory, shipments, and financial documents.</p></div>
     <div class="card"><h3>Operational monitoring</h3><p>Events, actionable issues, and mapping records make synchronization observable instead of hiding failures in logs.</p></div>
     <div class="card"><h3>Security &amp; isolation</h3><p>Role-based access, manager-only credentials, company record rules, and least-privilege queue execution.</p></div>
   </div>
@@ -78,11 +78,12 @@
   <h2>Real screens from the core</h2>
   <figure><img src="screenshots/backend.png" alt="Backend configuration"/><figcaption>Backend configuration with connection state, credentials masked, capabilities, and a dedicated job user.</figcaption></figure>
   <div class="grid2">
-    <figure><img src="screenshots/store.png" alt="Store configuration"/><figcaption>Store scope: external website/store view, company, warehouse, stock location, currency, and connector actions.</figcaption></figure>
+    <figure><img src="screenshots/store.png" alt="Store configuration"/><figcaption>Store scope with three primary actions: Test / Preflight, Sync Now, and View Jobs. Configuration is grouped into General, Catalog, Orders &amp; Finance, Inventory &amp; Fulfillment, Scheduling, and Diagnostics.</figcaption></figure>
     <figure><img src="screenshots/mappings.png" alt="Product mappings"/><figcaption>Store-scoped product mappings with external identity, SKU, Odoo template, type, and sync state.</figcaption></figure>
     <figure><img src="screenshots/sync-state.png" alt="Synchronization state"/><figcaption>Per-resource cursors and last-success evidence for each store.</figcaption></figure>
     <figure><img src="screenshots/queue.png" alt="Queue jobs"/><figcaption>Background jobs executed through OCA queue_job, including retries and completion evidence.</figcaption></figure>
     <figure><img src="screenshots/product-sync-wizard.png" alt="Sync to eCommerce wizard"/><figcaption>Provider-neutral Sync to eCommerce wizard from the free core: provider, backend, target store, Export or Update, and queued execution.</figcaption></figure>
+    <figure><img src="screenshots/store-sync-wizard.png" alt="Store synchronization wizard"/><figcaption>Store Sync Now workflow: choose Import, Export, or Update; select a supported data type; confirm the provider, backend, and stores; then queue the job.</figcaption></figure>
   </div>
 </div>
 
