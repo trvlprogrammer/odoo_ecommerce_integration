@@ -9,10 +9,12 @@
 - R-03 Live multi-company: PARTIAL — real Company A/B Odoo business-record
   isolation passed; separate second Magento store-view order creation was
   blocked by local Magento cart REST behavior.
-- R-04 Odoo 18 Dashboard filters/drill-down: PARTIAL — populated load and KPI
-  accuracy passed; full filter permutations not repeated.
-- R-05 Odoo 17 Dashboard filters/drill-down: PARTIAL — populated load and KPI
-  accuracy passed; full filter permutations not repeated.
+- R-04 Odoo 18 Dashboard filters/drill-down: PARTIAL — populated load, KPI
+  accuracy, provider/backend/Store filtering, and mapped-product drill-down
+  passed; date/reset matrix not repeated.
+- R-05 Odoo 17 Dashboard filters/drill-down: PARTIAL — populated load, KPI
+  accuracy, provider/backend/Store filtering, and mapped-product drill-down
+  passed; date/reset matrix not repeated.
 - R-06 Wizard dynamic options: PARTIAL — `can_queue` and server validation remain;
   options are not dynamically removed.
 - R-07 Historical queue classification: PASS with explicit unclassified policy —
