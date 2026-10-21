@@ -276,6 +276,32 @@ odoo_ecommerce_magento/
 - Listing now uses the compact Store form and Store Sync wizard screenshots.
 - No push, tag, deployment, or publication performed.
 
+
+## Multi-company hardening, scalable queues and Dashboard (2026-10-21)
+
+- Added server-side Operator checks for backend tests, preflight, Store Sync,
+  product Sync, legacy export, and both wizards.
+- Queue jobs are created with the Store company and allowed-company context;
+  stock hooks and scheduling filter by company.
+- Mapping targets are company-validated; Store/Backend company reassignment is
+  blocked after dependent records exist; SKU lookup is company-aware.
+- Added run/batch progress models and bounded coordinator/child jobs for product
+  import/export/update, categories, customers, orders, finance, shipments,
+  inventory, and stock events. Batch sizes are Store fields with validation.
+- Added one provider-neutral core scheduler and retired fixed Magento cron
+  intervals through migration.
+- Added the core eCommerce Dashboard with company/provider/backend/Store/date
+  filters, KPI cards, coverage charts, queue/activity charts, drill-down,
+  recent runs, failed jobs, issues, and Store health.
+- Odoo 18/17 now use partial active unique indexes with safe migration; 19 uses
+  native partial constraints.
+- Tests: 19.0 66 passed; 18.0 66 passed; 17.0 66 passed. Core-only installs pass
+  on all three. Existing DB copies preserve mapping counts/hashes; only the new
+  scheduler adds one cron record.
+- Real Magento 19 smoke passed for connection, catalog/category/order/finance/
+  inventory/product update through the real jobrunner.
+- Odoo 18/17 Dashboard browser rendering remains to be verified.
+
 ## Known limitations
 
 - Newly created Magento attributes can require one queue retry (60 s) before
