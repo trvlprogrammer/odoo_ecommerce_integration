@@ -4,7 +4,7 @@
 
 | Gate | 19 | 18 | 17 |
 | --- | --- | --- | --- |
-| Full test suite | 74 pass | 74 pass | 74 pass |
+| Full test suite | 76 pass | 76 pass | 76 pass |
 | Core-only install | Pass | Pass | Pass |
 | Magento upgrade | Pass | Pass | Pass |
 | Dashboard KPI accuracy (populated DB) | Pass | Pass | Pass |
@@ -52,6 +52,7 @@
 
 **CONDITIONALLY READY.** The 10k, restart, per-record inventory/category,
 multi-company, security, Dashboard, migration, and cross-version regression gates
-pass. Remaining gaps are the separate live Magento store-view order isolation,
-worker restart verification on 18/17, multi-worker scheduler race testing,
-dynamic wizard option removal, and peak memory measurement.
+pass. Remaining gaps are full date/reset Dashboard interaction coverage on 18/17 and
+dynamic wizard option removal. Separate Magento store-view isolation, worker
+restart on 18/17, multi-worker scheduler race, finance cursor, inventory
+generation race, and peak memory are verified.
