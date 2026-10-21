@@ -179,7 +179,7 @@ class EcommerceStore(models.Model):
         action = self.env["ir.actions.act_window"]._for_xml_id(
             "queue_job.action_queue_job"
         )
-        action["domain"] = [("channel", "=like", "root.ecommerce%")]
+        action["domain"] = [("channel", "=like", "ecommerce%")]
         action["context"] = {}
         return action
 

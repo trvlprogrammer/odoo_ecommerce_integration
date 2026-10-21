@@ -344,4 +344,4 @@ class TestGenericNavigation(TransactionCase):
         )
         action = store.action_view_jobs()
         self.assertEqual(action["res_model"], "queue.job")
-        self.assertIn(("channel", "=like", "root.ecommerce%"), action["domain"])
+        self.assertIn(("channel", "=like", "ecommerce%"), action["domain"])
