@@ -35,6 +35,6 @@ Expected and actual counts matched exactly on all three versions.
 
 ## Limits
 
-- Full filter permutation and every drill-down were not repeated on 18/17; those
-  versions were populated-load and console-verified, with KPI accuracy checked
-  server-side. Odoo 19 received full drill-down and company-switch testing.
+- 18/17 now additionally verify provider/backend/Store filters, date change,
+  Reset, and mapped-product drill-down with zero console errors. Odoo 19 also
+  covers company switching and the 10k mapping drill-down.
