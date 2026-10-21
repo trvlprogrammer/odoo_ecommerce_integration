@@ -94,6 +94,19 @@ export class EcommerceDashboard extends Component {
         this.load();
     }
 
+    resetFilters() {
+        this.state.filters = {
+            company_ids: this.state.meta.default_company_ids || [],
+            provider: "",
+            backend_id: false,
+            store_id: false,
+            date_from: this.state.meta.default_date_from,
+            date_to: this.state.meta.default_date_to,
+            granularity: "day",
+        };
+        this.load();
+    }
+
     onKpiClick(ev) {
         const key = ev.currentTarget.dataset.key;
         if (key) {
