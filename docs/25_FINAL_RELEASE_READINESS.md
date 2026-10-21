@@ -39,19 +39,19 @@
 
 ## Remaining limitations
 
-- Finance/inventory coordinators still enumerate broad eligible sets on manual
-  re-trigger; child accounting is idempotent, but no separate cross-run finance
-  cursor exists for late remote changes.
+- Finance uses a bounded wrapping reconciliation window; late financial events
+  are guaranteed eventually but may wait for the next window covering that order.
+- Inventory scheduled reconciliation processes only dirty mappings; manual full
+  resync remains available.
 - Capability-aware wizard options remain validated at execution; unsupported
   options are not dynamically removed from the selection list.
-- Queue jobs created before classification metadata remain explicitly
-  unclassified under provider/Store filters.
+- Historical queue jobs without metadata remain explicitly unclassified.
 - Peak 10k worker memory was not captured.
 
 ## Decision
 
 **CONDITIONALLY READY.** The 10k, restart, per-record inventory/category,
 multi-company, security, Dashboard, migration, and cross-version regression gates
-pass. Remaining gaps are limited to unexecuted 18/17 uninstall isolation,
-finance/inventory cross-run cursor durability, and dynamic wizard option
-filtering.
+pass. Remaining gaps are the separate live Magento store-view order isolation,
+worker restart verification on 18/17, multi-worker scheduler race testing,
+dynamic wizard option removal, and peak memory measurement.
