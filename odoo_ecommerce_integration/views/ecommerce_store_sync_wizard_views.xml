@@ -18,6 +18,10 @@
                         <field name="can_queue" invisible="1"/>
                     </group>
                 </group>
+                <div class="alert alert-warning" invisible="can_queue">
+                    The selected operation is not supported by every selected Store.
+                    Choose a supported operation/data type or adjust the Store selection.
+                </div>
                 <footer>
                     <button name="action_sync" type="object" string="Queue Synchronization"
                             class="btn-primary" invisible="not can_queue"/>
