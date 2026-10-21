@@ -1,7 +1,12 @@
+import logging
+from datetime import timedelta
+
 from odoo import api, fields, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 
 from .ecommerce_provider import SYNC_CAPABILITY_MAP
+
+_logger = logging.getLogger(__name__)
 
 
 class EcommerceStore(models.Model):
@@ -27,10 +32,10 @@ class EcommerceStore(models.Model):
     external_store_view_id = fields.Char()
     external_store_view_code = fields.Char(required=True)
     warehouse_id = fields.Many2one(
-        "stock.warehouse", required=True, ondelete="restrict"
+        "stock.warehouse", required=True, ondelete="restrict", check_company=True
     )
     stock_location_id = fields.Many2one(
-        "stock.location", required=True, ondelete="restrict"
+        "stock.location", required=True, ondelete="restrict", check_company=True
     )
     pricelist_id = fields.Many2one("product.pricelist", ondelete="restrict")
     currency_id = fields.Many2one("res.currency", ondelete="restrict")
@@ -39,6 +44,7 @@ class EcommerceStore(models.Model):
         "product.product",
         ondelete="restrict",
         domain="[('type', '=', 'service')]",
+        check_company=True,
     )
     auto_confirm_orders = fields.Boolean(default=False)
     auto_post_invoice = fields.Boolean(default=True)
@@ -47,6 +53,11 @@ class EcommerceStore(models.Model):
     rounding_tolerance = fields.Float(default=0.01)
     stock_batch_size = fields.Integer(default=50)
     shipment_batch_size = fields.Integer(default=100)
+    product_batch_size = fields.Integer(default=50)
+    category_batch_size = fields.Integer(default=50)
+    customer_batch_size = fields.Integer(default=50)
+    order_batch_size = fields.Integer(default=25)
+    finance_batch_size = fields.Integer(default=25)
     inventory_use_on_hand = fields.Boolean(default=True)
     inventory_subtract_reserved = fields.Boolean(default=True)
     inventory_safety_stock = fields.Integer(default=0)
@@ -56,6 +67,7 @@ class EcommerceStore(models.Model):
     category_sync_interval_minutes = fields.Integer(default=60)
     inventory_sync_interval_minutes = fields.Integer(default=15)
     shipment_sync_interval_minutes = fields.Integer(default=15)
+    finance_sync_interval_minutes = fields.Integer(default=30)
     last_preflight_at = fields.Datetime()
     last_preflight_error = fields.Char()
     can_preflight = fields.Boolean(compute="_compute_capability_flags")
@@ -85,10 +97,49 @@ class EcommerceStore(models.Model):
         ('backend_code_uniq', 'UNIQUE (backend_id, code)', 'Store code must be unique per backend.'),
         ('store_view_uniq', 'UNIQUE (backend_id, external_store_view_id)', 'A Magento store view can be bound to only one store.'),
         ('safety_check', 'CHECK (inventory_safety_stock >= 0)', 'Safety stock cannot be negative.'),
-        ('batch_check', 'CHECK (stock_batch_size > 0 AND stock_batch_size <= 500 AND shipment_batch_size > 0 AND shipment_batch_size <= 1000)', 'Synchronization batch sizes are out of range.'),
+        ('batch_check', 'CHECK (stock_batch_size > 0 AND stock_batch_size <= 500 AND shipment_batch_size > 0 AND shipment_batch_size <= 1000 AND product_batch_size > 0 AND product_batch_size <= 500 AND category_batch_size > 0 AND category_batch_size <= 500 AND customer_batch_size > 0 AND customer_batch_size <= 500 AND order_batch_size > 0 AND order_batch_size <= 500 AND finance_batch_size > 0 AND finance_batch_size <= 500)', 'Synchronization batch sizes are out of range.'),
         ('tolerance_check', 'CHECK (rounding_tolerance >= 0 AND rounding_tolerance <= 1)', 'Rounding tolerance must be between 0 and 1.'),
     ]
 
+
+    def _ecommerce_schedule_operations(self):
+        """Return (resource, operation, interval_minutes) for this provider."""
+        return []
+
+    @api.model
+    def _cron_ecommerce_scheduler(self):
+        """Provider-neutral per-store scheduler.
+
+        Cron discovery never performs provider API calls. It only enqueues the
+        provider's bounded coordinator through the capability contract.
+        """
+        now = fields.Datetime.now()
+        stores = self.sudo().search([("active", "=", True)])
+        for store in stores:
+            for resource, operation, interval in store._ecommerce_schedule_operations():
+                try:
+                    interval = int(interval or 0)
+                except (TypeError, ValueError):
+                    continue
+                if interval <= 0 or not store._ecommerce_supports(resource, operation):
+                    continue
+                state = self.env["ecommerce.sync.state"].sudo().search(
+                    [("store_id", "=", store.id), ("resource", "=", resource)],
+                    limit=1,
+                )
+                last = state.last_started_at or state.last_success_at
+                if last and last + timedelta(minutes=interval) > now:
+                    continue
+                try:
+                    store.sudo()._ecommerce_enqueue_sync(resource, operation)
+                except Exception:
+                    _logger.exception(
+                        "Could not enqueue scheduled %s %s for store %s",
+                        operation,
+                        resource,
+                        store.id,
+                    )
+        return True
 
     @api.depends("active", "backend_id.provider")
     def _compute_capability_flags(self):
@@ -116,15 +167,105 @@ class EcommerceStore(models.Model):
         """Whether this store can enqueue product export/update jobs."""
         return self._ecommerce_supports("products", "export")
 
+    def _ecommerce_has_dependencies(self):
+        self.ensure_one()
+        models = (
+            "ecommerce.product.mapping",
+            "ecommerce.variant.mapping",
+            "ecommerce.category.mapping",
+            "ecommerce.customer.mapping",
+            "ecommerce.order.mapping",
+            "ecommerce.invoice.mapping",
+            "ecommerce.payment.mapping",
+            "ecommerce.refund.mapping",
+            "ecommerce.shipment.mapping",
+            "ecommerce.inventory.source.mapping",
+            "ecommerce.carrier.mapping",
+            "ecommerce.payment.method.mapping",
+            "ecommerce.sync.state",
+            "ecommerce.sync.event",
+            "ecommerce.sync.issue",
+            "ecommerce.sync.run",
+        )
+        return any(
+            self.env[model].sudo().search_count([("store_id", "=", self.id)])
+            for model in models
+        )
+
+    def write(self, vals):
+        if "company_id" in vals or "backend_id" in vals:
+            for store in self:
+                new_company = vals.get("company_id", store.company_id.id)
+                new_backend = vals.get("backend_id", store.backend_id.id)
+                if (
+                    new_company != store.company_id.id
+                    or new_backend != store.backend_id.id
+                ) and store._ecommerce_has_dependencies():
+                    raise UserError(
+                        "The store company/backend cannot be changed after "
+                        "mappings, synchronization history, or transactions exist."
+                    )
+        return super().write(vals)
+
+    def _ecommerce_start_run(
+        self, resource, operation, *, total=0, queued=0, cursor_value=None
+    ):
+        self.ensure_one()
+        self._ecommerce_require_operator()
+        state = self.env["ecommerce.sync.state"].search(
+            [("store_id", "=", self.id), ("resource", "=", resource)],
+            order="direction",
+            limit=1,
+        )
+        return self.env["ecommerce.sync.run"].create_for_store(
+            self,
+            resource,
+            operation,
+            total=total,
+            queued=queued,
+            sync_state=state,
+            cursor_value=cursor_value,
+        )
+
+    def _ecommerce_enqueue_run_child(
+        self, run, method_name, args, *, channel, key
+    ):
+        self.ensure_one()
+        return self._ecommerce_enqueue_job(
+            method_name,
+            *args,
+            channel=channel,
+            identity_key=f"ecom:run:{run.id}:{key}",
+        )
+
+    def _ecommerce_require_operator(self):
+        if not self.env.is_superuser() and not self.env.user.has_group(
+            "odoo_ecommerce_integration.group_ecommerce_operator"
+        ):
+            raise AccessError(
+                "eCommerce Operator access is required for synchronization."
+            )
+
     def _ecommerce_job_user(self):
         self.ensure_one()
         return self.backend_id.job_user_id or self.env.ref("base.user_root")
 
     def _ecommerce_enqueue_job(self, method_name, *args, channel, identity_key):
-        """Generic queue_job enqueue helper owned by the free core."""
+        """Generic queue_job enqueue helper owned by the free core.
+
+        The job is explicitly scoped to the store company, never to the
+        caller's currently selected company.
+        """
         self.ensure_one()
-        delayable = self.with_user(self._ecommerce_job_user()).with_delay(
-            channel=channel, identity_key=identity_key
+        company = self.company_id
+        delayable = (
+            self.with_company(company)
+            .with_user(self._ecommerce_job_user())
+            .with_context(
+                company_id=company.id,
+                allowed_company_ids=[company.id],
+            )
+            .with_delay(channel=channel, identity_key=identity_key)
         )
         return getattr(delayable, method_name)(*args)
 
@@ -146,10 +287,12 @@ class EcommerceStore(models.Model):
 
     def action_preflight(self):
         self.ensure_one()
+        self._ecommerce_require_operator()
         raise UserError("This store's provider does not implement preflight.")
 
     def action_open_ecommerce_sync_wizard(self):
         self.ensure_one()
+        self._ecommerce_require_operator()
         if not self.can_sync:
             raise UserError(
                 "The installed eCommerce connector does not support synchronization."
@@ -212,6 +355,50 @@ class EcommerceMappingMixin(models.AbstractModel):
             if record.store_id.backend_id != record.backend_id:
                 raise ValidationError("Mapping backend does not match the store backend.")
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._ecommerce_check_target_companies()
+        return records
+
+    def write(self, vals):
+        result = super().write(vals)
+        self._ecommerce_check_target_companies()
+        return result
+
+    def _ecommerce_check_target_companies(self):
+        target_fields = (
+            "odoo_template_id",
+            "odoo_product_id",
+            "odoo_partner_id",
+            "odoo_invoice_partner_id",
+            "odoo_shipping_partner_id",
+            "odoo_sale_order_id",
+            "odoo_sale_order_line_id",
+            "odoo_move_id",
+            "odoo_payment_id",
+            "odoo_picking_id",
+            "odoo_credit_note_id",
+            "journal_id",
+            "delivery_carrier_id",
+            "warehouse_id",
+            "stock_location_id",
+            "product_mapping_id",
+        )
+        for record in self:
+            for field_name in target_fields:
+                if field_name not in record._fields:
+                    continue
+                target = record[field_name]
+                if not target or "company_id" not in target._fields:
+                    continue
+                target_company = target.company_id
+                if target_company and target_company != record.company_id:
+                    raise ValidationError(
+                        "The mapped target %s belongs to another company."
+                        % field_name
+                    )
+
 
 class EcommerceProductMapping(models.Model):
     _name = "ecommerce.product.mapping"
@@ -220,7 +407,11 @@ class EcommerceProductMapping(models.Model):
     _order = "store_id, external_id"
 
     odoo_template_id = fields.Many2one(
-        "product.template", required=True, ondelete="restrict", index=True
+        "product.template",
+        required=True,
+        ondelete="restrict",
+        index=True,
+        check_company=True,
     )
     external_product_type = fields.Char(required=True, default="simple")
     mapping_method = fields.Selection(
@@ -245,10 +436,17 @@ class EcommerceVariantMapping(models.Model):
     _order = "store_id, external_id"
 
     odoo_product_id = fields.Many2one(
-        "product.product", required=True, ondelete="restrict", index=True
+        "product.product",
+        required=True,
+        ondelete="restrict",
+        index=True,
+        check_company=True,
     )
     product_mapping_id = fields.Many2one(
-        "ecommerce.product.mapping", ondelete="restrict", index=True
+        "ecommerce.product.mapping",
+        ondelete="restrict",
+        index=True,
+        check_company=True,
     )
     external_sku = fields.Char()
     external_barcode = fields.Char()
@@ -346,7 +544,11 @@ class EcommerceCustomerMapping(models.Model):
     _order = "store_id, external_id"
 
     odoo_partner_id = fields.Many2one(
-        "res.partner", required=True, ondelete="restrict", index=True
+        "res.partner",
+        required=True,
+        ondelete="restrict",
+        index=True,
+        check_company=True,
     )
     external_website_id = fields.Char(required=True)
     is_guest = fields.Boolean(default=False, index=True)
@@ -368,10 +570,10 @@ class EcommerceInventorySourceMapping(models.Model):
     _order = "store_id, external_id"
 
     warehouse_id = fields.Many2one(
-        "stock.warehouse", required=True, ondelete="restrict"
+        "stock.warehouse", required=True, ondelete="restrict", check_company=True
     )
     stock_location_id = fields.Many2one(
-        "stock.location", required=True, ondelete="restrict"
+        "stock.location", required=True, ondelete="restrict", check_company=True
     )
     external_source_name = fields.Char()
 
@@ -405,7 +607,7 @@ class EcommerceCarrierMapping(models.Model):
     _order = "store_id, external_id"
 
     delivery_carrier_id = fields.Many2one(
-        "delivery.carrier", required=True, ondelete="restrict"
+        "delivery.carrier", required=True, ondelete="restrict", check_company=True
     )
     external_label = fields.Char()
     mapping_method = fields.Selection(
@@ -426,7 +628,7 @@ class EcommercePaymentMethodMapping(models.Model):
     _order = "store_id, external_id"
 
     journal_id = fields.Many2one(
-        "account.journal", required=True, ondelete="restrict"
+        "account.journal", required=True, ondelete="restrict", check_company=True
     )
     external_label = fields.Char()
     mapping_method = fields.Selection(

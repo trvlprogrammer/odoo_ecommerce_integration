@@ -15,11 +15,12 @@
                     <group>
                         <field name="store_ids" widget="many2many_tags"/>
                         <field name="capability_summary" nolabel="1"/>
+                        <field name="can_queue" invisible="1"/>
                     </group>
                 </group>
                 <footer>
                     <button name="action_sync" type="object" string="Queue Synchronization"
-                            class="btn-primary"/>
+                            class="btn-primary" invisible="not can_queue"/>
                     <button special="cancel" string="Cancel" class="btn-secondary"/>
                 </footer>
             </form>

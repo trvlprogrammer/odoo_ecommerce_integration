@@ -7,6 +7,14 @@ class ProductTemplate(models.Model):
 
     def action_open_ecommerce_sync_wizard(self):
         self.ensure_one()
+        if not self.env.is_superuser() and not self.env.user.has_group(
+            "odoo_ecommerce_integration.group_ecommerce_operator"
+        ):
+            from odoo.exceptions import AccessError
+
+            raise AccessError(
+                "eCommerce Operator access is required for synchronization."
+            )
         if not self.env["ecommerce.backend"]._ecommerce_provider_selection():
             raise UserError(
                 "No installed eCommerce connector provides product synchronization."
