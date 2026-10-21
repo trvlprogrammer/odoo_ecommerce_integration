@@ -31,5 +31,7 @@
 - A full company-A-to-company-B real Magento order/inventory execution was not
   run against two live Magento stores.
 - Historical queue jobs have no provider metadata and remain unclassified.
-- Odoo 18/17 uninstall isolation was not executed.
-- Actual worker-kill recovery was not executed.
+- Odoo 18 and 17 uninstall isolation also passed: Magento job removed, core and
+  unrelated jobs retained, core module remained installed.
+- Actual worker restart was executed during the 10k Odoo 19 run; OCA resumed the
+  run to exact completion without duplicate mappings.
