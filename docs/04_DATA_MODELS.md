@@ -58,7 +58,7 @@ One external installation/credential set.
 | --- | --- | --- | --- |
 | `name` | Char | yes | human label |
 | `code` | Char | yes | unique per company |
-| `provider` | Char | yes | V1 value `magento`; connector validates it; Shopify can be added without a core selection migration |
+| `provider` | Char | yes | Installed provider code registered by a connector; the core supplies labels and capabilities |
 | `company_id` | Many2one `res.company` | yes | default current company |
 | `active` | Boolean | yes | archive to disable |
 | `base_url` | Char | yes | normalized, no trailing slash |
@@ -118,6 +118,9 @@ One commercial scope in an installation.
 | `shipment_sync_interval_minutes` | Integer | yes | default `15` |
 | `last_preflight_at` | Datetime | no | |
 | `last_preflight_error` | Char | no | sanitized |
+| `can_preflight` | Boolean | computed | provider advertises `health.preflight` |
+| `can_sync` | Boolean | computed | provider advertises any synchronization capability |
+| `can_product_sync` | Boolean | computed | provider advertises `product.export` |
 
 Constraints:
 
@@ -131,7 +134,13 @@ Indexes:
 - `(company_id, active)`
 - `(backend_id, external_store_view_code)`
 
-### 3.3 `ecommerce.product.mapping`
+### 3.3 `ecommerce.store.sync.wizard` (transient)
+
+No persistent mapping data. Stores the selected `operation`, `data_type`,
+`provider`, `backend_id`, `store_ids`, and a computed capability summary. Its
+table is created or updated automatically and is safe to discard.
+
+### 3.4 `ecommerce.product.mapping`
 
 External parent product ↔ Odoo `product.template`.
 
@@ -150,7 +159,7 @@ Constraints:
 - unique `(store_id, external_id)` while active
 - unique `(store_id, odoo_template_id)` while active
 
-### 3.4 `ecommerce.variant.mapping`
+### 3.5 `ecommerce.variant.mapping`
 
 External sellable variant ↔ Odoo `product.product`. Operative grain for order
 lines and inventory.
@@ -176,7 +185,7 @@ Important: if several external variants map to one Odoo variant, order line
 quantities cannot be attributed safely. The unique Odoo-side constraint prevents
 this in V1.
 
-### 3.5 `ecommerce.attribute.mapping`
+### 3.6 `ecommerce.attribute.mapping`
 
 Magento attribute code ↔ Odoo `product.attribute`.
 
@@ -186,7 +195,7 @@ Additional fields: `odoo_attribute_id` (required), `external_attribute_code`
 Constraint: unique `(store_id, external_attribute_code)` while active; unique
 `(store_id, odoo_attribute_id)` while active.
 
-### 3.6 `ecommerce.attribute.value.mapping`
+### 3.7 `ecommerce.attribute.value.mapping`
 
 Magento option value ↔ Odoo `product.attribute.value`.
 
@@ -196,7 +205,7 @@ Additional fields: `attribute_mapping_id` (required), `odoo_value_id` (required)
 Constraint: unique `(attribute_mapping_id, external_option_id)` while active;
 unique `(attribute_mapping_id, odoo_value_id)` while active.
 
-### 3.7 `ecommerce.customer.mapping`
+### 3.8 `ecommerce.customer.mapping`
 
 Magento customer ↔ Odoo `res.partner`.
 
@@ -210,7 +219,7 @@ Guest orders have **no** customer mapping. A deterministic commercial partner is
 reused by normalized email + store; the delivery/invoice address may be a child
 partner. A guest order does not fabricate a Magento customer ID.
 
-### 3.8 `ecommerce.order.mapping`
+### 3.9 `ecommerce.order.mapping`
 
 Magento order ↔ Odoo `sale.order`.
 
@@ -248,7 +257,7 @@ Constraints:
 Indexes: `(store_id, import_status)`, `(store_id, external_order_reference)`,
 `(company_id, imported_at)`.
 
-### 3.9 `ecommerce.order.line.mapping`
+### 3.10 `ecommerce.order.line.mapping`
 
 Additional fields: `order_mapping_id` (required), `odoo_sale_order_line_id`
 (required), `external_line_id` (required), `external_child_line_id` (no),
@@ -259,7 +268,7 @@ Additional fields: `order_mapping_id` (required), `odoo_sale_order_line_id`
 Constraint: unique `(order_mapping_id, external_line_id)`.
 Index: `(order_mapping_id, external_child_line_id)`.
 
-### 3.10 `ecommerce.invoice.mapping`
+### 3.11 `ecommerce.invoice.mapping`
 
 Additional fields:
 
@@ -281,7 +290,7 @@ Constraints:
 - one active invoice mapping per order mapping in V1
 - unique `(store_id, external_id)`
 
-### 3.11 `ecommerce.payment.mapping`
+### 3.12 `ecommerce.payment.mapping`
 
 Payment evidence ↔ Odoo `account.payment`.
 
@@ -298,7 +307,7 @@ Constraints:
 - unique `(store_id, external_id)`
 - partial unique `(store_id, odoo_payment_id)` when not null
 
-### 3.12 `ecommerce.shipment.mapping`
+### 3.13 `ecommerce.shipment.mapping`
 
 Odoo picking ↔ Magento shipment.
 
@@ -315,7 +324,7 @@ Constraints:
 - unique `(store_id, odoo_picking_id)`
 - partial unique `(store_id, external_id)` when it is a remote identity
 
-### 3.13 `ecommerce.refund.mapping`
+### 3.14 `ecommerce.refund.mapping`
 
 Magento credit memo ↔ Odoo credit note.
 
@@ -333,7 +342,7 @@ Refund **payment** mapping is deferred in V1. If added later, it must be a
 separate model because a credit memo and a gateway refund are different
 economic events.
 
-### 3.14 `ecommerce.inventory.source.mapping`
+### 3.15 `ecommerce.inventory.source.mapping`
 
 Additional fields: `warehouse_id` (required), `stock_location_id` (required),
 `external_source_name` (Char), `active`.
@@ -344,7 +353,7 @@ generic filters.
 Constraints: unique `(store_id, external_id)`; only one active source per store
 in V1.
 
-### 3.15 `ecommerce.carrier.mapping`
+### 3.16 `ecommerce.carrier.mapping`
 
 Additional fields: `delivery_carrier_id` (required), `external_method_label`
 (Char), `active`.
@@ -353,7 +362,7 @@ Additional fields: `delivery_carrier_id` (required), `external_method_label`
 
 Constraint: unique `(store_id, external_id)` while active.
 
-### 3.16 `ecommerce.payment.method.mapping`
+### 3.17 `ecommerce.payment.method.mapping`
 
 Additional fields: `journal_id` (`account.journal`, required),
 `external_method_label` (Char), `active`.
@@ -362,7 +371,7 @@ Additional fields: `journal_id` (`account.journal`, required),
 
 Constraint: unique `(store_id, external_id)` while active.
 
-### 3.17 `ecommerce.sync.state`
+### 3.18 `ecommerce.sync.state`
 
 Persistent cursor/watermark per store/resource/direction.
 
@@ -388,7 +397,7 @@ Constraint: unique `(store_id, resource, direction)`.
 Cursor advances only after the batch/job succeeds. A failed page does not move
 the cursor.
 
-### 3.18 `ecommerce.sync.event`
+### 3.19 `ecommerce.sync.event`
 
 Append-only operational history. Not an issue.
 
@@ -402,7 +411,7 @@ unique `dedupe_key` when not null.
 
 No secrets or raw API payloads. PII is minimized to an internal record link.
 
-### 3.19 `ecommerce.sync.issue`
+### 3.20 `ecommerce.sync.issue`
 
 Actionable problem. Separate from events.
 
