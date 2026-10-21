@@ -121,8 +121,17 @@ class EcommerceStore(models.Model):
                     continue
                 if interval <= 0 or not store._ecommerce_supports(resource, operation):
                     continue
+                state_resource = {
+                    "products": "product",
+                    "categories": "category",
+                    "customers": "customer",
+                    "orders": "order",
+                    "shipments": "shipment",
+                    "finance": "payment",
+                    "inventory": "inventory",
+                }.get(resource, resource)
                 state = self.env["ecommerce.sync.state"].sudo().search(
-                    [("store_id", "=", store.id), ("resource", "=", resource)],
+                    [("store_id", "=", store.id), ("resource", "=", state_resource)],
                     limit=1,
                 )
                 last = state.last_started_at or state.last_success_at
@@ -262,6 +271,9 @@ class EcommerceStore(models.Model):
             .with_context(
                 company_id=company.id,
                 allowed_company_ids=[company.id],
+                ecommerce_store_id=self.id,
+                ecommerce_backend_id=self.backend_id.id,
+                ecommerce_provider=self.backend_id.provider,
             )
             .with_delay(channel=channel, identity_key=identity_key)
         )

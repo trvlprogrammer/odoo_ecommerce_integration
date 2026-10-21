@@ -5,6 +5,7 @@ from . import ecommerce_order
 from . import ecommerce_financial
 from . import ecommerce_sync
 from . import ecommerce_sync_run
+from . import ecommerce_queue_job
 from . import ecommerce_dashboard
 from . import ecommerce_product_sync_wizard
 from . import ecommerce_store_sync_wizard

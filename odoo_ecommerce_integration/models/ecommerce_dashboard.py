@@ -97,24 +97,23 @@ class EcommerceDashboard(models.TransientModel):
         return domain
 
     @api.model
-    def _queue_domain(self, company_ids, store_ids):
-        base = [
+    def _queue_domain(self, company_ids, store_ids, provider=None, backend_id=None):
+        """Deterministic queue filtering using integration-owned metadata.
+
+        Jobs created before this metadata was introduced remain unclassified and
+        are excluded when a provider, backend, or Store filter is requested.
+        """
+        domain = [
             ("company_id", "in", company_ids),
             ("channel", "=like", "ecommerce%"),
         ]
-        if not store_ids:
-            return base
-        leaves = []
-        for store_id in store_ids:
-            leaves.append(
-                expression.OR(
-                    [
-                        [("identity_key", "=like", f"%:{store_id}")],
-                        [("identity_key", "=like", f"%:{store_id}:%")],
-                    ]
-                )
-            )
-        return expression.AND([base, expression.OR(leaves)])
+        if provider:
+            domain.append(("ecommerce_provider", "=", provider))
+        if backend_id:
+            domain.append(("ecommerce_backend_id", "=", int(backend_id)))
+        if store_ids:
+            domain.append(("ecommerce_store_id", "in", store_ids))
+        return domain
 
     @api.model
     def _mapped_ids(self, table, field, store_ids):
@@ -290,15 +289,20 @@ class EcommerceDashboard(models.TransientModel):
                 (tuple(store_ids), start_dt, end_dt),
             )
             revenue = self.env.cr.fetchone()[0] or 0.0
-        queue_domain = self._queue_domain(company_scope or company_ids, store_ids)
+        queue_domain = self._queue_domain(
+            company_scope or company_ids,
+            store_ids,
+            filters.get("provider"),
+            filters.get("backend_id"),
+        )
         pending_states = ("pending", "enqueued", "wait_dependencies")
-        pending = self.env["queue.job"].search_count(
+        pending = self.env["queue.job"].sudo().search_count(
             queue_domain + [("state", "in", pending_states)]
         )
-        running = self.env["queue.job"].search_count(
+        running = self.env["queue.job"].sudo().search_count(
             queue_domain + [("state", "=", "started")]
         )
-        failed = self.env["queue.job"].search_count(
+        failed = self.env["queue.job"].sudo().search_count(
             queue_domain + [("state", "=", "failed")]
         )
         issue_domain = [
@@ -336,7 +340,12 @@ class EcommerceDashboard(models.TransientModel):
         result["charts"] = {
             "orders": self._order_series(store_ids, start_dt, end_dt, filters.get("granularity", "day")),
             "providers": self._provider_breakdown(store_ids, start_dt, end_dt),
-            "queue": self._queue_status(company_scope or company_ids, store_ids),
+            "queue": self._queue_status(
+                company_scope or company_ids,
+                store_ids,
+                filters.get("provider"),
+                filters.get("backend_id"),
+            ),
             "activity": self._activity_series(store_ids, start_dt, end_dt),
             "coverage": coverage,
         }
@@ -359,7 +368,7 @@ class EcommerceDashboard(models.TransientModel):
             }
             for run in runs
         ]
-        failed_jobs = self.env["queue.job"].search(
+        failed_jobs = self.env["queue.job"].sudo().search(
             queue_domain + [("state", "=", "failed")],
             order="id desc",
             limit=10,
@@ -409,10 +418,10 @@ class EcommerceDashboard(models.TransientModel):
                     "last_success_at": last_state.last_success_at.isoformat()
                     if last_state and last_state.last_success_at
                     else False,
-                    "pending": self.env["queue.job"].search_count(
+                    "pending": self.env["queue.job"].sudo().search_count(
                         store_queue + [("state", "in", pending_states)]
                     ),
-                    "failed": self.env["queue.job"].search_count(
+                    "failed": self.env["queue.job"].sudo().search_count(
                         store_queue + [("state", "=", "failed")]
                     ),
                     "issues": self.env["ecommerce.sync.issue"].search_count(
@@ -469,9 +478,9 @@ class EcommerceDashboard(models.TransientModel):
         ]
 
     @api.model
-    def _queue_status(self, company_ids, store_ids):
-        domain = self._queue_domain(company_ids, store_ids)
-        groups = self.env["queue.job"].read_group(
+    def _queue_status(self, company_ids, store_ids, provider=None, backend_id=None):
+        domain = self._queue_domain(company_ids, store_ids, provider, backend_id)
+        groups = self.env["queue.job"].sudo().read_group(
             domain, ["state"], ["state"], lazy=False
         )
         mapping = {
@@ -614,11 +623,18 @@ class EcommerceDashboard(models.TransientModel):
             action["domain"] = [("store_id", "in", store_ids)]
             return action
         if key in ("pending_jobs", "running_jobs", "failed_jobs"):
+            if not self.env.user.has_group("queue_job.group_queue_job_manager"):
+                return False
             action = self.env["ir.actions.act_window"]._for_xml_id(
                 "queue_job.action_queue_job"
             )
             companies = stores.mapped("company_id").ids or self._company_ids(filters)
-            domain = self._queue_domain(companies, store_ids)
+            domain = self._queue_domain(
+                companies,
+                store_ids,
+                filters.get("provider"),
+                filters.get("backend_id"),
+            )
             if key == "pending_jobs":
                 domain = expression.AND([domain, [("state", "in", ("pending", "enqueued", "wait_dependencies"))]])
             elif key == "running_jobs":
