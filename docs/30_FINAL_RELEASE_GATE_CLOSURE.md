@@ -8,8 +8,8 @@
 | G-02 Odoo 18 worker restart | PASS | Run 1: interrupted at 100/500, restarted, completed 500/500 |
 | G-03 Odoo 17 worker restart | PASS | Run 1: interrupted at 100/500, restarted, completed 500/500 |
 | G-04 scheduler multi-process concurrency | PASS | Two concurrent scheduler processes produced one active order job after unique identity index |
-| G-05 Odoo 18 Dashboard matrix | PASS | KPI accuracy, provider/backend/Store filters, date change, Reset, and mapped-product drill-down; zero console errors after test-fixture website assets were supplied |
-| G-06 Odoo 17 Dashboard matrix | PASS | Same matrix as 18 via hash route; zero console errors |
+| G-05 Odoo 18 Dashboard matrix | PARTIAL | KPI accuracy, provider/backend/Store/date/Reset/drill-down pass; Company B is absent from the 18 fixture |
+| G-06 Odoo 17 Dashboard matrix | PARTIAL | Same matrix as 18 via hash route; Company B absent |
 | G-07 capability-aware wizard UX | PARTIAL | Execution blocked; unsupported options not dynamically removed |
 | G-08 peak memory | PASS | 157,612 KB peak RSS, 500-update workload, 2 workers |
 | G-09 finance cursor safety | PASS | Separate new/reconcile cursors; bounded wrapping; no starvation in logic/test |
