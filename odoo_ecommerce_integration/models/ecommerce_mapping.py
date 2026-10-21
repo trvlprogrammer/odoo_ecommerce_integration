@@ -1,4 +1,6 @@
 import logging
+
+from psycopg2 import IntegrityError
 from datetime import timedelta
 
 from odoo import api, fields, models
@@ -305,6 +307,9 @@ class EcommerceStore(models.Model):
         caller's currently selected company.
         """
         self.ensure_one()
+        self.env.cr.execute(
+            "SELECT pg_advisory_xact_lock(hashtext(%s))", (identity_key,)
+        )
         company = self.company_id
         delayable = (
             self.with_company(company)
@@ -318,7 +323,20 @@ class EcommerceStore(models.Model):
             )
             .with_delay(channel=channel, identity_key=identity_key)
         )
-        return getattr(delayable, method_name)(*args)
+        try:
+            with self.env.cr.savepoint():
+                return getattr(delayable, method_name)(*args)
+        except IntegrityError:
+            existing = self.env["queue.job"].sudo().search(
+                [
+                    ("identity_key", "=", identity_key),
+                    ("state", "in", ("pending", "enqueued", "wait_dependencies")),
+                ],
+                limit=1,
+            )
+            if existing:
+                return existing
+            raise
 
     def _ecommerce_enqueue_sync(self, resource, operation):
         """Connector hook: enqueue one provider synchronization operation."""
@@ -518,6 +536,7 @@ class EcommerceVariantMapping(models.Model):
     last_pushed_at = fields.Datetime()
     inventory_dirty = fields.Boolean(default=True, index=True)
     inventory_dirty_at = fields.Datetime()
+    inventory_generation = fields.Integer(default=0, readonly=True)
 
     _external_uniq = models.UniqueIndex(
         "(store_id, external_id) WHERE active IS TRUE",
