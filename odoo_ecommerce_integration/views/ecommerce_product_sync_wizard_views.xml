@@ -18,6 +18,10 @@
                 </group>
                 <field name="can_queue" invisible="1"/>
                         <field name="existing_status" readonly="1"/>
+                <div class="alert alert-warning" invisible="can_queue">
+                    No supported product operation is selected for every selected Store.
+                    Check provider, Store, operation, and existing mappings.
+                </div>
                 <footer>
                     <button name="action_sync" type="object" string="true" class="btn-primary" invisible="not can_queue">Queue Synchronization</button>
                     <button special="cancel" string="true">Cancel</button>
