@@ -32,10 +32,10 @@ class EcommerceStore(models.Model):
     external_store_view_id = fields.Char()
     external_store_view_code = fields.Char(required=True)
     warehouse_id = fields.Many2one(
-        "stock.warehouse", required=True, ondelete="restrict", check_company=True
+        "stock.warehouse", required=True, ondelete="restrict"
     )
     stock_location_id = fields.Many2one(
-        "stock.location", required=True, ondelete="restrict", check_company=True
+        "stock.location", required=True, ondelete="restrict"
     )
     pricelist_id = fields.Many2one("product.pricelist", ondelete="restrict")
     currency_id = fields.Many2one("res.currency", ondelete="restrict")
@@ -44,7 +44,6 @@ class EcommerceStore(models.Model):
         "product.product",
         ondelete="restrict",
         domain="[('type', '=', 'service')]",
-        check_company=True,
     )
     auto_confirm_orders = fields.Boolean(default=False)
     auto_post_invoice = fields.Boolean(default=True)
@@ -410,7 +409,6 @@ class EcommerceProductMapping(models.Model):
         required=True,
         ondelete="restrict",
         index=True,
-        check_company=True,
     )
     external_product_type = fields.Char(required=True, default="simple")
     mapping_method = fields.Selection(
@@ -435,13 +433,11 @@ class EcommerceVariantMapping(models.Model):
         required=True,
         ondelete="restrict",
         index=True,
-        check_company=True,
     )
     product_mapping_id = fields.Many2one(
         "ecommerce.product.mapping",
         ondelete="restrict",
         index=True,
-        check_company=True,
     )
     external_sku = fields.Char()
     external_barcode = fields.Char()
@@ -527,7 +523,6 @@ class EcommerceCustomerMapping(models.Model):
         required=True,
         ondelete="restrict",
         index=True,
-        check_company=True,
     )
     external_website_id = fields.Char(required=True)
     is_guest = fields.Boolean(default=False, index=True)
@@ -546,10 +541,10 @@ class EcommerceInventorySourceMapping(models.Model):
     _order = "store_id, external_id"
 
     warehouse_id = fields.Many2one(
-        "stock.warehouse", required=True, ondelete="restrict", check_company=True
+        "stock.warehouse", required=True, ondelete="restrict"
     )
     stock_location_id = fields.Many2one(
-        "stock.location", required=True, ondelete="restrict", check_company=True
+        "stock.location", required=True, ondelete="restrict"
     )
     external_source_name = fields.Char()
 
@@ -580,7 +575,7 @@ class EcommerceCarrierMapping(models.Model):
     _order = "store_id, external_id"
 
     delivery_carrier_id = fields.Many2one(
-        "delivery.carrier", required=True, ondelete="restrict", check_company=True
+        "delivery.carrier", required=True, ondelete="restrict"
     )
     external_label = fields.Char()
     mapping_method = fields.Selection(
@@ -598,7 +593,7 @@ class EcommercePaymentMethodMapping(models.Model):
     _order = "store_id, external_id"
 
     journal_id = fields.Many2one(
-        "account.journal", required=True, ondelete="restrict", check_company=True
+        "account.journal", required=True, ondelete="restrict"
     )
     external_label = fields.Char()
     mapping_method = fields.Selection(

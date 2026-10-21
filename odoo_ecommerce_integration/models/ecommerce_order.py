@@ -8,7 +8,7 @@ class EcommerceOrderMapping(models.Model):
     _order = "store_id, imported_at desc, id desc"
 
     odoo_sale_order_id = fields.Many2one(
-        "sale.order", check_company=True, ondelete="restrict", index=True
+        "sale.order", ondelete="restrict", index=True
     )
     external_order_reference = fields.Char(index=True)
     external_state = fields.Char()
@@ -72,7 +72,7 @@ class EcommerceOrderLineMapping(models.Model):
         "ecommerce.order.mapping", required=True, ondelete="cascade", index=True
     )
     odoo_sale_order_line_id = fields.Many2one(
-        "sale.order.line", check_company=True, required=True, ondelete="restrict", index=True
+        "sale.order.line", required=True, ondelete="restrict", index=True
     )
     external_line_id = fields.Char(required=True)
     external_child_line_id = fields.Char()
