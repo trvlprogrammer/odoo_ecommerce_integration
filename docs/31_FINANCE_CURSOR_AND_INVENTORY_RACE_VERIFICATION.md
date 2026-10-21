@@ -21,7 +21,8 @@ Financial mappings are reused, so retries do not duplicate invoices/payments/
 credit notes.
 
 Test: new window processes 5 synthetic mappings, then the independent reconcile
-run processes the same 5 after forward cursor completion.
+run processes the same 5 after forward cursor completion. The 1k/10k/100k
+figures above are calculated bounds; a 100k live fixture was not generated.
 
 ## Inventory
 

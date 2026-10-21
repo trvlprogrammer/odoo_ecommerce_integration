@@ -52,7 +52,7 @@
 
 **CONDITIONALLY READY.** The 10k, restart, per-record inventory/category,
 multi-company, security, Dashboard, migration, and cross-version regression gates
-pass. Remaining gaps are full date/reset Dashboard interaction coverage on 18/17 and
-dynamic wizard option removal. Separate Magento store-view isolation, worker
+pass. Remaining gaps are full date/reset Dashboard interaction coverage on 18/17,
+dynamic wizard option removal, and 100k synthetic finance cursor execution. Separate Magento store-view isolation, worker
 restart on 18/17, multi-worker scheduler race, finance cursor, inventory
 generation race, and peak memory are verified.

@@ -12,10 +12,10 @@
 | G-06 Odoo 17 Dashboard matrix | PARTIAL | Same as 18 |
 | G-07 capability-aware wizard UX | PARTIAL | Execution blocked; unsupported options not dynamically removed |
 | G-08 peak memory | PASS | 157,612 KB peak RSS, 500-update workload, 2 workers |
-| G-09 finance cursor safety | PASS | Separate new/reconcile cursors; bounded wrapping; no starvation in logic/test |
+| G-09 finance cursor safety | PARTIAL | Separate new/reconcile cursors and no-starvation logic/test; 100k runtime fixture not executed |
 | G-10 inventory race safety | PASS | Generation counter prevents clearing newer dirty state; deterministic test |
 | G-11 cross-version regression | PASS | 76/76 on 19/18/17 |
-| G-12 final release audit | CONDITIONALLY READY | Remaining UX/18-17 company matrix limitations |
+| G-12 final release audit | CONDITIONALLY READY | Remaining Dashboard interaction and wizard UX limitations |
 
 ## Important finding and fix
 
