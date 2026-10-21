@@ -33,8 +33,14 @@ Expected and actual counts matched exactly on all three versions.
 - No page errors.
 - Screenshot: `/tmp/listing-final/screens/dashboard17.png`.
 
-## Limits
+## 18/17 populated Company B
 
-- 18/17 now additionally verify provider/backend/Store filters, date change,
-  Reset, and mapped-product drill-down with zero console errors. Odoo 19 also
-  covers company switching and the 10k mapping drill-down.
+- Company B fixtures were created in `hard_upgrade18` and `hard_upgrade17`.
+- Company A: 7 orders, 5 invoices.
+- Company B: 1 order, 1 invoice, 1 issue.
+- Native company switcher selected B; provider/backend/Store/date/Reset/mapped
+  drill-down passed.
+- Screenshots: `docs/screenshots/dashboard18_company_b.png`,
+  `docs/screenshots/dashboard17_company_b.png`.
+- Odoo's native company switcher exposes one active company at a time; combined
+  simultaneous browser selection was not exercised.
