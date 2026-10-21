@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="ecommerce_dashboard.Dashboard">
+        <div class="o_ecommerce_dashboard">
+            <div class="o_ecommerce_dashboard_header">
+                <div>
+                    <h1>eCommerce Dashboard</h1>
+                    <p class="text-muted mb-0">Provider-neutral mapping coverage, synchronization health, and queue operations.</p>
+                </div>
+                <div class="o_ecommerce_dashboard_filters">
+                    <label>Company
+                        <select multiple="multiple" t-on-change="onCompaniesChange" class="form-select">
+                            <t t-foreach="state.meta.companies" t-as="company" t-key="company.id">
+                                <option t-att-value="company.id" t-att-selected="state.filters.company_ids.includes(company.id)">
+                                    <t t-esc="company.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </label>
+                    <label>Provider
+                        <select t-on-change="onProviderChange" class="form-select">
+                            <option value="">All providers</option>
+                            <t t-foreach="state.meta.providers" t-as="provider" t-key="provider.code">
+                                <option t-att-value="provider.code" t-att-selected="state.filters.provider === provider.code">
+                                    <t t-esc="provider.label"/>
+                                </option>
+                            </t>
+                        </select>
+                    </label>
+                    <label>Backend
+                        <select t-on-change="onBackendChange" class="form-select">
+                            <option value="">All backends</option>
+                            <t t-foreach="filteredBackends()" t-as="backend" t-key="backend.id">
+                                <option t-att-value="backend.id" t-att-selected="state.filters.backend_id === backend.id">
+                                    <t t-esc="backend.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </label>
+                    <label>Store
+                        <select t-on-change="onStoreChange" class="form-select">
+                            <option value="">All stores</option>
+                            <t t-foreach="filteredStores()" t-as="store" t-key="store.id">
+                                <option t-att-value="store.id" t-att-selected="state.filters.store_id === store.id">
+                                    <t t-esc="store.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </label>
+                    <label>From
+                        <input type="date" class="form-control" t-model="state.filters.date_from" t-on-change="onDateChange"/>
+                    </label>
+                    <label>To
+                        <input type="date" class="form-control" t-model="state.filters.date_to" t-on-change="onDateChange"/>
+                    </label>
+                </div>
+            </div>
+            <div t-if="state.loading" class="o_ecommerce_dashboard_loading">
+                <span class="fa fa-circle-o-notch fa-spin"/> Loading dashboard…
+            </div>
+            <t t-elif="state.data">
+                <div t-if="!state.data.has_scope" class="o_ecommerce_dashboard_empty">
+                    Select at least one allowed company to view eCommerce metrics.
+                </div>
+                <div t-elif="!state.data.has_stores" class="o_ecommerce_dashboard_empty">
+                    No active eCommerce store matches the current filters. Configure a store or choose another provider.
+                </div>
+                <t t-else="">
+                    <div class="o_ecommerce_dashboard_kpis">
+                        <t t-foreach="state.data.kpis" t-as="kpi" t-key="kpi.key">
+                            <button type="button" class="o_ecommerce_dashboard_kpi" t-att-data-key="kpi.key" t-on-click="onKpiClick">
+                                <span class="o_ecommerce_dashboard_kpi_value">
+                                    <t t-esc="format(kpi.value)"/><t t-esc="kpi.suffix"/>
+                                </span>
+                                <span class="o_ecommerce_dashboard_kpi_label" t-esc="kpi.label"/>
+                            </button>
+                        </t>
+                    </div>
+                    <div class="o_ecommerce_dashboard_grid">
+                        <section class="o_ecommerce_dashboard_card">
+                            <h3>Mapping coverage</h3>
+                            <div class="o_ecommerce_dashboard_donuts">
+                                <t t-foreach="['products', 'variants', 'categories', 'customers']" t-as="coverage_key" t-key="coverage_key">
+                                    <button type="button" class="o_ecommerce_dashboard_donut_item"
+                                            t-att-data-key="'mapped_' + coverage_key" t-on-click="onKpiClick">
+                                        <span class="o_ecommerce_dashboard_donut" t-att-style="donutStyle(state.data.coverage[coverage_key])"/>
+                                        <span class="o_ecommerce_dashboard_donut_label" t-esc="coverage_key"/>
+                                        <span class="o_ecommerce_dashboard_donut_value">
+                                            <t t-esc="state.data.coverage[coverage_key].percent"/>%
+                                        </span>
+                                    </button>
+                                </t>
+                            </div>
+                        </section>
+                        <section class="o_ecommerce_dashboard_card">
+                            <h3>Queue status</h3>
+                            <div class="o_ecommerce_dashboard_bars">
+                                <t t-foreach="state.data.charts.queue" t-as="row" t-key="row.label">
+                                    <div class="o_ecommerce_dashboard_bar_row">
+                                        <span t-esc="row.label"/>
+                                        <div class="o_ecommerce_dashboard_bar"><span t-att-style="'width:' + barWidth(row.count, state.data.charts.queue)"/></div>
+                                        <strong t-esc="row.count"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </section>
+                        <section class="o_ecommerce_dashboard_card">
+                            <h3>Orders by provider</h3>
+                            <div class="o_ecommerce_dashboard_bars">
+                                <t t-foreach="state.data.charts.providers" t-as="row" t-key="row.label">
+                                    <div class="o_ecommerce_dashboard_bar_row">
+                                        <span t-esc="row.label"/>
+                                        <div class="o_ecommerce_dashboard_bar"><span t-att-style="'width:' + barWidth(row.count, state.data.charts.providers)"/></div>
+                                        <strong t-esc="row.count"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </section>
+                        <section class="o_ecommerce_dashboard_card">
+                            <h3>Sales orders</h3>
+                            <div class="o_ecommerce_dashboard_bars">
+                                <t t-foreach="state.data.charts.orders" t-as="row" t-key="row.bucket">
+                                    <div class="o_ecommerce_dashboard_bar_row">
+                                        <span t-esc="row.bucket"/>
+                                        <div class="o_ecommerce_dashboard_bar"><span t-att-style="'width:' + barWidth(row.count, state.data.charts.orders)"/></div>
+                                        <strong><t t-esc="row.count"/> · <t t-esc="format(row.revenue)"/></strong>
+                                    </div>
+                                </t>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="o_ecommerce_dashboard_grid">
+                        <section class="o_ecommerce_dashboard_card">
+                            <h3>Recent synchronizations</h3>
+                            <table class="table table-sm">
+                                <thead><tr><th>Provider</th><th>Store</th><th>Operation</th><th>Status</th><th>Processed</th><th>Failed</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="state.data.recent_runs" t-as="run" t-key="run.id">
+                                        <td t-esc="run.provider"/>
+                                        <td t-esc="run.store"/>
+                                        <td t-esc="run.operation + ' ' + run.resource"/>
+                                        <td t-esc="run.state"/>
+                                        <td><t t-esc="run.processed"/> / <t t-esc="run.total"/></td>
+                                        <td t-esc="run.failed"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p t-if="!state.data.recent_runs.length" class="text-muted">No synchronization runs yet.</p>
+                        </section>
+                        <section class="o_ecommerce_dashboard_card">
+                            <h3>Store health</h3>
+                            <table class="table table-sm">
+                                <thead><tr><th>Store</th><th>Company</th><th>Backend</th><th>Last success</th><th>Pending</th><th>Failed</th><th>Issues</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="state.data.store_health" t-as="store" t-key="store.id">
+                                        <td t-esc="store.store"/>
+                                        <td t-esc="store.company"/>
+                                        <td t-esc="store.backend"/>
+                                        <td t-esc="store.last_success_at or 'Never'"/>
+                                        <td t-esc="store.pending"/>
+                                        <td t-esc="store.failed"/>
+                                        <td t-esc="store.issues"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+                    </div>
+                    <div class="o_ecommerce_dashboard_grid">
+                        <section class="o_ecommerce_dashboard_card">
+                            <h3>Failed jobs</h3>
+                            <table class="table table-sm">
+                                <thead><tr><th>Job</th><th>Method</th><th>Channel</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="state.data.failed_jobs" t-as="job" t-key="job.id">
+                                        <td><a href="#" data-key="failed_jobs" t-on-click.prevent="onKpiClick" t-esc="job.name"/></td>
+                                        <td t-esc="job.method"/>
+                                        <td t-esc="job.channel"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p t-if="!state.data.failed_jobs.length" class="text-muted">No failed jobs.</p>
+                        </section>
+                        <section class="o_ecommerce_dashboard_card">
+                            <h3>Open issues</h3>
+                            <table class="table table-sm">
+                                <thead><tr><th>Severity</th><th>Store</th><th>Entity</th><th>Reason</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="state.data.open_issues" t-as="issue" t-key="issue.id">
+                                        <td t-esc="issue.severity"/>
+                                        <td t-esc="issue.store"/>
+                                        <td t-esc="issue.entity"/>
+                                        <td t-esc="issue.reason"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p t-if="!state.data.open_issues.length" class="text-muted">No open issues.</p>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </div>
+    </t>
+</templates>

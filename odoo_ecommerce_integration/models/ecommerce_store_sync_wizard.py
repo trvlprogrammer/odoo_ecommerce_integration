@@ -1,5 +1,5 @@
 from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 
 from .ecommerce_provider import (
     SYNC_CAPABILITY_MAP,
@@ -38,6 +38,7 @@ class EcommerceStoreSyncWizard(models.TransientModel):
     capability_summary = fields.Text(
         readonly=True, compute="_compute_capability_summary"
     )
+    can_queue = fields.Boolean(compute="_compute_capability_summary")
 
     @api.model
     def _selection_provider(self):
@@ -137,6 +138,7 @@ class EcommerceStoreSyncWizard(models.TransientModel):
                 (wizard.operation, wizard.data_type)
             )
             if not capability:
+                wizard.can_queue = False
                 wizard.capability_summary = (
                     "This operation is not available for the selected data type."
                 )
@@ -152,12 +154,24 @@ class EcommerceStoreSyncWizard(models.TransientModel):
                         "supported" if supported else "not supported",
                     )
                 )
+            supported_count = sum(1 for line in lines if line.endswith("supported"))
+            wizard.can_queue = bool(
+                capability
+                and lines
+                and supported_count == len(lines)
+            )
             wizard.capability_summary = (
                 "\n".join(lines) if lines else "Select one or more stores."
             )
 
     def action_sync(self):
         self.ensure_one()
+        if not self.env.is_superuser() and not self.env.user.has_group(
+            "odoo_ecommerce_integration.group_ecommerce_operator"
+        ):
+            raise AccessError(
+                "eCommerce Operator access is required for synchronization."
+            )
         if not self.store_ids:
             raise UserError("Select at least one target store.")
         capability = SYNC_CAPABILITY_MAP.get((self.operation, self.data_type))

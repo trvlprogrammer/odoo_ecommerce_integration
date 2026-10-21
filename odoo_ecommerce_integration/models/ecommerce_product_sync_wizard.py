@@ -1,5 +1,5 @@
 from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 
 
 class EcommerceProductSyncWizard(models.TransientModel):
@@ -33,6 +33,7 @@ class EcommerceProductSyncWizard(models.TransientModel):
         domain="[('backend_id', '=', backend_id), ('active', '=', True)]",
     )
     existing_status = fields.Text(readonly=True, compute="_compute_existing_status")
+    can_queue = fields.Boolean(compute="_compute_existing_status")
 
     @api.model
     def _selection_provider(self):
@@ -132,10 +133,25 @@ class EcommerceProductSyncWizard(models.TransientModel):
                     else:
                         state = "Not mapped"
                     lines.append(f"{store.display_name} · {product.display_name}: {state}")
+            supported = bool(
+                wizard.product_ids
+                and wizard.store_ids
+                and all(
+                    store._ecommerce_supports("products", wizard.operation)
+                    for store in wizard.store_ids
+                )
+            )
+            wizard.can_queue = supported
             wizard.existing_status = "\n".join(lines) if lines else "Select a backend and target store(s)."
 
     def action_sync(self):
         self.ensure_one()
+        if not self.env.is_superuser() and not self.env.user.has_group(
+            "odoo_ecommerce_integration.group_ecommerce_operator"
+        ):
+            raise AccessError(
+                "eCommerce Operator access is required for synchronization."
+            )
         if not self.product_ids:
             raise UserError("Select at least one product.")
         if not self.store_ids:

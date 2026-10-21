@@ -155,4 +155,16 @@
         <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
     </record>
 
+    <record id="rule_company_ecommerce_sync_run" model="ir.rule">
+        <field name="name">ecommerce.sync.run: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_sync_run"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
+    <record id="rule_company_ecommerce_sync_batch" model="ir.rule">
+        <field name="name">ecommerce.sync.batch: multi-company</field>
+        <field name="model_id" ref="model_ecommerce_sync_batch"/>
+        <field name="domain_force">[('run_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_ecommerce_user'))]"/>
+    </record>
 </odoo>
