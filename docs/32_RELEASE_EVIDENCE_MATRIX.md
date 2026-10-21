@@ -3,10 +3,12 @@
 | Evidence | Odoo 19 | Odoo 18 | Odoo 17 |
 | --- | --- | --- | --- |
 | Full tests | 76 pass | 76 pass | 76 pass |
+| Finance 100k cursor selection | Pass (19 fixture) | Shared logic | Shared logic |
 | Core-only install | Pass | Pass | Pass |
 | Magento upgrade | Pass | Pass | Pass |
 | Uninstall isolation | Pass | Pass | Pass |
 | Worker restart | Pass (10k) | Pass (500-page run) | Pass (500-page run) |
+| Dashboard Company B populated | Pass | Pass | Pass |
 | Dashboard KPI exact | Pass | Pass | Pass |
 | Dashboard provider/backend/Store + drill-down | Pass | Pass | Pass |
 | Dashboard date/reset/filter/drill-down | Pass | Pass | Pass |
