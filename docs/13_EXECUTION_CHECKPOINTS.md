@@ -299,7 +299,7 @@ odoo_ecommerce_magento/
   scheduler adds one cron record.
 - Real Magento 19 smoke passed for connection, catalog/category/order/finance/
   inventory/product update through the real jobrunner.
-- Odoo 18/17 Dashboard browser rendering remains to be verified.
+- Dashboard browser rendering passed on Odoo 19, 18, and 17.
 
 ## Known limitations
 
