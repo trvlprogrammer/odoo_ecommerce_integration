@@ -37,6 +37,7 @@ SYNC_CAPABILITY_MAP = {
     ("import", "customers"): "customer.import",
     ("import", "orders"): "order.import",
     ("export", "inventory"): "inventory.export",
+    ("reconcile", "inventory"): "inventory.export",
     ("export", "shipments"): "shipment.export",
     ("import", "finance"): "finance.import",
 }

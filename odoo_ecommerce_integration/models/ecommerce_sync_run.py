@@ -50,6 +50,7 @@ class EcommerceSyncRun(models.Model):
     finished_at = fields.Datetime()
     last_error = fields.Char()
     cursor_value = fields.Char()
+    advance_cursor_on_partial = fields.Boolean(default=False)
     sync_state_id = fields.Many2one(
         "ecommerce.sync.state", ondelete="set null", index=True
     )
@@ -69,6 +70,7 @@ class EcommerceSyncRun(models.Model):
         queued=0,
         sync_state=None,
         cursor_value=None,
+        advance_cursor_on_partial=False,
     ):
         return self.create(
             {
@@ -80,6 +82,7 @@ class EcommerceSyncRun(models.Model):
                 "queued": queued,
                 "sync_state_id": sync_state.id if sync_state else False,
                 "cursor_value": cursor_value,
+                "advance_cursor_on_partial": advance_cursor_on_partial,
             }
         )
 
@@ -156,8 +159,11 @@ class EcommerceSyncRun(models.Model):
             }
             if state == "done":
                 sync_values["last_success_at"] = fields.Datetime.now()
-                if run.cursor_value:
-                    sync_values["cursor_value"] = run.cursor_value
+            if run.cursor_value and (
+                state == "done"
+                or (state == "partial" and run.advance_cursor_on_partial)
+            ):
+                sync_values["cursor_value"] = run.cursor_value
             run.sync_state_id.write(sync_values)
 
     def action_cancel(self):
