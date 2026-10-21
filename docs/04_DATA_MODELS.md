@@ -424,6 +424,14 @@ Fields: `backend_id`, `store_id`, `company_id`, `issue_type`, `severity`,
 Fingerprint is deterministic, e.g.
 `store:<id>|type:<issue_type>|entity:<model>:<id>|reason:<code>`.
 
+### 3.21 `ecommerce.sync.run` and `ecommerce.sync.batch`
+
+`ecommerce.sync.run` persists Store/provider/operation/resource, total, queued,
+processed, succeeded, failed, skipped, state, timestamps, cursor, and last error.
+`ecommerce.sync.batch` stores a unique `(run_id, key)` acknowledgement so queue
+retries do not double-count progress. Both derive company from the Store and are
+protected by company rules.
+
 ## 4. Ownership matrix
 
 | Model | Owner | Connector may |
