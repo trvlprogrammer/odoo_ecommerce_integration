@@ -397,7 +397,7 @@ class TestHardening(TransactionCase):
                 "login": "readonly-ecommerce-hardening",
                 "company_id": self.company.id,
                 "company_ids": [(6, 0, [self.company.id])],
-                "group_ids": [
+                "groups_id": [
                     (
                         6,
                         0,

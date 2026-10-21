@@ -8,6 +8,7 @@
     "license": "LGPL-3",
     "application": False,
     "installable": True,
+    "post_init_hook": "post_init_hook",
     "images": [
         "static/description/banner.png",
         "static/description/screenshots/backend.png",

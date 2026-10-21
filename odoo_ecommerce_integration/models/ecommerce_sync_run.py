@@ -55,8 +55,6 @@ class EcommerceSyncRun(models.Model):
     )
     details = fields.Json(default=dict)
 
-    _run_idx = models.Index("(store_id, state, started_at)")
-    _company_idx = models.Index("(company_id, started_at)")
 
     @api.model
     def create_for_store(
@@ -188,6 +186,6 @@ class EcommerceSyncBatch(models.Model):
     error = fields.Text()
     processed_at = fields.Datetime(default=fields.Datetime.now)
 
-    _run_key_uniq = models.UniqueIndex(
-        "(run_id, key)", "A batch key must be unique within a synchronization run."
-    )
+    _sql_constraints = [
+        ("run_key_uniq", "UNIQUE (run_id, key)", "A batch key must be unique within a synchronization run."),
+    ]
