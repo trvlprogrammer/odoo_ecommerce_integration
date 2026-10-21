@@ -345,3 +345,170 @@ class TestGenericNavigation(TransactionCase):
         action = store.action_view_jobs()
         self.assertEqual(action["res_model"], "queue.job")
         self.assertIn(("channel", "=like", "ecommerce%"), action["domain"])
+
+
+class TestHardening(TransactionCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.company = cls.env.company
+        cls.warehouse = cls.env["stock.warehouse"].create(
+            {"name": "Hardening WH", "code": "HDW", "company_id": cls.company.id}
+        )
+        cls.backend = cls.env["ecommerce.backend"].create(
+            {
+                "name": "Hardening Backend",
+                "code": "hardening",
+                "provider": "magento",
+                "base_url": "https://hardening.example.test",
+                "job_user_id": cls.env.user.id,
+            }
+        )
+        cls.store = cls.env["ecommerce.store"].create(
+            {
+                "name": "Hardening Store",
+                "code": "hardening",
+                "backend_id": cls.backend.id,
+                "company_id": cls.company.id,
+                "external_store_view_code": "default",
+                "warehouse_id": cls.warehouse.id,
+                "stock_location_id": cls.warehouse.lot_stock_id.id,
+            }
+        )
+        cls.template = cls.env["product.template"].create(
+            {
+                "name": "Hardening Product",
+                "default_code": "HARD-1",
+                "sale_ok": True,
+                "type": "consu",
+            }
+        )
+
+    def _mapping(self, template=None):
+        return self.env["ecommerce.product.mapping"].create(
+            {
+                "backend_id": self.backend.id,
+                "store_id": self.store.id,
+                "external_id": "HARD-EXT-1",
+                "odoo_template_id": (template or self.template).id,
+                "external_product_type": "simple",
+            }
+        )
+
+    def test_readonly_user_cannot_open_sync_wizard(self):
+        from odoo.exceptions import AccessError
+
+        user = self.env["res.users"].create(
+            {
+                "name": "Readonly eCommerce",
+                "login": "readonly-ecommerce-hardening",
+                "company_id": self.company.id,
+                "company_ids": [(6, 0, [self.company.id])],
+                "group_ids": [
+                    (
+                        6,
+                        0,
+                        [
+                            self.env.ref("base.group_user").id,
+                            self.env.ref(
+                                "odoo_ecommerce_integration.group_ecommerce_user"
+                            ).id,
+                        ],
+                    )
+                ],
+            }
+        )
+        with self.assertRaises(AccessError):
+            self.store.with_user(user).action_open_ecommerce_sync_wizard()
+
+    def test_queue_job_uses_store_company(self):
+        self.store._ecommerce_enqueue_job(
+            "action_view_jobs",
+            channel="ecommerce.catalog",
+            identity_key="test:queue-company",
+        )
+        job = self.env["queue.job"].search(
+            [("identity_key", "=", "test:queue-company")], limit=1
+        )
+        self.assertTrue(job)
+        self.assertEqual(job.company_id, self.store.company_id)
+
+    def test_store_backend_change_blocked_with_mapping(self):
+        from odoo.exceptions import UserError
+
+        self._mapping()
+        other_backend = self.backend.copy({"code": "hardening-other"})
+        with self.assertRaises(UserError):
+            self.store.backend_id = other_backend
+
+    def test_mapping_rejects_cross_company_template(self):
+        from odoo.exceptions import ValidationError
+
+        other_company = self.env["res.company"].create({"name": "Hardening Other Co"})
+        other_template = self.env["product.template"].create(
+            {
+                "name": "Other Company Product",
+                "default_code": "HARD-OTHER",
+                "company_id": other_company.id,
+            }
+        )
+        with self.assertRaises(ValidationError):
+            self._mapping(other_template)
+
+    def test_dashboard_filters_and_drilldown(self):
+        self._mapping()
+        data = self.env["ecommerce.dashboard"].get_dashboard_data(
+            {
+                "company_ids": [self.company.id],
+                "provider": "magento",
+                "backend_id": self.backend.id,
+                "store_id": self.store.id,
+            }
+        )
+        self.assertTrue(data["has_stores"])
+        self.assertEqual(data["coverage"]["products"]["mapped"], 1)
+        self.assertGreaterEqual(data["coverage"]["products"]["total"], 1)
+        action = self.env["ecommerce.dashboard"].get_drilldown(
+            "mapped_products",
+            {
+                "company_ids": [self.company.id],
+                "store_id": self.store.id,
+            },
+        )
+        self.assertEqual(action["res_model"], "ecommerce.product.mapping")
+        self.assertIn(("store_id", "in", [self.store.id]), action["domain"])
+
+
+class TestSyncRunProgress(TransactionCase):
+    def test_batch_progress_is_idempotent_and_completes(self):
+        company = self.env.company
+        warehouse = self.env["stock.warehouse"].create(
+            {"name": "Run WH", "code": "RUNW", "company_id": company.id}
+        )
+        backend = self.env["ecommerce.backend"].create(
+            {
+                "name": "Run Backend",
+                "code": "run",
+                "provider": "magento",
+                "base_url": "https://run.example.test",
+                "job_user_id": self.env.user.id,
+            }
+        )
+        store = self.env["ecommerce.store"].create(
+            {
+                "name": "Run Store",
+                "code": "run",
+                "backend_id": backend.id,
+                "company_id": company.id,
+                "external_store_view_code": "default",
+                "warehouse_id": warehouse.id,
+                "stock_location_id": warehouse.lot_stock_id.id,
+            }
+        )
+        run = store._ecommerce_start_run("product", "import", total=2)
+        run._record_batch("one", succeeded=1)
+        run._record_batch("one", succeeded=1)
+        self.assertEqual(run.processed, 1)
+        run._record_batch("two", succeeded=1)
+        self.assertEqual(run.state, "done")
+        self.assertEqual(run.processed, 2)

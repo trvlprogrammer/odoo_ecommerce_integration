@@ -10,7 +10,7 @@ class EcommerceInvoiceMapping(models.Model):
     order_mapping_id = fields.Many2one(
         "ecommerce.order.mapping", required=True, ondelete="cascade", index=True
     )
-    odoo_move_id = fields.Many2one("account.move", ondelete="restrict", index=True)
+    odoo_move_id = fields.Many2one("account.move", check_company=True, ondelete="restrict", index=True)
     external_increment_id = fields.Char()
     status = fields.Selection(
         [
@@ -50,12 +50,12 @@ class EcommercePaymentMapping(models.Model):
     invoice_mapping_id = fields.Many2one(
         "ecommerce.invoice.mapping", ondelete="restrict", index=True
     )
-    odoo_payment_id = fields.Many2one("account.payment", ondelete="restrict", index=True)
+    odoo_payment_id = fields.Many2one("account.payment", check_company=True, ondelete="restrict", index=True)
     external_invoice_id = fields.Char()
     external_method_code = fields.Char()
     amount = fields.Monetary(currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", ondelete="restrict")
-    journal_id = fields.Many2one("account.journal", ondelete="restrict")
+    journal_id = fields.Many2one("account.journal", check_company=True, ondelete="restrict")
     payment_reference = fields.Char()
     status = fields.Selection(
         [
@@ -90,7 +90,7 @@ class EcommerceShipmentMapping(models.Model):
         "ecommerce.order.mapping", required=True, ondelete="cascade", index=True
     )
     odoo_picking_id = fields.Many2one(
-        "stock.picking", required=True, ondelete="restrict", index=True
+        "stock.picking", check_company=True, required=True, ondelete="restrict", index=True
     )
     tracking_number = fields.Char()
     tracking_carrier = fields.Char()
@@ -130,7 +130,7 @@ class EcommerceRefundMapping(models.Model):
     invoice_mapping_id = fields.Many2one(
         "ecommerce.invoice.mapping", ondelete="restrict", index=True
     )
-    odoo_credit_note_id = fields.Many2one("account.move", ondelete="restrict", index=True)
+    odoo_credit_note_id = fields.Many2one("account.move", check_company=True, ondelete="restrict", index=True)
     external_increment_id = fields.Char()
     amount = fields.Monetary(currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", ondelete="restrict")

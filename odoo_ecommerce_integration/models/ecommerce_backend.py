@@ -1,5 +1,5 @@
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, ValidationError, UserError
 
 from .ecommerce_provider import CAPABILITY_DEFINITIONS
 
@@ -68,6 +68,16 @@ class EcommerceBackend(models.Model):
         for backend in self:
             if backend.job_user_id and backend.company_id not in backend.job_user_id.company_ids:
                 raise ValidationError("The job user must have access to the backend company.")
+            if (
+                backend.job_user_id
+                and backend.job_user_id.id != 1
+                and not backend.job_user_id.has_group(
+                    "odoo_ecommerce_integration.group_ecommerce_operator"
+                )
+            ):
+                raise ValidationError(
+                    "The job user must have eCommerce Operator access."
+                )
 
     @api.model
     def _ecommerce_provider_registry(self):
@@ -101,6 +111,28 @@ class EcommerceBackend(models.Model):
         return frozenset(
             code for code in definition.get("capabilities", []) if code in known
         )
+
+    def _ecommerce_require_operator(self):
+        if not self.env.is_superuser() and not self.env.user.has_group(
+            "odoo_ecommerce_integration.group_ecommerce_operator"
+        ):
+            raise AccessError(
+                "eCommerce Operator access is required for synchronization."
+            )
+
+    def write(self, vals):
+        if "company_id" in vals:
+            for backend in self:
+                if (
+                    vals["company_id"] != backend.company_id.id
+                    and self.env["ecommerce.store"]
+                    .sudo()
+                    .search_count([("backend_id", "=", backend.id)])
+                ):
+                    raise UserError(
+                        "The backend company cannot be changed while stores exist."
+                    )
+        return super().write(vals)
 
     def action_set_draft(self):
         self.write({"state": "draft", "last_test_error": False})
