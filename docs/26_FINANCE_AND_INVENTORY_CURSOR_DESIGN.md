@@ -7,10 +7,11 @@ mappings.
 
 - State: `ecommerce.sync.state` resource `payment`, cursor = last order-mapping id.
 - Window: `finance_batch_size × 10` (default 25 × 10 = 250 orders/run).
-- Coordinator selects imported order mappings with `id > cursor`.
-- At the end of the sequence it wraps to the first window; this guarantees
-  eventual reconciliation of late invoices, payments, and credit memos without
-  an unbounded scan every run.
+- Forward discovery selects `id > payment cursor`.
+- Reconciliation independently selects `id > payment_reconcile cursor`, wrapping
+  at the end; continuous new orders cannot starve old orders.
+- This guarantees eventual reconciliation of late invoices, payments, and credit
+  memos without an unbounded scan every run.
 - Child batches are independently queued and acknowledged through
   `ecommerce.sync.batch`.
 - Cursor advances only when the run completes. `advance_cursor_on_partial=True`
@@ -19,9 +20,9 @@ mappings.
 - No Odoo financial document is created twice: existing invoice/payment/refund
   mappings are reused.
 
-Limitation: late financial events are discovered on the next reconciliation
-window that reaches the relevant order, not necessarily on the immediately next
-run. This is an explicit eventual-completeness tradeoff.
+Revisit latency at 30-minute finance scheduling: ≤0.5 h at 1,000 mappings,
+≤5 h at 10,000, and ≤50 h at 100,000. This is an explicit eventual-completeness
+tradeoff; no permanent starvation.
 
 ## Inventory
 
