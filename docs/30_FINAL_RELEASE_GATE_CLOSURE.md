@@ -10,11 +10,11 @@
 | G-04 scheduler multi-process concurrency | PASS | Two concurrent scheduler processes produced one active order job after unique identity index |
 | G-05 Odoo 18 Dashboard matrix | PASS | Populated Company A + B fixture; separate company browser, KPI accuracy, provider/backend/Store/date/Reset/drill-down; combined native single-company switcher limitation documented |
 | G-06 Odoo 17 Dashboard matrix | PASS | Same populated A/B matrix via hash route |
-| G-07 capability-aware wizard UX | PARTIAL | Execution blocked; unsupported options not dynamically removed |
+| G-07 capability-aware wizard UX | PARTIAL | Explicit unsupported warning and Queue hidden; dynamic removal not implemented |
 | G-08 peak memory | PASS | 157,612 KB peak RSS, 500-update workload, 2 workers |
 | G-09 finance cursor safety | PASS for cursor logic, PARTIAL for live finance events | 100k mapping fixture: 100 forward + 100 reconcile windows, 0.8 ms/query, no starvation; late-event live stream not generated |
 | G-10 inventory race safety | PASS | Generation counter prevents clearing newer dirty state; deterministic test |
-| G-11 cross-version regression | PASS | 76/76 on 19/18/17 |
+| G-11 cross-version regression | PASS | 77/77 on 19/18/17 |
 | G-12 final release audit | CONDITIONALLY READY | Remaining wizard dynamic-option and live 100k finance-event limitations |
 
 ## Important finding and fix
