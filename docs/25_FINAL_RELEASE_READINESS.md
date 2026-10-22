@@ -4,13 +4,17 @@
 
 | Gate | 19 | 18 | 17 |
 | --- | --- | --- | --- |
-| Full test suite | 76 pass | 76 pass | 76 pass |
+| Full test suite | 77 pass | 77 pass | 77 pass |
 | Core-only install | Pass | Pass | Pass |
 | Magento upgrade | Pass | Pass | Pass |
 | Dashboard KPI accuracy (populated DB) | Pass | Pass | Pass |
 | Dashboard populated browser | Pass | Pass | Pass (hash URL) |
 | Uninstall isolation | Pass | Pass | Pass |
 | 10k real Magento E2E | PASS | N/A (equivalent logic tests) | N/A |
+| Product image E2E | PASS | Unit | Unit |
+| Guest/registered/transition dedup | PASS | Unit | Unit |
+| Virtual/service products | PASS | Unit | Unit |
+| 100k finance cursor selection | PASS | Shared logic | Shared logic |
 
 ## 10k evidence
 
@@ -39,23 +43,23 @@
 
 ## Remaining limitations
 
-- Finance uses a bounded wrapping reconciliation window; late financial events
-  are guaranteed eventually but may wait for the next window covering that order.
-- Inventory scheduled reconciliation processes only dirty mappings; manual full
-  resync remains available.
-- Capability-aware wizard options remain validated at execution; unsupported
-  options are not dynamically removed from the selection list.
-- Historical queue jobs without metadata remain explicitly unclassified.
-- Peak 10k worker memory was not captured.
+- New real Magento partial-shipment, partial-refund, and multiple-refund orders
+  were not executed on the current fixture; existing automated shipment/refund
+  tests pass.
+- Capability-aware wizard options are not dynamically removed. Unsupported
+  selections show an explicit warning and Queue Synchronization is hidden.
+- Native Odoo company switcher selects one active company at a time; Company A
+  and B Dashboards were browser-verified separately.
+- A live 100k Magento financial-event stream was not generated; 100k cursor
+  selection/performance was measured on synthetic mappings.
+- Peak 10k import memory was not captured; 500-update peak RSS was 157,612 KB.
 
 ## Decision
 
-**CONDITIONALLY READY.** The 10k, restart, per-record inventory/category,
-multi-company, security, Dashboard, migration, and cross-version regression gates
-pass. Remaining gaps are dynamic wizard option removal and 100k synthetic finance
-pass. Remaining gaps are dynamic wizard option removal and 100k synthetic finance
-cursor execution. Dashboard date/reset/filter/drill-down passes on 19/18/17;
-company-switch isolation was exercised on 19 only. Separate Magento store-view
-isolation, worker
-restart on 18/17, multi-worker scheduler race, finance cursor, inventory
-generation race, and peak memory are verified.
+**CONDITIONALLY READY.** Scale, genuine second Store View, customer dedup,
+product/image/virtual E2E, Dashboard A/B, worker restart on all versions,
+scheduler race, 100k finance cursor selection, inventory generation safety,
+uninstall isolation, migrations, and 77/77 cross-version regressions pass.
+Remaining gaps are new live partial-shipment/refund E2E, dynamic wizard option
+removal, simultaneous multi-company browser selection, and a live 100k
+financial-event stream.

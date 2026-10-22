@@ -2,7 +2,7 @@
 
 | Evidence | Odoo 19 | Odoo 18 | Odoo 17 |
 | --- | --- | --- | --- |
-| Full tests | 76 pass | 76 pass | 76 pass |
+| Full tests | 77 pass | 77 pass | 77 pass |
 | Finance 100k cursor selection | Pass (19 fixture) | Shared logic | Shared logic |
 | Core-only install | Pass | Pass | Pass |
 | Magento upgrade | Pass | Pass | Pass |
