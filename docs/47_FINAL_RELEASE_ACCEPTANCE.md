@@ -1,32 +1,21 @@
 # Final Release Acceptance
 
-## Release decision
+Superseded on 2026-10-22 by `54_FINAL_RELEASE_ACCEPTANCE_DECISION.md`.
 
-**CONDITIONALLY READY.**
+## Final decision
 
-## Mandatory gates with full evidence
+**GO for release of the 1.3.0 line on Odoo 19, 18, and 17.**
 
-- Real Magento 10k catalog E2E.
-- Real second Store View order, invoice and inventory isolation.
-- Guest/registered/transition partner deduplication.
-- Product image import/export with binary verification.
-- Virtual/service products both directions.
-- Worker restart on 19/18/17.
-- Scheduler duplicate race.
-- 100k finance cursor selection.
-- Inventory generation race.
-- Dashboard A/B KPI and filters on 19/18/17.
-- Uninstall isolation.
-- 77/77 cross-version regression.
+The previously listed gaps for live partial shipment and partial/full refund
+were closed with real Magento orders 35-40 and are recorded in documents 49-53.
 
-## Remaining acceptance gaps
+Remaining non-blocking items:
 
-- New live partial-shipment and partial/full-refund orders not executed on the
-  current fixture.
-- 100k live financial-event stream not run.
-- Simultaneous browser multi-company selection not available in native switcher;
-  separate A/B Dashboards verified.
-- Dynamic wizard option removal not implemented; unsupported selections are
-  clearly warned and cannot queue.
+- The 100k finance fixture measured cursor selection and query cost; a live
+  100k financial-event stream was not replayed in this final pass.
+- Native Odoo permits one active company per browser session; Dashboard A/B
+  isolation was verified with separate sessions.
+- Magento RMA and physical return-to-stock remain outside the 1.3.0 contract.
 
-These are not represented as PASS.
+See `54_FINAL_RELEASE_ACCEPTANCE_DECISION.md` for the accepted criteria,
+defects closed, boundaries, and artifact identifiers.
