@@ -47,13 +47,18 @@ repository root itself as a module.
 ## Dependencies
 
 - `base`, `mail`, `sale_management`, `stock`, `account`, `delivery`,
-  `website_sale`, `mrp`
+  `website_sale`
 - OCA `queue_job` from the matching OCA/queue branch (`19.0`, `18.0`, `17.0`)
 
 Odoo does not download Git dependencies automatically. Install `queue_job` as
 an independent addon from the matching branch.
 
-Install order: `queue_job`, then `odoo_ecommerce_integration`.
+Install order: `queue_job`, then `odoo_ecommerce_integration`. A provider
+connector is required for external synchronization; Core does not depend on
+Magento, Shopify, or Manufacturing.
+
+Live demo: <https://odoo.odoointegrator.id> (user `demo`, password `demo`).
+Support: <alfatihridhont@gmail.com>.
 
 ## Documentation
 

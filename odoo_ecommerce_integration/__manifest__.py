@@ -1,6 +1,6 @@
 {
     "name": "eCommerce Integration Core",
-    "summary": "Shared backend, mapping, synchronization, and monitoring framework",
+    "summary": "Provider-neutral eCommerce integration foundation for mappings, queues, security, and operations",
     "version": "19.0.1.3.0",
     "category": "Sales/Integration",
     "author": "trvlprogrammer",
@@ -15,7 +15,14 @@
         "static/description/screenshots/backend.png",
         "static/description/screenshots/store.png",
         "static/description/screenshots/mappings.png",
+        "static/description/screenshots/customers.png",
+        "static/description/screenshots/orders.png",
+        "static/description/screenshots/sync-state.png",
         "static/description/screenshots/queue.png",
+        "static/description/screenshots/product-sync-wizard.png",
+        "static/description/screenshots/store-sync-wizard.png",
+        "static/description/screenshots/issues.png",
+        "static/description/screenshots/security.png",
     ],
     "depends": [
         "base",
