@@ -178,7 +178,6 @@
                 <field name="warehouse_id"/>
                 <field name="stock_location_id"/>
                 <field name="active"/>
-                <field name="sync_state"/>
             </tree>
         </field>
     </record>
@@ -190,20 +189,15 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="backend_id"/>
                             <field name="store_id"/>
                             <field name="company_id" groups="base.group_multi_company"/>
-                            <field name="external_id"/>
-                            <field name="external_code"/>
-                            <field name="external_source_name"/>
+                            <field name="external_id" placeholder="default"/>
+                            <field name="external_source_name" placeholder="Default Source"/>
                         </group>
                         <group>
                             <field name="warehouse_id"/>
                             <field name="stock_location_id"/>
                             <field name="active"/>
-                            <field name="sync_state"/>
-                            <field name="last_synced_at"/>
-                            <field name="last_error"/>
                         </group>
                     </group>
                 </sheet>

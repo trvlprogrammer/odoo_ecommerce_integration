@@ -11,7 +11,17 @@ class EcommerceBackend(models.Model):
 
     name = fields.Char(required=True)
     code = fields.Char(required=True)
-    provider = fields.Char(required=True)
+    provider = fields.Char(
+        required=True,
+        help="Internal provider code. Select the friendly provider in the form.",
+    )
+    provider_ui = fields.Selection(
+        selection="_ecommerce_provider_selection",
+        string="Provider",
+        compute="_compute_provider_ui",
+        inverse="_inverse_provider_ui",
+        store=False,
+    )
     company_id = fields.Many2one(
         "res.company",
         required=True,
@@ -70,6 +80,16 @@ class EcommerceBackend(models.Model):
                 raise ValidationError(
                     "The job user must have eCommerce Operator access."
                 )
+
+    @api.depends("provider")
+    def _compute_provider_ui(self):
+        for backend in self:
+            backend.provider_ui = backend.provider or False
+
+    def _inverse_provider_ui(self):
+        for backend in self:
+            if backend.provider_ui:
+                backend.provider = backend.provider_ui
 
     @api.model
     def _ecommerce_provider_registry(self):
