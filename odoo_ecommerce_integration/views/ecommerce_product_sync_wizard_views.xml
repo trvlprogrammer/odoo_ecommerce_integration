@@ -7,12 +7,11 @@
             <form string="Sync to eCommerce">
                 <group>
                     <group>
-                        <field name="provider"/>
-                        <field name="backend_id" options="{'no_create': True}"/>
+                        <field name="store_ids" widget="many2many_tags" options="{'no_create': True}"/>
                         <field name="operation"/>
+                        <field name="sync_images" invisible="operation != 'update'"/>
                     </group>
                     <group>
-                        <field name="store_ids" widget="many2many_tags" options="{'no_create': True}"/>
                         <field name="product_ids" widget="many2many_tags" options="{'no_create': True}"/>
                     </group>
                 </group>

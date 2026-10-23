@@ -17,7 +17,10 @@ class EcommerceStore(models.Model):
     _order = "name"
 
     name = fields.Char(required=True)
-    code = fields.Char(required=True)
+    code = fields.Char(
+        required=True,
+        help="Internal Odoo store code. It is not the Magento website or store-view code.",
+    )
     backend_id = fields.Many2one(
         "ecommerce.backend", required=True, ondelete="restrict", index=True
     )
@@ -29,10 +32,23 @@ class EcommerceStore(models.Model):
         index=True,
     )
     active = fields.Boolean(default=True)
-    external_website_id = fields.Char()
-    external_website_code = fields.Char()
-    external_store_view_id = fields.Char()
-    external_store_view_code = fields.Char(required=True)
+    external_website_id = fields.Char(
+        string="Magento Website ID",
+        help="Numeric Magento website identifier used to scope catalog and customer data.",
+    )
+    external_website_code = fields.Char(
+        string="Magento Website Code",
+        help="Magento website code shown in Stores > All Stores.",
+    )
+    external_store_view_id = fields.Char(
+        string="Magento Store View ID",
+        help="Numeric Magento store-view identifier used for order discovery and payload validation.",
+    )
+    external_store_view_code = fields.Char(
+        string="Magento Store View Code",
+        required=True,
+        help="Magento store-view code used in API calls and order synchronization.",
+    )
     warehouse_id = fields.Many2one(
         "stock.warehouse", required=True, ondelete="restrict", check_company=True
     )
@@ -44,9 +60,30 @@ class EcommerceStore(models.Model):
     website_id = fields.Many2one("website", ondelete="set null", index=True)
     shipping_product_id = fields.Many2one(
         "product.product",
+        string="Shipping Product",
         ondelete="restrict",
         domain="[('type', '=', 'service')]",
         check_company=True,
+        help="Service product used for the Magento shipping order line.",
+    )
+    default_delivery_carrier_id = fields.Many2one(
+        "delivery.carrier",
+        string="Default Delivery Carrier",
+        ondelete="restrict",
+        check_company=True,
+        help="Carrier used when a Magento shipping method has no explicit carrier mapping.",
+    )
+    default_payment_journal_id = fields.Many2one(
+        "account.journal",
+        string="Default Payment Journal",
+        ondelete="restrict",
+        check_company=True,
+        domain="[('type', 'in', ('bank', 'cash'))]",
+        help="Journal used when a Magento payment method has no explicit journal mapping.",
+    )
+    order_import_cutoff_date = fields.Date(
+        string="Order Import Cutoff",
+        help="Never import Magento orders created before this date. Leave empty to import all available orders.",
     )
     auto_confirm_orders = fields.Boolean(default=False)
     auto_post_invoice = fields.Boolean(default=True)
@@ -120,6 +157,17 @@ class EcommerceStore(models.Model):
                 raise ValidationError("Pricelist must belong to the store company.")
             if store.website_id and store.website_id.company_id != store.company_id:
                 raise ValidationError("Website must belong to the store company.")
+            if (
+                store.default_delivery_carrier_id
+                and store.default_delivery_carrier_id.company_id
+                and store.default_delivery_carrier_id.company_id != store.company_id
+            ):
+                raise ValidationError("Default delivery carrier must belong to the store company.")
+            if store.default_payment_journal_id:
+                if store.default_payment_journal_id.company_id != store.company_id:
+                    raise ValidationError("Default payment journal must belong to the store company.")
+                if store.default_payment_journal_id.type not in ("bank", "cash"):
+                    raise ValidationError("Default payment journal must be a bank or cash journal.")
 
 
     def _ecommerce_schedule_operations(self):
@@ -349,7 +397,7 @@ class EcommerceStore(models.Model):
             "The installed connector does not implement this synchronization operation."
         )
 
-    def _ecommerce_enqueue_product_sync(self, product_ids, operation):
+    def _ecommerce_enqueue_product_sync(self, product_ids, operation, sync_images=True):
         """Connector hook: enqueue bounded product synchronization jobs."""
         self.ensure_one()
         raise UserError("This store's provider does not support product synchronization.")
@@ -676,7 +724,32 @@ class EcommerceInventorySourceMapping(models.Model):
     stock_location_id = fields.Many2one(
         "stock.location", required=True, ondelete="restrict", check_company=True
     )
-    external_source_name = fields.Char()
+    external_id = fields.Char(
+        string="Magento Source Code",
+        required=True,
+        help="MSI inventory source code in Magento, normally 'default'.",
+    )
+    external_source_name = fields.Char(
+        string="Source Name",
+        help="Human-readable Magento inventory source name.",
+    )
+
+    @api.onchange("store_id")
+    def _onchange_store_scope(self):
+        for record in self:
+            if record.store_id:
+                record.backend_id = record.store_id.backend_id
+                record.warehouse_id = record.store_id.warehouse_id
+                record.stock_location_id = record.store_id.stock_location_id
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            store_id = vals.get("store_id")
+            if store_id and not vals.get("backend_id"):
+                store = self.env["ecommerce.store"].browse(store_id)
+                vals["backend_id"] = store.backend_id.id
+        return super().create(vals_list)
 
     _external_uniq = models.UniqueIndex(
         "(store_id, external_id) WHERE active IS TRUE",

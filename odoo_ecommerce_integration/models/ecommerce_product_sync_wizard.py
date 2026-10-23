@@ -20,17 +20,23 @@ class EcommerceProductSyncWizard(models.TransientModel):
         required=True,
         default="export",
     )
-    provider = fields.Selection(selection="_selection_provider", required=True)
+    # Kept for backward-compatible API/tests, but derived from the Store.
+    provider = fields.Selection(selection="_selection_provider")
     backend_id = fields.Many2one(
         "ecommerce.backend",
-        required=True,
-        domain="[('provider', '=', provider), ('active', '=', True)]",
+        domain="[('active', '=', True)]",
     )
     store_ids = fields.Many2many(
         "ecommerce.store",
-        string="Target stores",
+        string="Store",
         required=True,
-        domain="[('backend_id', '=', backend_id), ('active', '=', True)]",
+        domain="[('active', '=', True)]",
+    )
+    sync_images = fields.Boolean(
+        string="Synchronize Images",
+        default=False,
+        help="For Update operations, also synchronize primary and gallery media. "
+        "Leave disabled to update product data without touching Magento media.",
     )
     existing_status = fields.Text(readonly=True, compute="_compute_existing_status")
     can_queue = fields.Boolean(compute="_compute_existing_status")
@@ -69,6 +75,16 @@ class EcommerceProductSyncWizard(models.TransientModel):
             elif self.env.context.get("active_model") == "product.product":
                 values["product_ids"] = [(6, 0, active_ids)]
         return values
+
+    @api.onchange("store_ids")
+    def _onchange_store_ids(self):
+        if self.store_ids:
+            self.backend_id = self.store_ids[0].backend_id
+            self.provider = self.store_ids[0].backend_id.provider
+        else:
+            self.backend_id = False
+            self.provider = False
+        self._compute_existing_status()
 
     @api.onchange("provider")
     def _onchange_provider(self):
@@ -156,11 +172,10 @@ class EcommerceProductSyncWizard(models.TransientModel):
             raise UserError("Select at least one product.")
         if not self.store_ids:
             raise UserError("Select at least one target store.")
-        backend = self.backend_id
-        if not backend.active:
-            raise UserError("The selected backend is inactive.")
-        if backend.provider != self.provider:
-            raise UserError("The selected backend does not match the chosen provider.")
+        backend = self.store_ids[0].backend_id
+        for store in self.store_ids:
+            if not store.backend_id.active:
+                raise UserError("The selected store backend is inactive.")
 
         # A configurable template is synchronized once, using a representative
         # variant; sending several variants would create the same parent twice.
@@ -232,9 +247,14 @@ class EcommerceProductSyncWizard(models.TransientModel):
         if errors:
             raise UserError("\n".join(errors))
 
+        sync_images = bool(self.sync_images or self.operation == "export")
         jobs = 0
         for store in stores:
-            jobs += store._ecommerce_enqueue_product_sync([product.id for product in products], self.operation)
+            jobs += store._ecommerce_enqueue_product_sync(
+                [product.id for product in products],
+                self.operation,
+                sync_images=sync_images,
+            )
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
@@ -244,5 +264,6 @@ class EcommerceProductSyncWizard(models.TransientModel):
                 % (jobs, len(products), len(stores)),
                 "type": "success",
                 "sticky": False,
+                "next": {"type": "ir.actions.act_window_close"},
             },
         }

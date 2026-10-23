@@ -10,7 +10,6 @@ export class EcommerceDashboard extends Component {
         this.state = useState({
             loading: true,
             filters: {
-                company_ids: [],
                 provider: "",
                 backend_id: false,
                 store_id: false,
@@ -18,13 +17,12 @@ export class EcommerceDashboard extends Component {
                 date_to: "",
                 granularity: "day",
             },
-            meta: { companies: [], providers: [], backends: [], stores: [] },
+            meta: { active_companies: [], providers: [], backends: [], stores: [] },
             data: null,
         });
         onWillStart(async () => {
             const meta = await this.orm.call("ecommerce.dashboard", "get_filters", []);
             this.state.meta = meta;
-            this.state.filters.company_ids = meta.default_company_ids || [];
             this.state.filters.date_from = meta.default_date_from;
             this.state.filters.date_to = meta.default_date_to;
             await this.load();
@@ -47,9 +45,7 @@ export class EcommerceDashboard extends Component {
     filteredBackends() {
         const provider = this.state.filters.provider;
         return this.state.meta.backends.filter(
-            (item) =>
-                this.state.filters.company_ids.includes(item.company_id) &&
-                (!provider || item.provider === provider)
+            (item) => !provider || item.provider === provider
         );
     }
 
@@ -57,19 +53,9 @@ export class EcommerceDashboard extends Component {
         const backendId = Number(this.state.filters.backend_id || 0);
         return this.state.meta.stores.filter(
             (item) =>
-                this.state.filters.company_ids.includes(item.company_id) &&
                 (!this.state.filters.provider || item.provider === this.state.filters.provider) &&
                 (!backendId || item.backend_id === backendId)
         );
-    }
-
-    onCompaniesChange(ev) {
-        this.state.filters.company_ids = Array.from(ev.target.selectedOptions).map(
-            (option) => Number(option.value)
-        );
-        this.state.filters.backend_id = false;
-        this.state.filters.store_id = false;
-        this.load();
     }
 
     onProviderChange(ev) {
@@ -96,7 +82,6 @@ export class EcommerceDashboard extends Component {
 
     resetFilters() {
         this.state.filters = {
-            company_ids: this.state.meta.default_company_ids || [],
             provider: "",
             backend_id: false,
             store_id: false,
@@ -131,6 +116,14 @@ export class EcommerceDashboard extends Component {
 
     barWidth(value, values) {
         const max = Math.max(1, ...values.map((item) => item.count || 0));
+        return `${Math.round(((value || 0) * 100) / max)}%`;
+    }
+
+    comparisonBarWidth(value, rows) {
+        const max = Math.max(
+            1,
+            ...rows.map((row) => Math.max(row.odoo_orders || 0, row.ecommerce_orders || 0))
+        );
         return `${Math.round(((value || 0) * 100) / max)}%`;
     }
 
