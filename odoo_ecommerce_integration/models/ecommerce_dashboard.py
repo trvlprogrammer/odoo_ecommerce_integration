@@ -10,9 +10,8 @@ class EcommerceDashboard(models.TransientModel):
 
     @api.model
     def _company_ids(self, filters):
-        allowed = set(self.env.companies.ids)
-        requested = set(filters.get("company_ids") or allowed)
-        return sorted(allowed & requested)
+        # The dashboard always follows the active Odoo company context.
+        return sorted(self.env.companies.ids)
 
     @api.model
     def _dates(self, filters):
@@ -40,9 +39,8 @@ class EcommerceDashboard(models.TransientModel):
             [("active", "=", True), ("company_id", "in", companies.ids)], order="name"
         )
         return {
-            "companies": [
-                {"id": company.id, "name": company.display_name}
-                for company in companies
+            "active_companies": [
+                {"id": company.id, "name": company.display_name} for company in companies
             ],
             "providers": [
                 {"code": code, "label": label}
@@ -67,7 +65,6 @@ class EcommerceDashboard(models.TransientModel):
                 }
                 for store in stores
             ],
-            "default_company_ids": companies.ids,
             "default_date_from": (fields.Date.context_today(self) - timedelta(days=30)).isoformat(),
             "default_date_to": fields.Date.context_today(self).isoformat(),
         }
@@ -277,6 +274,8 @@ class EcommerceDashboard(models.TransientModel):
         refund_count = self.env["ecommerce.refund.mapping"].search_count(invoice_domain)
         shipment_count = self.env["ecommerce.shipment.mapping"].search_count(invoice_domain)
         revenue = 0.0
+        odoo_order_count = 0
+        inventory_on_hand = 0.0
         if store_ids:
             self.env.cr.execute(
                 """
@@ -289,6 +288,33 @@ class EcommerceDashboard(models.TransientModel):
                 (tuple(store_ids), start_dt, end_dt),
             )
             revenue = self.env.cr.fetchone()[0] or 0.0
+            self.env.cr.execute(
+                """
+                SELECT COUNT(*)
+                  FROM sale_order so
+                 WHERE so.company_id IN %s
+                   AND so.date_order >= %s AND so.date_order < %s
+                   AND so.state IN ('sale', 'done')
+                """,
+                (tuple(company_scope or company_ids), start_dt, end_dt),
+            )
+            odoo_order_count = self.env.cr.fetchone()[0] or 0
+            self.env.cr.execute(
+                """
+                SELECT COALESCE(SUM(q.quantity), 0)
+                  FROM stock_quant q
+                  JOIN product_product p ON p.id = q.product_id
+                  JOIN product_template t ON t.id = p.product_tmpl_id
+                  JOIN ecommerce_variant_mapping m ON m.odoo_product_id = p.id
+                 WHERE m.store_id IN %s AND m.active IS TRUE
+                   AND (t.company_id IS NULL OR t.company_id IN %s)
+                   AND q.location_id IN (
+                       SELECT id FROM stock_location WHERE usage = 'internal'
+                   )
+                """,
+                (tuple(store_ids), tuple(company_scope or company_ids)),
+            )
+            inventory_on_hand = float(self.env.cr.fetchone()[0] or 0.0)
         queue_domain = self._queue_domain(
             company_scope or company_ids,
             store_ids,
@@ -326,7 +352,9 @@ class EcommerceDashboard(models.TransientModel):
             kpi("mapped_customers", "Mapped Customers", mapped_customer_count),
             kpi("unmapped_customers", "Unmapped Customers", coverage["customers"]["unmapped"]),
             kpi("orders", "eCommerce Orders", order_count),
-            kpi("revenue", "Order Revenue", round(revenue, 2)),
+            kpi("odoo_orders", "Odoo Orders", odoo_order_count),
+            kpi("revenue", "eCommerce Revenue", round(revenue, 2)),
+            kpi("inventory_on_hand", "On Hand", round(inventory_on_hand, 2)),
             kpi("invoices", "eCommerce Invoices", invoice_count),
             kpi("payments", "eCommerce Payments", payment_count),
             kpi("refunds", "Credit Notes", refund_count),
@@ -337,6 +365,38 @@ class EcommerceDashboard(models.TransientModel):
             kpi("open_issues", "Open Issues", open_issues),
         ]
         result["coverage"] = coverage
+        result["kpi_groups"] = [
+            {
+                "key": "orders",
+                "label": "Orders",
+                "kpis": self._kpis_for(result["kpis"], ("orders", "odoo_orders", "revenue", "shipments")),
+            },
+            {
+                "key": "customers",
+                "label": "Customers",
+                "kpis": self._kpis_for(result["kpis"], ("mapped_customers", "unmapped_customers")),
+            },
+            {
+                "key": "products",
+                "label": "Products",
+                "kpis": self._kpis_for(result["kpis"], ("products", "mapped_products", "coverage", "unmapped_products", "mapped_variants", "unmapped_variants")),
+            },
+            {
+                "key": "inventory",
+                "label": "Inventory",
+                "kpis": self._kpis_for(result["kpis"], ("inventory_on_hand", "mapped_variants", "unmapped_variants")),
+            },
+            {
+                "key": "finance",
+                "label": "Finance",
+                "kpis": self._kpis_for(result["kpis"], ("invoices", "payments", "refunds")),
+            },
+            {
+                "key": "synchronization",
+                "label": "Synchronization",
+                "kpis": self._kpis_for(result["kpis"], ("pending_jobs", "running_jobs", "failed_jobs", "open_issues")),
+            },
+        ]
         result["charts"] = {
             "orders": self._order_series(store_ids, start_dt, end_dt, filters.get("granularity", "day")),
             "providers": self._provider_breakdown(store_ids, start_dt, end_dt),
@@ -348,6 +408,13 @@ class EcommerceDashboard(models.TransientModel):
             ),
             "activity": self._activity_series(store_ids, start_dt, end_dt),
             "coverage": coverage,
+            "order_comparison": self._order_comparison(
+                store_ids,
+                company_scope or company_ids,
+                start_dt,
+                end_dt,
+                filters.get("granularity", "day"),
+            ),
         }
         runs = self.env["ecommerce.sync.run"].search(
             [("store_id", "in", store_ids)], order="started_at desc, id desc", limit=10
@@ -430,6 +497,41 @@ class EcommerceDashboard(models.TransientModel):
                 }
             )
         return result
+
+    @staticmethod
+    def _kpis_for(kpis, keys):
+        by_key = {item["key"]: item for item in kpis}
+        return [by_key[key] for key in keys if key in by_key]
+
+    @api.model
+    def _order_comparison(self, store_ids, company_ids, start_dt, end_dt, granularity):
+        if not store_ids:
+            return []
+        granularity = granularity if granularity in ("day", "week", "month") else "day"
+        self.env.cr.execute(
+            f"""
+            SELECT date_trunc(%s, so.date_order) AS bucket, COUNT(*)
+              FROM sale_order so
+             WHERE so.company_id IN %s
+               AND so.date_order >= %s AND so.date_order < %s
+               AND so.state IN ('sale', 'done')
+             GROUP BY bucket
+            """,
+            (granularity, tuple(company_ids), start_dt, end_dt),
+        )
+        odoo = {row[0].date().isoformat(): row[1] for row in self.env.cr.fetchall()}
+        ecommerce = {
+            row["bucket"]: row["count"]
+            for row in self._order_series(store_ids, start_dt, end_dt, granularity)
+        }
+        return [
+            {
+                "bucket": bucket,
+                "odoo_orders": odoo.get(bucket, 0),
+                "ecommerce_orders": ecommerce.get(bucket, 0),
+            }
+            for bucket in sorted(set(odoo) | set(ecommerce))
+        ]
 
     @api.model
     def _order_series(self, store_ids, start_dt, end_dt, granularity):
@@ -619,6 +721,19 @@ class EcommerceDashboard(models.TransientModel):
                 "odoo_ecommerce_integration.action_ecommerce_order_mapping"
             )
             action["domain"] = [("store_id", "in", store_ids)]
+            return action
+        if key == "odoo_orders":
+            action = self.env["ir.actions.act_window"]._for_xml_id("sale.action_orders")
+            companies = stores.mapped("company_id").ids or self._company_ids(filters)
+            action["domain"] = [
+                ("company_id", "in", companies),
+                ("state", "in", ("sale", "done")),
+            ]
+            return action
+        if key == "inventory_on_hand":
+            action = self.env["ir.actions.act_window"]._for_xml_id("product.product_normal_action")
+            mapped = set(self._mapped_ids("ecommerce_variant_mapping", "odoo_product_id", store_ids))
+            action["domain"] = [("id", "in", list(mapped))]
             return action
         if key in ("invoices", "payments", "refunds", "shipments"):
             xmlid = {
