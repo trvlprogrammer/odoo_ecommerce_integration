@@ -63,21 +63,18 @@ class EcommerceStore(models.Model):
         string="Shipping Product",
         ondelete="restrict",
         domain="[('type', '=', 'service')]",
-        check_company=True,
         help="Service product used for the Magento shipping order line.",
     )
     default_delivery_carrier_id = fields.Many2one(
         "delivery.carrier",
         string="Default Delivery Carrier",
         ondelete="restrict",
-        check_company=True,
         help="Carrier used when a Magento shipping method has no explicit carrier mapping.",
     )
     default_payment_journal_id = fields.Many2one(
         "account.journal",
         string="Default Payment Journal",
         ondelete="restrict",
-        check_company=True,
         domain="[('type', 'in', ('bank', 'cash'))]",
         help="Journal used when a Magento payment method has no explicit journal mapping.",
     )
