@@ -1,7 +1,7 @@
 {
     "name": "eCommerce Integration Core",
     "summary": "Provider-neutral eCommerce integration foundation for mappings, queues, security, and operations",
-    "version": "18.0.1.3.0",
+    "version": "18.0.1.4.0",
     "category": "Sales/Integration",
     "author": "trvlprogrammer",
     "website": "https://github.com/trvlprogrammer/odoo_ecommerce_integration",
@@ -51,6 +51,7 @@
         "views/ecommerce_sync_views.xml",
         "views/ecommerce_product_sync_wizard_views.xml",
         "views/ecommerce_store_sync_wizard_views.xml",
+        "views/ecommerce_refund_views.xml",
         "views/ecommerce_dashboard_views.xml",
         "views/product_views.xml",
         "views/ecommerce_menus.xml",

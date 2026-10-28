@@ -3,12 +3,23 @@ import { Component, onWillStart, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 
+const STORE_COLORS = [
+    "#2f6f8f",
+    "#c47f2c",
+    "#6b5ca5",
+    "#3d8b6d",
+    "#b05a5a",
+    "#5b6b83",
+    "#8a6d3b",
+];
+
 export class EcommerceDashboard extends Component {
     setup() {
         this.orm = useService("orm");
         this.action = useService("action");
         this.state = useState({
             loading: true,
+            error: false,
             filters: {
                 provider: "",
                 backend_id: false,
@@ -21,22 +32,34 @@ export class EcommerceDashboard extends Component {
             data: null,
         });
         onWillStart(async () => {
-            const meta = await this.orm.call("ecommerce.dashboard", "get_filters", []);
-            this.state.meta = meta;
-            this.state.filters.date_from = meta.default_date_from;
-            this.state.filters.date_to = meta.default_date_to;
-            await this.load();
+            try {
+                const meta = await this.orm.call("ecommerce.dashboard", "get_filters", []);
+                this.state.meta = meta;
+                this.state.filters.date_from = meta.default_date_from;
+                this.state.filters.date_to = meta.default_date_to;
+                await this.load();
+            } catch (error) {
+                this.state.loading = false;
+                this.state.error = this.errorMessage(error);
+            }
         });
+    }
+
+    errorMessage(error) {
+        return error?.message || error?.data?.message || String(error);
     }
 
     async load() {
         this.state.loading = true;
+        this.state.error = false;
         try {
             this.state.data = await this.orm.call(
                 "ecommerce.dashboard",
                 "get_dashboard_data",
                 [this.state.filters]
             );
+        } catch (error) {
+            this.state.error = this.errorMessage(error);
         } finally {
             this.state.loading = false;
         }
@@ -92,16 +115,12 @@ export class EcommerceDashboard extends Component {
         this.load();
     }
 
-    onKpiClick(ev) {
-        const key = ev.currentTarget.dataset.key;
-        if (key) {
-            this.openDrill(key);
-        }
-    }
-
-    async openDrill(key) {
-        const action = await this.orm.call("ecommerce.dashboard", "get_drilldown", [
-            key,
+    async onBarClick(ev) {
+        const dataset = ev.currentTarget.dataset;
+        const action = await this.orm.call("ecommerce.dashboard", "get_metric_drilldown", [
+            dataset.metric,
+            dataset.scope,
+            dataset.storeId ? Number(dataset.storeId) : false,
             this.state.filters,
         ]);
         if (action) {
@@ -109,32 +128,42 @@ export class EcommerceDashboard extends Component {
         }
     }
 
-    donutStyle(item) {
-        const percent = Math.max(0, Math.min(100, item.percent || 0));
-        return `background: conic-gradient(#1f6f50 0 ${percent}%, #e4ebe7 ${percent}% 100%);`;
+    periodLabel(group) {
+        return group.date_filtered ? "Selected period" : "Current snapshot";
     }
 
-    barWidth(value, values) {
-        const max = Math.max(1, ...values.map((item) => item.count || 0));
-        return `${Math.round(((value || 0) * 100) / max)}%`;
-    }
-
-    comparisonBarWidth(value, rows) {
-        const max = Math.max(
-            1,
-            ...rows.map((row) => Math.max(row.odoo_orders || 0, row.ecommerce_orders || 0))
-        );
-        return `${Math.round(((value || 0) * 100) / max)}%`;
-    }
-
-    format(value) {
-        if (value === undefined || value === null) {
-            return "0";
+    format(value, group) {
+        const number = Number(value || 0);
+        const decimals =
+            group.value_type === "currency" ? 2 : group.value_type === "quantity" ? 2 : 0;
+        const formatted = new Intl.NumberFormat(undefined, {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+        }).format(number);
+        if (group.value_type === "currency") {
+            return `${this.state.data?.currency_symbol || ""}${formatted}`;
         }
-        if (typeof value === "number") {
-            return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value);
-        }
-        return value;
+        return formatted;
+    }
+
+    barWidth(value, group) {
+        const max = Math.max(Number(group.max_value || 0), 0);
+        return max ? `${Math.round((Number(value || 0) * 100) / max)}%` : "0%";
+    }
+
+    barStyle(bar, barIndex, group) {
+        const color =
+            bar.scope === "odoo"
+                ? "#123f38"
+                : STORE_COLORS[Math.max(barIndex - 1, 0) % STORE_COLORS.length];
+        return `width: ${this.barWidth(bar.value, group)}; background: ${color};`;
+    }
+
+    barTitle(bar, group) {
+        return `${group.metric_label} — ${bar.label}: ${this.format(
+            bar.value,
+            group
+        )} (${this.periodLabel(group)})`;
     }
 }
 
