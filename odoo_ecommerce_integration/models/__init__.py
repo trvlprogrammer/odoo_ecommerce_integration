@@ -8,5 +8,6 @@ from . import ecommerce_sync_run
 from . import ecommerce_queue_job
 from . import ecommerce_dashboard
 from . import ecommerce_product_sync_wizard
+from . import ecommerce_refund
 from . import ecommerce_store_sync_wizard
 from . import product

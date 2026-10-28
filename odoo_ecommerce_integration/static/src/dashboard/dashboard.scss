@@ -1,240 +1,318 @@
 .o_ecommerce_dashboard {
-    padding: 20px 24px 40px;
-    background: #f7f9f8;
     min-height: 100%;
+    padding: 24px;
+    background: var(--o-webclient-background-color, #f8f9fb);
+    color: var(--o-main-text-color, #27313a);
 }
+
 .o_ecommerce_dashboard_header {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.6fr);
+    gap: 24px;
+    align-items: end;
+    margin-bottom: 20px;
+}
+
+.o_ecommerce_dashboard_heading h1 {
+    margin: 2px 0 6px;
+    font-size: 1.65rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+}
+
+.o_ecommerce_dashboard_heading p {
+    max-width: 720px;
+    margin: 0;
+    color: var(--o-muted-text-color, #66727d);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.o_ecommerce_dashboard_eyebrow {
+    color: var(--o-brand-primary, #017e84);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.o_ecommerce_dashboard_filters {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(110px, 1fr)) auto;
+    gap: 10px;
+    align-items: end;
+    padding: 14px;
+    border: 1px solid var(--o-border-color, #e2e6eb);
+    border-radius: 12px;
+    background: var(--o-view-background-color, #fff);
+    box-shadow: 0 1px 2px rgba(15, 35, 45, 0.04);
+}
+
+.o_ecommerce_dashboard_filters label {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 5px;
+    margin: 0;
+    color: var(--o-muted-text-color, #66727d);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.o_ecommerce_dashboard_filters .form-select,
+.o_ecommerce_dashboard_filters .form-control {
+    min-width: 0;
+    height: 34px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    font-size: 0.82rem;
+}
+
+.o_ecommerce_dashboard_filter_actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-bottom: 1px;
+    white-space: nowrap;
+}
+
+.o_ecommerce_dashboard_filter_actions .btn {
+    font-size: 0.8rem;
+}
+
+.o_ecommerce_dashboard_loading,
+.o_ecommerce_dashboard_empty,
+.o_ecommerce_dashboard_notice,
+.o_ecommerce_dashboard_error {
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid var(--o-border-color, #e2e6eb);
+    background: var(--o-view-background-color, #fff);
+}
+
+.o_ecommerce_dashboard_loading {
+    color: var(--o-muted-text-color, #66727d);
+}
+
+.o_ecommerce_dashboard_notice {
+    margin-bottom: 16px;
+    border-color: #e8d7a8;
+    background: #fff9e8;
+    color: #6d5714;
+    font-size: 0.84rem;
+}
+
+.o_ecommerce_dashboard_error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 16px;
+    border-color: #e2b4b4;
+    background: #fff4f4;
+    color: #8a2929;
+}
+
+.o_ecommerce_dashboard_error p {
+    margin: 4px 0 0;
+    font-size: 0.82rem;
+}
+
+.o_ecommerce_dashboard_metric_grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+@media (min-width: 1181px) {
+    .o_ecommerce_dashboard .o_ecommerce_dashboard_metric_grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.o_ecommerce_dashboard_metric_card {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid var(--o-border-color, #e2e6eb);
+    border-radius: 12px;
+    background: var(--o-view-background-color, #fff);
+    box-shadow: 0 1px 2px rgba(15, 35, 45, 0.04);
+}
+
+.o_ecommerce_dashboard_metric_header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 24px;
-    margin-bottom: 20px;
+    gap: 13px;
 }
-.o_ecommerce_dashboard_header h1 {
-    margin: 0 0 4px;
-    font-size: 1.6rem;
-    font-weight: 600;
-}
-.o_ecommerce_dashboard_filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: flex-end;
-    max-width: 1000px;
-}
-.o_ecommerce_dashboard_filters label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 0.78rem;
-    color: #52605a;
-    min-width: 130px;
-}
-.o_ecommerce_dashboard_filters select[multiple] {
-    min-height: 74px;
-}
-.o_ecommerce_dashboard_loading,
-.o_ecommerce_dashboard_empty {
-    background: #fff;
-    border: 1px solid #dfe7e2;
-    border-radius: 12px;
-    padding: 28px;
-    color: #5d6b64;
-}
-.o_ecommerce_dashboard_domain {
-    margin-bottom: 16px;
-}
-.o_ecommerce_dashboard_domain h2 {
+
+.o_ecommerce_dashboard_metric_header h2 {
+    margin: 0 0 3px;
     font-size: 1rem;
     font-weight: 650;
-    color: #193b2e;
-    margin: 0 0 10px;
 }
-.o_ecommerce_dashboard_wide {
-    grid-column: 1 / -1;
-}
-.o_ecommerce_dashboard_comparison_row {
-    display: grid;
-    grid-template-columns: minmax(90px, 1fr) 3fr auto;
-    gap: 10px;
-    align-items: center;
-    font-size: 0.84rem;
-}
-.o_ecommerce_dashboard_comparison_bars {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.o_ecommerce_dashboard_bar.odoo span {
-    background: #193b2e;
-}
-.o_ecommerce_dashboard_bar.ecommerce span {
-    background: #d9792b;
-}
-.o_ecommerce_dashboard_legend {
-    display: flex;
-    gap: 16px;
-    margin-top: 12px;
+
+.o_ecommerce_dashboard_metric_header span {
+    color: var(--o-muted-text-color, #66727d);
     font-size: 0.76rem;
-    color: #52605a;
-}
-.o_ecommerce_dashboard_legend .odoo::before,
-.o_ecommerce_dashboard_legend .ecommerce::before {
-    content: "";
-    display: inline-block;
-    width: 9px;
-    height: 9px;
-    border-radius: 3px;
-    margin-right: 5px;
-}
-.o_ecommerce_dashboard_legend .odoo::before {
-    background: #193b2e;
-}
-.o_ecommerce_dashboard_legend .ecommerce::before {
-    background: #d9792b;
-}
-.o_ecommerce_dashboard_kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
-    gap: 12px;
-    margin-bottom: 18px;
-}
-.o_ecommerce_dashboard_kpi {
-    background: #fff;
-    border: 1px solid #dfe7e2;
-    border-radius: 12px;
-    padding: 14px 16px;
-    text-align: left;
-    transition: border-color 120ms ease, transform 120ms ease;
-}
-.o_ecommerce_dashboard_kpi:hover {
-    border-color: #1f6f50;
-    transform: translateY(-1px);
-}
-.o_ecommerce_dashboard_kpi_value {
-    display: block;
-    font-size: 1.45rem;
-    font-weight: 650;
-    color: #193b2e;
-}
-.o_ecommerce_dashboard_kpi_label {
-    display: block;
-    font-size: 0.8rem;
-    color: #617068;
-    margin-top: 4px;
-}
-.o_ecommerce_dashboard_grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-    gap: 14px;
-    margin-bottom: 14px;
-}
-.o_ecommerce_dashboard_card {
-    background: #fff;
-    border: 1px solid #dfe7e2;
-    border-radius: 12px;
-    padding: 16px 18px;
-    overflow: auto;
-}
-.o_ecommerce_dashboard_card h3 {
-    margin: 0 0 14px;
-    font-size: 1rem;
     font-weight: 600;
 }
-.o_ecommerce_dashboard_donuts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
+
+.o_ecommerce_dashboard_snapshot {
+    flex: 0 0 auto;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--o-brand-primary, #017e84);
+    color: #fff !important;
+    font-size: 0.66rem !important;
+    font-weight: 600;
+    white-space: nowrap;
 }
-.o_ecommerce_dashboard_donut_item {
-    border: 0;
-    background: transparent;
-    text-align: center;
-    min-width: 96px;
+
+.o_ecommerce_dashboard_metric_help {
+    min-height: 32px;
+    margin: 10px 0 14px;
+    color: var(--o-muted-text-color, #66727d);
+    font-size: 0.74rem;
+    line-height: 1.4;
 }
-.o_ecommerce_dashboard_donut {
-    width: 76px;
-    height: 76px;
-    border-radius: 50%;
-    display: inline-block;
-    position: relative;
-}
-.o_ecommerce_dashboard_donut::after {
-    content: "";
-    position: absolute;
-    inset: 15px;
-    border-radius: 50%;
-    background: #fff;
-}
-.o_ecommerce_dashboard_donut_label {
-    display: block;
-    margin-top: 6px;
-    text-transform: capitalize;
-    font-size: 0.8rem;
-    color: #52605a;
-}
-.o_ecommerce_dashboard_donut_value {
-    display: block;
-    font-weight: 650;
-    color: #193b2e;
-}
-.o_ecommerce_dashboard_bars {
+
+.o_ecommerce_dashboard_chart {
     display: flex;
     flex-direction: column;
     gap: 9px;
 }
+
 .o_ecommerce_dashboard_bar_row {
     display: grid;
-    grid-template-columns: minmax(90px, 1fr) 2fr auto;
+    grid-template-columns: minmax(95px, 1.1fr) minmax(70px, 3fr) minmax(72px, auto);
     gap: 10px;
     align-items: center;
-    font-size: 0.84rem;
+    width: 100%;
+    padding: 3px 4px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: inherit;
+    font-size: 0.8rem;
+    text-align: left;
+    transition: background-color 120ms ease;
 }
-.o_ecommerce_dashboard_bar {
-    height: 9px;
-    background: #e8efeb;
-    border-radius: 6px;
+
+.o_ecommerce_dashboard_bar_row:hover,
+.o_ecommerce_dashboard_bar_row:focus-visible {
+    background: var(--o-gray-100, #f1f4f6);
+    outline: none;
+}
+
+.o_ecommerce_dashboard_bar_label {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
     overflow: hidden;
+    color: var(--o-main-text-color, #27313a);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
-.o_ecommerce_dashboard_bar span {
+
+.o_ecommerce_dashboard_bar_label small {
+    overflow: hidden;
+    color: var(--o-muted-text-color, #7b8794);
+    font-size: 0.64rem;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+}
+
+.o_ecommerce_dashboard_bar_track {
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--o-gray-200, #e9edf0);
+}
+
+.o_ecommerce_dashboard_bar_fill {
     display: block;
     height: 100%;
-    background: #1f6f50;
-    border-radius: 6px;
+    min-width: 2px;
+    border-radius: inherit;
+    transition: width 280ms ease;
 }
-.o_ecommerce_dashboard .table {
-    font-size: 0.82rem;
-    margin-bottom: 0;
+
+.o_ecommerce_dashboard_bar_row strong {
+    color: var(--o-main-text-color, #27313a);
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
 }
-.o_ecommerce_dashboard .table thead th {
-    color: #5c6b64;
-    font-size: 0.74rem;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+
+.o_ecommerce_dashboard_bar_row.is_odoo .o_ecommerce_dashboard_bar_label {
+    color: #123f38;
+    font-weight: 700;
 }
-@media (max-width: 900px) {
-    .o_ecommerce_dashboard {
-        padding: 14px;
-    }
+
+.o_ecommerce_dashboard_no_data {
+    margin: 4px 0 0;
+    color: var(--o-muted-text-color, #7b8794);
+    font-size: 0.75rem;
+}
+
+@media (max-width: 1180px) {
     .o_ecommerce_dashboard_header {
-        flex-direction: column;
+        grid-template-columns: 1fr;
+        align-items: start;
     }
+
     .o_ecommerce_dashboard_filters {
-        width: 100%;
+        grid-template-columns: repeat(3, minmax(120px, 1fr));
     }
-    .o_ecommerce_dashboard_filters label {
-        min-width: 46%;
-        flex: 1;
+
+    .o_ecommerce_dashboard_metric_grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .o_ecommerce_dashboard_wide {
+}
+
+@media (max-width: 760px) {
+    .o_ecommerce_dashboard {
+        padding: 16px;
+    }
+
+    .o_ecommerce_dashboard_heading h1 {
+        font-size: 1.4rem;
+    }
+
+    .o_ecommerce_dashboard_filters {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+    }
+
+    .o_ecommerce_dashboard_filter_actions {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+    }
+
+    .o_ecommerce_dashboard_metric_grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 520px) {
+    .o_ecommerce_dashboard_filters {
+        grid-template-columns: 1fr;
+    }
+
+    .o_ecommerce_dashboard_filter_actions {
         grid-column: auto;
     }
-}
-@media (max-width: 600px) {
-    .o_ecommerce_dashboard_filters label {
-        min-width: 100%;
+
+    .o_ecommerce_dashboard_bar_row {
+        grid-template-columns: minmax(88px, 1.2fr) minmax(50px, 2fr) auto;
+        gap: 7px;
     }
-    .o_ecommerce_dashboard_comparison_row {
-        grid-template-columns: 1fr;
+
+    .o_ecommerce_dashboard_error {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
