@@ -10,6 +10,41 @@
                     <button name="action_open_ecommerce_sync_wizard" type="object" string="Sync to eCommerce" groups="odoo_ecommerce_integration.group_ecommerce_operator"/>
                 </header>
             </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="eCommerce" name="ecommerce_content">
+                    <group string="SEO" name="ecommerce_seo">
+                        <field name="ecommerce_url_key" placeholder="Generated from the product name"/>
+                        <field name="ecommerce_url_key_manual" invisible="1"/>
+                        <field name="ecommerce_meta_title"/>
+                        <field name="ecommerce_meta_keywords"/>
+                        <field name="ecommerce_meta_description"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_product_template_form_inherit_ecommerce_sales" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.ecommerce.sales</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="website_sale.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='ecom_description']" position="inside">
+                <field name="ecommerce_short_description" placeholder="Short description shown in product listings"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_product_image_form_inherit_ecommerce" model="ir.ui.view">
+        <field name="name">product.image.form.inherit.ecommerce</field>
+        <field name="model">product.image</field>
+        <field name="inherit_id" ref="website_sale.view_product_image_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='video_url']" position="after">
+                <group string="eCommerce" name="ecommerce_media">
+                    <field name="ecommerce_alt_text" placeholder="Alternative text for this media"/>
+                </group>
+            </xpath>
         </field>
     </record>
 </odoo>

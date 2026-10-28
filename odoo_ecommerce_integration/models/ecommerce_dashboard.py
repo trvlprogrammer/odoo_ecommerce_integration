@@ -170,332 +170,360 @@ class EcommerceDashboard(models.TransientModel):
         return self.env.cr.fetchone()[0] or 0
 
     @api.model
+    def _dashboard_currency_symbol(self, company_ids):
+        currencies = (
+            self.env["res.company"].browse(company_ids).mapped("currency_id")
+        )
+        return currencies[0].symbol if len(currencies) == 1 else ""
+
+    @api.model
+    def _read_sum(self, model, domain, field_name):
+        rows = self.env[model]._read_group(domain, [], [f"{field_name}:sum"])
+        return float(rows[0][0] or 0.0) if rows else 0.0
+
+    @api.model
+    def _distinct_mapping_ids(self, model, field_name, domain):
+        groups = self.env[model]._read_group(domain, [field_name], [])
+        ids = set()
+        for group in groups:
+            value = group[0]
+            if hasattr(value, "ids"):
+                ids.update(value.ids)
+            elif value:
+                ids.add(value)
+        return sorted(ids)
+
+    @api.model
+    def _store_provider(self, store):
+        return store.sudo().backend_id.sudo().provider or ""
+
+    @api.model
+    def _metric_group(
+        self,
+        key,
+        label,
+        metric_label,
+        description,
+        value_type,
+        odoo_value,
+        store_values,
+        *,
+        date_filtered,
+    ):
+        bars = [
+            {
+                "scope": "odoo",
+                "store_id": False,
+                "label": "Total Odoo",
+                "value": odoo_value,
+                "provider": "",
+            }
+        ]
+        for store, value in store_values:
+            bars.append(
+                {
+                    "scope": "store",
+                    "store_id": store.id,
+                    "label": store.display_name,
+                    "value": value,
+                    "provider": self._store_provider(store),
+                }
+            )
+        max_value = max([float(bar["value"] or 0.0) for bar in bars] or [0.0])
+        return {
+            "key": key,
+            "label": label,
+            "metric_label": metric_label,
+            "description": description,
+            "value_type": value_type,
+            "date_filtered": date_filtered,
+            "bars": bars,
+            "max_value": max_value,
+            "has_data": any(float(bar["value"] or 0.0) > 0 for bar in bars),
+        }
+
+    @api.model
+    def _dashboard_metric_groups(
+        self, company_ids, stores, start_dt, end_dt, start_date, end_date
+    ):
+        company_domain = [("company_id", "in", company_ids)]
+        product_company_domain = [
+            "|",
+            ("company_id", "=", False),
+            ("company_id", "in", company_ids),
+        ]
+        customer_company_domain = [
+            "|",
+            ("company_id", "=", False),
+            ("company_id", "in", company_ids),
+        ]
+        sale_domain = company_domain + [
+            ("date_order", ">=", start_dt),
+            ("date_order", "<", end_dt),
+            ("state", "in", ("sale", "done")),
+        ]
+
+        odoo_orders = self.env["sale.order"].search_count(sale_domain)
+        order_values = []
+        for store in stores:
+            order_ids = self._distinct_mapping_ids(
+                "ecommerce.order.mapping",
+                "odoo_sale_order_id",
+                [
+                    ("store_id", "=", store.id),
+                    ("active", "=", True),
+                    ("import_status", "=", "imported"),
+                    ("odoo_sale_order_id", "!=", False),
+                    ("odoo_sale_order_id.company_id", "in", company_ids),
+                    ("odoo_sale_order_id.date_order", ">=", start_dt),
+                    ("odoo_sale_order_id.date_order", "<", end_dt),
+                    ("odoo_sale_order_id.state", "in", ("sale", "done")),
+                ],
+            )
+            order_values.append((store, len(order_ids)))
+
+        customer_domain = customer_company_domain + [
+            ("customer_rank", ">", 0),
+            ("create_date", ">=", start_dt),
+            ("create_date", "<", end_dt),
+        ]
+        odoo_customers = self.env["res.partner"].search_count(customer_domain)
+        customer_values = []
+        for store in stores:
+            customer_ids = self._distinct_mapping_ids(
+                "ecommerce.customer.mapping",
+                "odoo_partner_id",
+                [
+                    ("store_id", "=", store.id),
+                    ("active", "=", True),
+                    ("odoo_partner_id.customer_rank", ">", 0),
+                    ("odoo_partner_id.create_date", ">=", start_dt),
+                    ("odoo_partner_id.create_date", "<", end_dt),
+                    "|",
+                    ("odoo_partner_id.company_id", "=", False),
+                    ("odoo_partner_id.company_id", "in", company_ids),
+                ],
+            )
+            customer_values.append((store, len(customer_ids)))
+
+        odoo_products = self.env["product.template"].search_count(
+            [("sale_ok", "=", True)] + product_company_domain
+        )
+        product_values = []
+        for store in stores:
+            product_ids = self._distinct_mapping_ids(
+                "ecommerce.product.mapping",
+                "odoo_template_id",
+                [
+                    ("store_id", "=", store.id),
+                    ("active", "=", True),
+                    ("odoo_template_id.sale_ok", "=", True),
+                    "|",
+                    ("odoo_template_id.company_id", "=", False),
+                    ("odoo_template_id.company_id", "in", company_ids),
+                ],
+            )
+            product_values.append((store, len(product_ids)))
+
+        odoo_revenue = self._read_sum("sale.order", sale_domain, "amount_total")
+        revenue_values = []
+        for store in stores:
+            order_ids = self._distinct_mapping_ids(
+                "ecommerce.order.mapping",
+                "odoo_sale_order_id",
+                [
+                    ("store_id", "=", store.id),
+                    ("active", "=", True),
+                    ("import_status", "=", "imported"),
+                    ("odoo_sale_order_id", "!=", False),
+                    ("odoo_sale_order_id.company_id", "in", company_ids),
+                    ("odoo_sale_order_id.date_order", ">=", start_dt),
+                    ("odoo_sale_order_id.date_order", "<", end_dt),
+                    ("odoo_sale_order_id.state", "in", ("sale", "done")),
+                ],
+            )
+            revenue_values.append(
+                (
+                    store,
+                    self._read_sum(
+                        "sale.order",
+                        [("id", "in", order_ids), ("company_id", "in", company_ids)],
+                        "amount_total",
+                    )
+                    if order_ids
+                    else 0.0,
+                )
+            )
+
+        quant_domain = [
+            ("location_id.usage", "=", "internal"),
+            "|",
+            ("product_id.company_id", "=", False),
+            ("product_id.company_id", "in", company_ids),
+        ]
+        odoo_inventory = self._read_sum("stock.quant", quant_domain, "quantity")
+        inventory_values = []
+        for store in stores:
+            variant_ids = self._distinct_mapping_ids(
+                "ecommerce.variant.mapping",
+                "odoo_product_id",
+                [
+                    ("store_id", "=", store.id),
+                    ("active", "=", True),
+                ],
+            )
+            inventory_values.append(
+                (
+                    store,
+                    self._read_sum(
+                        "stock.quant",
+                        quant_domain + [("product_id", "in", variant_ids)],
+                        "quantity",
+                    )
+                    if variant_ids
+                    else 0.0,
+                )
+            )
+
+        invoice_domain = company_domain + [
+            ("move_type", "=", "out_invoice"),
+            ("state", "=", "posted"),
+            ("invoice_date", ">=", start_date),
+            ("invoice_date", "<=", end_date),
+        ]
+        odoo_invoices = self.env["account.move"].search_count(invoice_domain)
+        invoice_values = []
+        for store in stores:
+            move_ids = self._distinct_mapping_ids(
+                "ecommerce.invoice.mapping",
+                "odoo_move_id",
+                [
+                    ("store_id", "=", store.id),
+                    ("active", "=", True),
+                    ("odoo_move_id", "!=", False),
+                    ("odoo_move_id.company_id", "in", company_ids),
+                    ("odoo_move_id.move_type", "=", "out_invoice"),
+                    ("odoo_move_id.state", "=", "posted"),
+                    ("odoo_move_id.invoice_date", ">=", start_date),
+                    ("odoo_move_id.invoice_date", "<=", end_date),
+                ],
+            )
+            invoice_values.append((store, len(move_ids)))
+
+        issue_domain = [
+            ("store_id", "in", stores.ids),
+            ("status", "=", "open"),
+        ]
+        odoo_issues = self.env["ecommerce.sync.issue"].search_count(issue_domain)
+        issue_values = [
+            (
+                store,
+                self.env["ecommerce.sync.issue"].search_count(
+                    [("store_id", "=", store.id), ("status", "=", "open")]
+                ),
+            )
+            for store in stores
+        ]
+
+        return [
+            self._metric_group(
+                "orders",
+                "Orders",
+                "Orders",
+                "Confirmed Odoo sale orders; store bars count distinct Odoo orders mapped to each store.",
+                "integer",
+                odoo_orders,
+                order_values,
+                date_filtered=True,
+            ),
+            self._metric_group(
+                "customers",
+                "Customers",
+                "New customers",
+                "Customers created in the selected period; store bars use distinct mapped customer records.",
+                "integer",
+                odoo_customers,
+                customer_values,
+                date_filtered=True,
+            ),
+            self._metric_group(
+                "products",
+                "Products",
+                "Sellable products",
+                "Sellable product templates; store bars count products mapped to each store.",
+                "integer",
+                odoo_products,
+                product_values,
+                date_filtered=False,
+            ),
+            self._metric_group(
+                "revenue",
+                "Sales / Revenue",
+                "Revenue",
+                "Confirmed orders in Odoo currency; store bars avoid counting the same order twice within a store.",
+                "currency",
+                odoo_revenue,
+                revenue_values,
+                date_filtered=True,
+            ),
+            self._metric_group(
+                "inventory",
+                "Inventory",
+                "On-hand quantity",
+                "Current internal on-hand quantity; store bars use distinct mapped variants.",
+                "quantity",
+                odoo_inventory,
+                inventory_values,
+                date_filtered=False,
+            ),
+            self._metric_group(
+                "finance",
+                "Finance",
+                "Posted invoices",
+                "Posted customer invoices in the selected period; store bars use mapped invoices.",
+                "integer",
+                odoo_invoices,
+                invoice_values,
+                date_filtered=True,
+            ),
+            self._metric_group(
+                "issues",
+                "Open Issues",
+                "Open issues",
+                "Current open synchronization issues in the selected Store scope.",
+                "integer",
+                odoo_issues,
+                issue_values,
+                date_filtered=False,
+            ),
+        ]
+
+    @api.model
     def get_dashboard_data(self, filters=None):
         filters = filters or {}
         company_ids = self._company_ids(filters)
         start_dt, end_dt, start_date, end_date = self._dates(filters)
         stores = self._scoped_stores(filters)
-        store_ids = stores.ids
-        company_scope = sorted(set(stores.mapped("company_id").ids)) or company_ids
         result = {
             "company_ids": company_ids,
-            "store_ids": store_ids,
+            "store_ids": stores.ids,
             "date_from": start_date.isoformat(),
             "date_to": end_date.isoformat(),
             "has_scope": bool(company_ids),
-            "has_stores": bool(store_ids),
-            "kpis": [],
-            "coverage": {},
-            "charts": {},
-            "recent_runs": [],
-            "failed_jobs": [],
-            "open_issues": [],
-            "store_health": [],
+            "has_stores": bool(stores),
+            "currency_symbol": self._dashboard_currency_symbol(company_ids),
+            "metric_groups": [],
         }
         if not company_ids:
             return result
-
-        product_company_domain = [
-            "|",
-            ("company_id", "=", False),
-            ("company_id", "in", company_scope or company_ids),
-        ]
-        eligible_templates = self.env["product.template"].search_count(
-            [("sale_ok", "=", True), ("default_code", "!=", False)]
-            + product_company_domain
+        result["metric_groups"] = self._dashboard_metric_groups(
+            company_ids,
+            stores,
+            start_dt,
+            end_dt,
+            start_date,
+            end_date,
         )
-        eligible_variants = self.env["product.product"].search_count(
-            [("sale_ok", "=", True), ("default_code", "!=", False)]
-            + product_company_domain
-        )
-        categories = self.env["product.public.category"].search_count([])
-        customers = self.env["res.partner"].search_count(
-            [
-                ("customer_rank", ">", 0),
-                "|",
-                ("company_id", "=", False),
-                ("company_id", "in", company_scope or company_ids),
-            ]
-        )
-        mapped_template_count = self._mapped_coverage_count(
-            "products", store_ids, company_scope or company_ids
-        )
-        mapped_variant_count = self._mapped_coverage_count(
-            "variants", store_ids, company_scope or company_ids
-        )
-        mapped_category_count = self._mapped_coverage_count(
-            "categories", store_ids, company_scope or company_ids
-        )
-        mapped_customer_count = self._mapped_coverage_count(
-            "customers", store_ids, company_scope or company_ids
-        )
-        coverage = {
-            "products": {
-                "total": eligible_templates,
-                "mapped": mapped_template_count,
-                "unmapped": max(eligible_templates - mapped_template_count, 0),
-            },
-            "variants": {
-                "total": eligible_variants,
-                "mapped": mapped_variant_count,
-                "unmapped": max(eligible_variants - mapped_variant_count, 0),
-            },
-            "categories": {
-                "total": categories,
-                "mapped": mapped_category_count,
-                "unmapped": max(categories - mapped_category_count, 0),
-            },
-            "customers": {
-                "total": customers,
-                "mapped": mapped_customer_count,
-                "unmapped": max(customers - mapped_customer_count, 0),
-            },
-        }
-        for item in coverage.values():
-            item["percent"] = (
-                round(item["mapped"] * 100.0 / item["total"], 1)
-                if item["total"]
-                else 0.0
-            )
-
-        order_domain = [
-            ("store_id", "in", store_ids),
-            ("imported_at", ">=", start_dt),
-            ("imported_at", "<", end_dt),
-        ]
-        order_count = self.env["ecommerce.order.mapping"].search_count(order_domain)
-        invoice_domain = [
-            ("store_id", "in", store_ids),
-            ("create_date", ">=", start_dt),
-            ("create_date", "<", end_dt),
-        ]
-        invoice_count = self.env["ecommerce.invoice.mapping"].search_count(invoice_domain)
-        payment_count = self.env["ecommerce.payment.mapping"].search_count(invoice_domain)
-        refund_count = self.env["ecommerce.refund.mapping"].search_count(invoice_domain)
-        shipment_count = self.env["ecommerce.shipment.mapping"].search_count(invoice_domain)
-        revenue = 0.0
-        odoo_order_count = 0
-        inventory_on_hand = 0.0
-        if store_ids:
-            self.env.cr.execute(
-                """
-                SELECT COALESCE(SUM(so.amount_total), 0)
-                  FROM sale_order so
-                  JOIN ecommerce_order_mapping m ON m.odoo_sale_order_id = so.id
-                 WHERE m.store_id IN %s
-                   AND so.date_order >= %s AND so.date_order < %s
-                """,
-                (tuple(store_ids), start_dt, end_dt),
-            )
-            revenue = self.env.cr.fetchone()[0] or 0.0
-            self.env.cr.execute(
-                """
-                SELECT COUNT(*)
-                  FROM sale_order so
-                 WHERE so.company_id IN %s
-                   AND so.date_order >= %s AND so.date_order < %s
-                   AND so.state IN ('sale', 'done')
-                """,
-                (tuple(company_scope or company_ids), start_dt, end_dt),
-            )
-            odoo_order_count = self.env.cr.fetchone()[0] or 0
-            self.env.cr.execute(
-                """
-                SELECT COALESCE(SUM(q.quantity), 0)
-                  FROM stock_quant q
-                  JOIN product_product p ON p.id = q.product_id
-                  JOIN product_template t ON t.id = p.product_tmpl_id
-                  JOIN ecommerce_variant_mapping m ON m.odoo_product_id = p.id
-                 WHERE m.store_id IN %s AND m.active IS TRUE
-                   AND (t.company_id IS NULL OR t.company_id IN %s)
-                   AND q.location_id IN (
-                       SELECT id FROM stock_location WHERE usage = 'internal'
-                   )
-                """,
-                (tuple(store_ids), tuple(company_scope or company_ids)),
-            )
-            inventory_on_hand = float(self.env.cr.fetchone()[0] or 0.0)
-        queue_domain = self._queue_domain(
-            company_scope or company_ids,
-            store_ids,
-            filters.get("provider"),
-            filters.get("backend_id"),
-        )
-        pending_states = ("pending", "enqueued", "wait_dependencies")
-        pending = self.env["queue.job"].sudo().search_count(
-            queue_domain + [("state", "in", pending_states)]
-        )
-        running = self.env["queue.job"].sudo().search_count(
-            queue_domain + [("state", "=", "started")]
-        )
-        failed = self.env["queue.job"].sudo().search_count(
-            queue_domain + [("state", "=", "failed")]
-        )
-        issue_domain = [
-            ("store_id", "in", store_ids),
-            ("status", "=", "open"),
-        ]
-        open_issues = self.env["ecommerce.sync.issue"].search_count(issue_domain)
-
-        def kpi(key, label, value, suffix=""):
-            return {"key": key, "label": label, "value": value, "suffix": suffix}
-
-        result["kpis"] = [
-            kpi("products", "Total Products", eligible_templates),
-            kpi("mapped_products", "Mapped Products", mapped_template_count),
-            kpi("unmapped_products", "Unmapped Products", coverage["products"]["unmapped"]),
-            kpi("coverage", "Product Coverage", coverage["products"]["percent"], "%"),
-            kpi("mapped_variants", "Mapped Variants", mapped_variant_count),
-            kpi("unmapped_variants", "Unmapped Variants", coverage["variants"]["unmapped"]),
-            kpi("mapped_categories", "Mapped Categories", mapped_category_count),
-            kpi("unmapped_categories", "Unmapped Categories", coverage["categories"]["unmapped"]),
-            kpi("mapped_customers", "Mapped Customers", mapped_customer_count),
-            kpi("unmapped_customers", "Unmapped Customers", coverage["customers"]["unmapped"]),
-            kpi("orders", "eCommerce Orders", order_count),
-            kpi("odoo_orders", "Odoo Orders", odoo_order_count),
-            kpi("revenue", "eCommerce Revenue", round(revenue, 2)),
-            kpi("inventory_on_hand", "On Hand", round(inventory_on_hand, 2)),
-            kpi("invoices", "eCommerce Invoices", invoice_count),
-            kpi("payments", "eCommerce Payments", payment_count),
-            kpi("refunds", "Credit Notes", refund_count),
-            kpi("shipments", "Shipments", shipment_count),
-            kpi("pending_jobs", "Pending Queue Jobs", pending),
-            kpi("running_jobs", "Running Queue Jobs", running),
-            kpi("failed_jobs", "Failed Queue Jobs", failed),
-            kpi("open_issues", "Open Issues", open_issues),
-        ]
-        result["coverage"] = coverage
-        result["kpi_groups"] = [
-            {
-                "key": "orders",
-                "label": "Orders",
-                "kpis": self._kpis_for(result["kpis"], ("orders", "odoo_orders", "revenue", "shipments")),
-            },
-            {
-                "key": "customers",
-                "label": "Customers",
-                "kpis": self._kpis_for(result["kpis"], ("mapped_customers", "unmapped_customers")),
-            },
-            {
-                "key": "products",
-                "label": "Products",
-                "kpis": self._kpis_for(result["kpis"], ("products", "mapped_products", "coverage", "unmapped_products", "mapped_variants", "unmapped_variants")),
-            },
-            {
-                "key": "inventory",
-                "label": "Inventory",
-                "kpis": self._kpis_for(result["kpis"], ("inventory_on_hand", "mapped_variants", "unmapped_variants")),
-            },
-            {
-                "key": "finance",
-                "label": "Finance",
-                "kpis": self._kpis_for(result["kpis"], ("invoices", "payments", "refunds")),
-            },
-            {
-                "key": "synchronization",
-                "label": "Synchronization",
-                "kpis": self._kpis_for(result["kpis"], ("pending_jobs", "running_jobs", "failed_jobs", "open_issues")),
-            },
-        ]
-        result["charts"] = {
-            "orders": self._order_series(store_ids, start_dt, end_dt, filters.get("granularity", "day")),
-            "providers": self._provider_breakdown(store_ids, start_dt, end_dt),
-            "queue": self._queue_status(
-                company_scope or company_ids,
-                store_ids,
-                filters.get("provider"),
-                filters.get("backend_id"),
-            ),
-            "activity": self._activity_series(store_ids, start_dt, end_dt),
-            "coverage": coverage,
-            "order_comparison": self._order_comparison(
-                store_ids,
-                company_scope or company_ids,
-                start_dt,
-                end_dt,
-                filters.get("granularity", "day"),
-            ),
-        }
-        runs = self.env["ecommerce.sync.run"].search(
-            [("store_id", "in", store_ids)], order="started_at desc, id desc", limit=10
-        )
-        result["recent_runs"] = [
-            {
-                "id": run.id,
-                "provider": run.provider,
-                "store": run.store_id.display_name,
-                "operation": run.operation,
-                "resource": run.resource,
-                "state": run.state,
-                "started_at": run.started_at.isoformat() if run.started_at else False,
-                "processed": run.processed,
-                "succeeded": run.succeeded,
-                "failed": run.failed,
-                "total": run.total,
-            }
-            for run in runs
-        ]
-        failed_jobs = self.env["queue.job"].sudo().search(
-            queue_domain + [("state", "=", "failed")],
-            order="id desc",
-            limit=10,
-        )
-        result["failed_jobs"] = [
-            {
-                "id": job.id,
-                "name": job.name or job.method_name,
-                "method": job.method_name,
-                "channel": job.channel,
-                "company_id": job.company_id.id,
-            }
-            for job in failed_jobs
-        ]
-        issues = self.env["ecommerce.sync.issue"].search(
-            issue_domain, order="last_seen_at desc, id desc", limit=10
-        )
-        result["open_issues"] = [
-            {
-                "id": issue.id,
-                "severity": issue.severity,
-                "store": issue.store_id.display_name,
-                "entity": issue.external_reference or issue.entity_id or issue.title,
-                "reason": issue.reason_code,
-                "status": issue.status,
-            }
-            for issue in issues
-        ]
-        for store in stores[:25]:
-            store_queue = self._queue_domain([store.company_id.id], [store.id])
-            last_state = self.env["ecommerce.sync.state"].search(
-                [("store_id", "=", store.id), ("last_success_at", "!=", False)],
-                order="last_success_at desc",
-                limit=1,
-            )
-            result["store_health"].append(
-                {
-                    "id": store.id,
-                    "store": store.display_name,
-                    "backend": store.backend_id.display_name,
-                    "provider": store.backend_id.provider,
-                    "company": store.company_id.display_name,
-                    "backend_state": store.backend_id.state,
-                    "last_test_at": store.backend_id.last_test_at.isoformat()
-                    if store.backend_id.last_test_at
-                    else False,
-                    "last_success_at": last_state.last_success_at.isoformat()
-                    if last_state and last_state.last_success_at
-                    else False,
-                    "pending": self.env["queue.job"].sudo().search_count(
-                        store_queue + [("state", "in", pending_states)]
-                    ),
-                    "failed": self.env["queue.job"].sudo().search_count(
-                        store_queue + [("state", "=", "failed")]
-                    ),
-                    "issues": self.env["ecommerce.sync.issue"].search_count(
-                        [("store_id", "=", store.id), ("status", "=", "open")]
-                    ),
-                }
-            )
         return result
 
     @staticmethod
@@ -637,6 +665,166 @@ class EcommerceDashboard(models.TransientModel):
                 }
             )
         return result
+
+    @api.model
+    def _dashboard_action(self, xmlid, domain):
+        action = self.env["ir.actions.act_window"]._for_xml_id(xmlid)
+        action["domain"] = domain
+        return action
+
+    @api.model
+    def get_metric_drilldown(self, metric, scope="odoo", store_id=None, filters=None):
+        filters = filters or {}
+        company_ids = self._company_ids(filters)
+        start_dt, end_dt, start_date, end_date = self._dates(filters)
+        stores = self._scoped_stores(filters)
+        store = self.env["ecommerce.store"]
+        if scope == "store":
+            store = stores.filtered(lambda item: item.id == int(store_id or 0))[:1]
+            if not store:
+                return False
+        company_domain = [("company_id", "in", company_ids)]
+        sale_domain = company_domain + [
+            ("date_order", ">=", start_dt),
+            ("date_order", "<", end_dt),
+            ("state", "in", ("sale", "done")),
+        ]
+        customer_domain = [
+            "|",
+            ("company_id", "=", False),
+            ("company_id", "in", company_ids),
+            ("customer_rank", ">", 0),
+            ("create_date", ">=", start_dt),
+            ("create_date", "<", end_dt),
+        ]
+        product_domain = [
+            ("sale_ok", "=", True),
+            "|",
+            ("company_id", "=", False),
+            ("company_id", "in", company_ids),
+        ]
+        quant_domain = [
+            ("location_id.usage", "=", "internal"),
+            "|",
+            ("product_id.company_id", "=", False),
+            ("product_id.company_id", "in", company_ids),
+        ]
+        invoice_domain = company_domain + [
+            ("move_type", "=", "out_invoice"),
+            ("state", "=", "posted"),
+            ("invoice_date", ">=", start_date),
+            ("invoice_date", "<=", end_date),
+        ]
+
+        if metric in ("orders", "revenue"):
+            if scope == "odoo":
+                return self._dashboard_action("sale.action_orders", sale_domain)
+            order_ids = self._distinct_mapping_ids(
+                "ecommerce.order.mapping",
+                "odoo_sale_order_id",
+                [
+                    ("store_id", "=", store.id),
+                    ("active", "=", True),
+                    ("import_status", "=", "imported"),
+                    ("odoo_sale_order_id", "!=", False),
+                    ("odoo_sale_order_id.company_id", "in", company_ids),
+                    ("odoo_sale_order_id.date_order", ">=", start_dt),
+                    ("odoo_sale_order_id.date_order", "<", end_dt),
+                    ("odoo_sale_order_id.state", "in", ("sale", "done")),
+                ],
+            )
+            return self._dashboard_action(
+                "sale.action_orders",
+                [("id", "in", order_ids), ("company_id", "in", company_ids)],
+            )
+
+        if metric == "customers":
+            if scope == "odoo":
+                return self._dashboard_action("base.action_partner_form", customer_domain)
+            partner_ids = self._distinct_mapping_ids(
+                "ecommerce.customer.mapping",
+                "odoo_partner_id",
+                [
+                    ("store_id", "=", store.id),
+                    ("active", "=", True),
+                    ("odoo_partner_id.customer_rank", ">", 0),
+                    ("odoo_partner_id.create_date", ">=", start_dt),
+                    ("odoo_partner_id.create_date", "<", end_dt),
+                    "|",
+                    ("odoo_partner_id.company_id", "=", False),
+                    ("odoo_partner_id.company_id", "in", company_ids),
+                ],
+            )
+            return self._dashboard_action(
+                "base.action_partner_form", [("id", "in", partner_ids)]
+            )
+
+        if metric == "products":
+            if scope == "odoo":
+                return self._dashboard_action(
+                    "product.product_template_action", product_domain
+                )
+            template_ids = self._distinct_mapping_ids(
+                "ecommerce.product.mapping",
+                "odoo_template_id",
+                [
+                    ("store_id", "=", store.id),
+                    ("active", "=", True),
+                    ("odoo_template_id.sale_ok", "=", True),
+                    "|",
+                    ("odoo_template_id.company_id", "=", False),
+                    ("odoo_template_id.company_id", "in", company_ids),
+                ],
+            )
+            return self._dashboard_action(
+                "product.product_template_action", [("id", "in", template_ids)]
+            )
+
+        if metric == "inventory":
+            if scope == "odoo":
+                return self._dashboard_action("stock.stock_quant_action", quant_domain)
+            variant_ids = self._distinct_mapping_ids(
+                "ecommerce.variant.mapping",
+                "odoo_product_id",
+                [("store_id", "=", store.id), ("active", "=", True)],
+            )
+            return self._dashboard_action(
+                "stock.stock_quant_action",
+                quant_domain + [("product_id", "in", variant_ids)],
+            )
+
+        if metric == "finance":
+            if scope == "odoo":
+                return self._dashboard_action(
+                    "account.action_move_out_invoice_type", invoice_domain
+                )
+            move_ids = self._distinct_mapping_ids(
+                "ecommerce.invoice.mapping",
+                "odoo_move_id",
+                [
+                    ("store_id", "=", store.id),
+                    ("active", "=", True),
+                    ("odoo_move_id", "!=", False),
+                    ("odoo_move_id.company_id", "in", company_ids),
+                    ("odoo_move_id.move_type", "=", "out_invoice"),
+                    ("odoo_move_id.state", "=", "posted"),
+                    ("odoo_move_id.invoice_date", ">=", start_date),
+                    ("odoo_move_id.invoice_date", "<=", end_date),
+                ],
+            )
+            return self._dashboard_action(
+                "account.action_move_out_invoice_type", [("id", "in", move_ids)]
+            )
+
+        if metric == "issues":
+            domain = [("store_id", "=", store.id), ("status", "=", "open")] if scope == "store" else [
+                ("store_id", "in", stores.ids),
+                ("status", "=", "open"),
+            ]
+            return self._dashboard_action(
+                "odoo_ecommerce_integration.action_ecommerce_sync_issue", domain
+            )
+        return False
 
     @api.model
     def get_drilldown(self, key, filters=None):

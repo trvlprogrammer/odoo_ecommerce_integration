@@ -34,9 +34,9 @@ class EcommerceProductSyncWizard(models.TransientModel):
     )
     sync_images = fields.Boolean(
         string="Synchronize Images",
-        default=False,
-        help="For Update operations, also synchronize primary and gallery media. "
-        "Leave disabled to update product data without touching Magento media.",
+        default=True,
+        help="Synchronize primary and gallery media during Update operations. "
+        "Disable to update product data without touching Magento media.",
     )
     existing_status = fields.Text(readonly=True, compute="_compute_existing_status")
     can_queue = fields.Boolean(compute="_compute_existing_status")

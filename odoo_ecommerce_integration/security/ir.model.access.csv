@@ -70,3 +70,5 @@ acl_manager_sync_batch,ecommerce.sync.batch_manager,model_ecommerce_sync_batch,g
 acl_dashboard_user,ecommerce.dashboard_user,model_ecommerce_dashboard,group_ecommerce_user,1,0,0,0
 acl_dashboard_operator,ecommerce.dashboard_operator,model_ecommerce_dashboard,group_ecommerce_operator,1,0,0,0
 acl_dashboard_manager,ecommerce.dashboard_manager,model_ecommerce_dashboard,group_ecommerce_manager,1,0,0,0
+acl_operator_refund_wizard,ecommerce.refund.export.wizard_operator,model_ecommerce_refund_export_wizard,group_ecommerce_operator,1,1,1,1
+acl_manager_refund_wizard,ecommerce.refund.export.wizard_manager,model_ecommerce_refund_export_wizard,group_ecommerce_manager,1,1,1,1

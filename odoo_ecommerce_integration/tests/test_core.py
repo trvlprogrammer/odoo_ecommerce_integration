@@ -53,6 +53,21 @@ class TestCore(TransactionCase):
         self.assertEqual(self.backend.state, "draft")
         self.assertTrue(self.backend.access_token)
 
+    def test_ecommerce_url_key_generation_and_manual_override(self):
+        template = self.env["product.template"].create(
+            {"name": "Café Déjà Vu!", "type": "consu"}
+        )
+        self.assertEqual(template.ecommerce_url_key, "cafe-deja-vu")
+        template.write({"name": "New Product Name"})
+        self.assertEqual(template.ecommerce_url_key, "new-product-name")
+        template.write({"ecommerce_url_key": "custom-key"})
+        self.assertTrue(template.ecommerce_url_key_manual)
+        template.write({"name": "Another Product Name"})
+        self.assertEqual(template.ecommerce_url_key, "custom-key")
+        template.write({"ecommerce_url_key": False})
+        self.assertEqual(template.ecommerce_url_key, "another-product-name")
+        self.assertFalse(template.ecommerce_url_key_manual)
+
     def test_mapping_company_is_derived(self):
         mapping = self.env["ecommerce.product.mapping"].create(self._mapping_values())
         self.assertEqual(mapping.company_id, self.company)
@@ -455,28 +470,47 @@ class TestHardening(TransactionCase):
         with self.assertRaises(ValidationError):
             self._mapping(other_template)
 
-    def test_dashboard_filters_and_drilldown(self):
+    def test_dashboard_metric_groups_and_drilldown(self):
         self._mapping()
-        data = self.env["ecommerce.dashboard"].get_dashboard_data(
-            {
-                "company_ids": [self.company.id],
-                "provider": "magento",
-                "backend_id": self.backend.id,
-                "store_id": self.store.id,
-            }
-        )
+        filters = {
+            "company_ids": [self.company.id],
+            "provider": "magento",
+            "backend_id": self.backend.id,
+            "store_id": self.store.id,
+        }
+        data = self.env["ecommerce.dashboard"].get_dashboard_data(filters)
         self.assertTrue(data["has_stores"])
-        self.assertEqual(data["coverage"]["products"]["mapped"], 1)
-        self.assertGreaterEqual(data["coverage"]["products"]["total"], 1)
-        action = self.env["ecommerce.dashboard"].get_drilldown(
-            "mapped_products",
-            {
-                "company_ids": [self.company.id],
-                "store_id": self.store.id,
-            },
+        groups = {group["key"]: group for group in data["metric_groups"]}
+        self.assertEqual(
+            list(groups),
+            [
+                "orders",
+                "customers",
+                "products",
+                "revenue",
+                "inventory",
+                "finance",
+                "issues",
+            ],
         )
-        self.assertEqual(action["res_model"], "ecommerce.product.mapping")
-        self.assertIn(("store_id", "in", [self.store.id]), action["domain"])
+        product_bar = next(
+            bar for bar in groups["products"]["bars"] if bar["scope"] == "store"
+        )
+        self.assertEqual(product_bar["store_id"], self.store.id)
+        self.assertGreaterEqual(product_bar["value"], 1)
+        self.assertEqual(groups["products"]["bars"][0]["scope"], "odoo")
+
+        action = self.env["ecommerce.dashboard"].get_metric_drilldown(
+            "products", "store", self.store.id, filters
+        )
+        self.assertEqual(action["res_model"], "product.template")
+        self.assertIn(("id", "in", [self.template.id]), action["domain"])
+
+        odoo_action = self.env["ecommerce.dashboard"].get_metric_drilldown(
+            "orders", "odoo", False, filters
+        )
+        self.assertEqual(odoo_action["res_model"], "sale.order")
+        self.assertIn(("company_id", "in", [self.company.id]), odoo_action["domain"])
 
 
 class TestSyncRunProgress(TransactionCase):
