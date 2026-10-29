@@ -65,6 +65,8 @@
                                     <field name="stock_location_id"/>
                                     <field name="pricelist_id"/>
                                     <field name="currency_id"/>
+                                    <field name="default_sales_tax_id"/>
+                                    <field name="default_international_tax_id"/>
                                     <field name="website_id" options="{'no_create': True}"/>
                                     <field name="shipping_product_id"/>
                                 </group>

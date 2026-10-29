@@ -56,6 +56,22 @@ class EcommerceStore(models.Model):
         "stock.location", required=True, ondelete="restrict", check_company=True
     )
     pricelist_id = fields.Many2one("product.pricelist", ondelete="restrict")
+    default_sales_tax_id = fields.Many2one(
+        "account.tax",
+        string="Default Sales Tax",
+        ondelete="restrict",
+        check_company=True,
+        domain="[('type_tax_use', '=', 'sale')]",
+        help="Sale tax applied to domestic web orders. Leave empty to use Magento line taxes.",
+    )
+    default_international_tax_id = fields.Many2one(
+        "account.tax",
+        string="Default International Tax",
+        ondelete="restrict",
+        check_company=True,
+        domain="[('type_tax_use', '=', 'sale')]",
+        help="Sale tax applied when the delivery country differs from the company country. Leave empty to use Magento line taxes.",
+    )
     currency_id = fields.Many2one("res.currency", ondelete="restrict")
     website_id = fields.Many2one("website", ondelete="set null", index=True)
     shipping_product_id = fields.Many2one(
@@ -146,7 +162,15 @@ class EcommerceStore(models.Model):
             if store.backend_id.company_id != store.company_id:
                 raise ValidationError("Store and backend must belong to the same company.")
 
-    @api.constrains("company_id", "warehouse_id", "stock_location_id", "currency_id", "pricelist_id")
+    @api.constrains(
+        "company_id",
+        "warehouse_id",
+        "stock_location_id",
+        "currency_id",
+        "pricelist_id",
+        "default_sales_tax_id",
+        "default_international_tax_id",
+    )
     def _check_company_records(self):
         for store in self:
             if store.warehouse_id.company_id != store.company_id:
@@ -168,6 +192,48 @@ class EcommerceStore(models.Model):
                     raise ValidationError("Default payment journal must belong to the store company.")
                 if store.default_payment_journal_id.type not in ("bank", "cash"):
                     raise ValidationError("Default payment journal must be a bank or cash journal.")
+            for tax in (store.default_sales_tax_id, store.default_international_tax_id):
+                if tax and tax.company_id not in (False, store.company_id):
+                    raise ValidationError("Default taxes must belong to the store company.")
+                if tax and tax.type_tax_use != "sale":
+                    raise ValidationError("Default taxes must be sale taxes.")
+
+    def _ecommerce_price_for(self, product, quantity=1.0, uom=None, date=None):
+        """Return the Store pricelist price, falling back to the product Sales Price."""
+        self.ensure_one()
+        variant = (
+            product
+            if product._name == "product.product"
+            else product.product_variant_id
+        )
+        if not variant:
+            return 0.0
+        if not self.pricelist_id:
+            return variant.lst_price
+        currency = (
+            self.currency_id
+            or self.pricelist_id.currency_id
+            or self.company_id.currency_id
+        )
+        price, rule = self.pricelist_id._get_product_price_rule(
+            variant,
+            quantity or 1.0,
+            currency=currency,
+            uom=uom or variant.uom_id,
+            date=date or fields.Date.context_today(self),
+        )
+        return price if rule else variant.lst_price
+
+    def _ecommerce_tax_for_country(self, country):
+        """Return the configured tax for a delivery country, if any.
+
+        A missing delivery country is treated as domestic, never international.
+        """
+        self.ensure_one()
+        company_country = self.company_id.country_id
+        if not country or not company_country or country == company_country:
+            return self.default_sales_tax_id
+        return self.default_international_tax_id
 
 
     def _ecommerce_schedule_operations(self):

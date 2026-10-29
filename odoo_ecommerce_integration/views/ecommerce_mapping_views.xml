@@ -128,6 +128,9 @@
                             <field name="external_grand_total"/>
                             <field name="odoo_amount_total"/>
                             <field name="financial_check"/>
+                            <field name="external_tax_total"/>
+                            <field name="odoo_tax_total"/>
+                            <field name="tax_check"/>
                         </group>
                     </group>
                     <group>
