@@ -215,6 +215,8 @@
                 <field name="store_id"/>
                 <field name="external_id"/>
                 <field name="external_label"/>
+                <field name="external_active"/>
+                <field name="external_scope"/>
                 <field name="journal_id"/>
                 <field name="active"/>
                 <field name="sync_state"/>
@@ -235,6 +237,8 @@
                             <field name="external_id"/>
                             <field name="external_code"/>
                             <field name="external_label"/>
+                            <field name="external_active"/>
+                            <field name="external_scope"/>
                         </group>
                         <group>
                             <field name="journal_id"/>
@@ -256,7 +260,10 @@
                 <field name="store_id"/>
                 <field name="external_id"/>
                 <field name="external_label"/>
+                <field name="external_active"/>
+                <field name="external_scope"/>
                 <field name="delivery_carrier_id"/>
+                <field name="shipping_product_id"/>
                 <field name="active"/>
                 <field name="sync_state"/>
             </list>
@@ -276,9 +283,12 @@
                             <field name="external_id"/>
                             <field name="external_code"/>
                             <field name="external_label"/>
+                            <field name="external_active"/>
+                            <field name="external_scope"/>
                         </group>
                         <group>
                             <field name="delivery_carrier_id"/>
+                            <field name="shipping_product_id"/>
                             <field name="active"/>
                             <field name="sync_state"/>
                             <field name="last_synced_at"/>

@@ -1,7 +1,7 @@
 {
     "name": "eCommerce Integration Core",
     "summary": "Provider-neutral eCommerce integration foundation for mappings, queues, security, and operations",
-    "version": "19.0.1.8.2",
+    "version": "19.0.1.9.0",
     "category": "Sales/Integration",
     "author": "trvlprogrammer",
     "website": "https://github.com/trvlprogrammer/odoo_ecommerce_integration",

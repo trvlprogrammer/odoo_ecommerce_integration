@@ -29,6 +29,8 @@ class EcommerceSyncState(models.Model):
             ("payment", "Payment"),
             ("payment_reconcile", "Financial Reconciliation"),
             ("inventory", "Inventory"),
+            ("delivery", "Delivery Method"),
+            ("payment_method", "Payment Method"),
             ("shipment", "Shipment"),
             ("refund", "Refund"),
             ("health", "Health"),

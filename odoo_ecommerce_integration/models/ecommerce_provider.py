@@ -10,6 +10,8 @@ CAPABILITY_DEFINITIONS = {
     "inventory.export": "Export inventory quantities",
     "shipment.export": "Export shipments",
     "finance.import": "Import financial documents and payment evidence",
+    "delivery.import": "Import delivery methods",
+    "payment.import": "Import payment methods",
 }
 
 SYNC_OPERATIONS = [

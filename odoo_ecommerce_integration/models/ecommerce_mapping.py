@@ -74,14 +74,6 @@ class EcommerceStore(models.Model):
     )
     currency_id = fields.Many2one("res.currency", ondelete="restrict")
     website_id = fields.Many2one("website", ondelete="set null", index=True)
-    shipping_product_id = fields.Many2one(
-        "product.product",
-        string="Shipping Product",
-        ondelete="restrict",
-        domain="[('type', '=', 'service')]",
-        check_company=True,
-        help="Service product used for the Magento shipping order line.",
-    )
     default_delivery_carrier_id = fields.Many2one(
         "delivery.carrier",
         string="Default Delivery Carrier",
@@ -223,6 +215,25 @@ class EcommerceStore(models.Model):
             date=date or fields.Date.context_today(self),
         )
         return price if rule else variant.lst_price
+
+    def action_import_delivery_methods(self):
+        self.ensure_one()
+        self._ecommerce_require_operator()
+        self._ecommerce_enqueue_method_import("delivery")
+        return True
+
+    def action_import_payment_methods(self):
+        self.ensure_one()
+        self._ecommerce_require_operator()
+        self._ecommerce_enqueue_method_import("payment")
+        return True
+
+    def _ecommerce_enqueue_method_import(self, resource):
+        """Connector hook: enqueue provider delivery or payment method import."""
+        self.ensure_one()
+        raise UserError(
+            "The installed connector does not implement %s method import." % resource
+        )
 
     def _ecommerce_tax_for_country(self, country):
         """Return the configured tax for a delivery country, if any.
@@ -564,6 +575,7 @@ class EcommerceMappingMixin(models.AbstractModel):
             "odoo_credit_note_id",
             "journal_id",
             "delivery_carrier_id",
+            "shipping_product_id",
             "warehouse_id",
             "stock_location_id",
             "product_mapping_id",
@@ -847,9 +859,25 @@ class EcommerceCarrierMapping(models.Model):
     _order = "store_id, external_id"
 
     delivery_carrier_id = fields.Many2one(
-        "delivery.carrier", required=True, ondelete="restrict", check_company=True
+        "delivery.carrier", required=False, ondelete="restrict", check_company=True
+    )
+    shipping_product_id = fields.Many2one(
+        "product.product",
+        string="Shipping Product",
+        ondelete="restrict",
+        check_company=True,
+        domain="[('type', '=', 'service')]",
+        help="Optional service product override. The delivery carrier product is used when empty.",
     )
     external_label = fields.Char()
+    external_active = fields.Boolean(
+        string="Provider Active",
+        default=True,
+        help="Whether the method is currently active at the provider.",
+    )
+    external_scope = fields.Char(
+        help="Provider scope, such as website or store-view code.",
+    )
 
     _external_uniq = models.UniqueIndex(
         "(store_id, external_id) WHERE active IS TRUE",
@@ -864,9 +892,17 @@ class EcommercePaymentMethodMapping(models.Model):
     _order = "store_id, external_id"
 
     journal_id = fields.Many2one(
-        "account.journal", required=True, ondelete="restrict", check_company=True
+        "account.journal", required=False, ondelete="restrict", check_company=True
     )
     external_label = fields.Char()
+    external_active = fields.Boolean(
+        string="Provider Active",
+        default=True,
+        help="Whether the method is currently active at the provider.",
+    )
+    external_scope = fields.Char(
+        help="Provider scope, such as website or store-view code.",
+    )
 
     _external_uniq = models.UniqueIndex(
         "(store_id, external_id) WHERE active IS TRUE",

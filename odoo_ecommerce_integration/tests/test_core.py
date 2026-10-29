@@ -1,6 +1,6 @@
 from psycopg2 import IntegrityError
 
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests.common import TransactionCase
 
 
@@ -47,6 +47,13 @@ class TestCore(TransactionCase):
             "odoo_template_id": self.template.id,
             "external_product_type": "simple",
         }
+
+    def test_method_import_hooks_are_provider_neutral(self):
+        self.assertNotIn("shipping_product_id", self.store._fields)
+        with self.assertRaises(UserError):
+            self.store.action_import_delivery_methods()
+        with self.assertRaises(UserError):
+            self.store.action_import_payment_methods()
 
     def test_backend_store_scope(self):
         self.assertEqual(self.store.company_id, self.company)
@@ -457,7 +464,7 @@ class TestHardening(TransactionCase):
             self.store.backend_id = other_backend
 
     def test_mapping_rejects_cross_company_template(self):
-        from odoo.exceptions import ValidationError
+        from odoo.exceptions import UserError, ValidationError
 
         other_company = self.env["res.company"].create({"name": "Hardening Other Co"})
         other_template = self.env["product.template"].create(

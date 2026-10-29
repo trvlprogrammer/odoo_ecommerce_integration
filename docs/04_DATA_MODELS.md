@@ -104,7 +104,6 @@ One commercial scope in an installation.
 | `stock_location_id` | Many2one `stock.location` | yes | child of warehouse stock location |
 | `pricelist_id` | Many2one `product.pricelist` | no | company-owned |
 | `currency_id` | Many2one `res.currency` | no | company-active |
-| `shipping_product_id` | Many2one `product.product` | no | service product for shipping lines |
 | `auto_confirm_orders` | Boolean | yes | default `False` |
 | `auto_post_invoice` | Boolean | yes | default `True` |
 | `auto_register_payment` | Boolean | yes | default `False` in V1 |
@@ -355,19 +354,25 @@ in V1.
 
 ### 3.16 `ecommerce.carrier.mapping`
 
-Additional fields: `delivery_carrier_id` (required), `external_method_label`
-(Char), `active`.
+Additional fields: `delivery_carrier_id` (optional), `shipping_product_id`
+(optional service product override), `external_label` (Char), `external_active`
+(Boolean), `external_scope` (Char), `active`.
 
-`external_id` is the Magento shipping method code.
+`external_id` is the stable Magento shipping method code. New mappings use the
+Store default delivery carrier and its delivery product when configured. The
+carrier delivery product is used when `shipping_product_id` is empty. The
+obsolete Store-level shipping product is migrated into existing mappings.
 
 Constraint: unique `(store_id, external_id)` while active.
 
 ### 3.17 `ecommerce.payment.method.mapping`
 
-Additional fields: `journal_id` (`account.journal`, required),
-`external_method_label` (Char), `active`.
+Additional fields: `journal_id` (`account.journal`, optional),
+`external_label` (Char), `external_active` (Boolean), `external_scope` (Char),
+`active`.
 
-`external_id` is the Magento payment method code.
+`external_id` is the stable Magento payment method code. New mappings use the
+Store default payment journal when configured.
 
 Constraint: unique `(store_id, external_id)` while active.
 
