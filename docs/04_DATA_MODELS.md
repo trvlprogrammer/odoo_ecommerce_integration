@@ -101,7 +101,6 @@ One commercial scope in an installation.
 | `external_store_view_id` | Char | no | Magento store view ID |
 | `external_store_view_code` | Char | yes | REST path scope |
 | `warehouse_id` | Many2one `stock.warehouse` | yes | company-owned |
-| `stock_location_id` | Many2one `stock.location` | yes | child of warehouse stock location |
 | `pricelist_id` | Many2one `product.pricelist` | no | company-owned |
 | `currency_id` | Many2one `res.currency` | no | company-active |
 | `auto_confirm_orders` | Boolean | yes | default `False` |
@@ -347,7 +346,8 @@ Additional fields: `warehouse_id` (required), `stock_location_id` (required),
 `external_source_name` (Char), `active`.
 
 `external_id` is the Magento `source_code`; `external_code` may mirror it for
-generic filters.
+generic filters. `stock_location_id` is authoritative for inventory
+synchronization; the Store no longer has a redundant stock location.
 
 Constraints: unique `(store_id, external_id)`; only one active source per store
 in V1.

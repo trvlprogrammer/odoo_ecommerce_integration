@@ -46,14 +46,10 @@ class EcommerceStore(models.Model):
     )
     external_store_view_code = fields.Char(
         string="Magento Store View Code",
-        required=True,
         help="Magento store-view code used in API calls and order synchronization.",
     )
     warehouse_id = fields.Many2one(
         "stock.warehouse", required=True, ondelete="restrict", check_company=True
-    )
-    stock_location_id = fields.Many2one(
-        "stock.location", required=True, ondelete="restrict", check_company=True
     )
     pricelist_id = fields.Many2one("product.pricelist", ondelete="restrict")
     default_sales_tax_id = fields.Many2one(
@@ -157,7 +153,6 @@ class EcommerceStore(models.Model):
     @api.constrains(
         "company_id",
         "warehouse_id",
-        "stock_location_id",
         "currency_id",
         "pricelist_id",
         "default_sales_tax_id",
@@ -167,8 +162,6 @@ class EcommerceStore(models.Model):
         for store in self:
             if store.warehouse_id.company_id != store.company_id:
                 raise ValidationError("Warehouse must belong to the store company.")
-            if store.stock_location_id.company_id not in (False, store.company_id):
-                raise ValidationError("Stock location must belong to the store company.")
             if store.pricelist_id and store.pricelist_id.company_id not in (False, store.company_id):
                 raise ValidationError("Pricelist must belong to the store company.")
             if store.website_id and store.website_id.company_id != store.company_id:
@@ -818,7 +811,7 @@ class EcommerceInventorySourceMapping(models.Model):
             if record.store_id:
                 record.backend_id = record.store_id.backend_id
                 record.warehouse_id = record.store_id.warehouse_id
-                record.stock_location_id = record.store_id.stock_location_id
+                record.stock_location_id = record.store_id.warehouse_id.lot_stock_id
 
     @api.model_create_multi
     def create(self, vals_list):

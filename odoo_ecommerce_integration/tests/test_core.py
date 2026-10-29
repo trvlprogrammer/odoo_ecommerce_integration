@@ -32,7 +32,6 @@ class TestCore(TransactionCase):
                 "external_website_id": "1",
                 "external_store_view_id": "1",
                 "warehouse_id": cls.warehouse.id,
-                "stock_location_id": cls.warehouse.lot_stock_id.id,
             }
         )
         cls.template = cls.env["product.template"].create(
@@ -74,6 +73,19 @@ class TestCore(TransactionCase):
         template.write({"ecommerce_url_key": False})
         self.assertEqual(template.ecommerce_url_key, "another-product-name")
         self.assertFalse(template.ecommerce_url_key_manual)
+
+    def test_store_stock_location_is_replaced_by_inventory_source(self):
+        self.assertNotIn("stock_location_id", self.store._fields)
+        source = self.env["ecommerce.inventory.source.mapping"].new(
+            {
+                "store_id": self.store.id,
+                "external_id": "default",
+                "external_code": "default",
+            }
+        )
+        source._onchange_store_scope()
+        self.assertEqual(source.warehouse_id, self.warehouse)
+        self.assertEqual(source.stock_location_id, self.warehouse.lot_stock_id)
 
     def test_mapping_company_is_derived(self):
         mapping = self.env["ecommerce.product.mapping"].create(self._mapping_values())
@@ -216,7 +228,6 @@ class TestGenericProviderContract(TransactionCase):
                 "company_id": cls.company.id,
                 "external_store_view_code": "default",
                 "warehouse_id": cls.warehouse.id,
-                "stock_location_id": cls.warehouse.lot_stock_id.id,
             }
         )
         cls.template = cls.env["product.template"].create(
@@ -361,7 +372,6 @@ class TestGenericNavigation(TransactionCase):
                 "company_id": company.id,
                 "external_store_view_code": "default",
                 "warehouse_id": warehouse.id,
-                "stock_location_id": warehouse.lot_stock_id.id,
             }
         )
         action = store.action_view_jobs()
@@ -394,7 +404,6 @@ class TestHardening(TransactionCase):
                 "company_id": cls.company.id,
                 "external_store_view_code": "default",
                 "warehouse_id": cls.warehouse.id,
-                "stock_location_id": cls.warehouse.lot_stock_id.id,
             }
         )
         cls.template = cls.env["product.template"].create(
@@ -543,7 +552,6 @@ class TestSyncRunProgress(TransactionCase):
                 "company_id": company.id,
                 "external_store_view_code": "default",
                 "warehouse_id": warehouse.id,
-                "stock_location_id": warehouse.lot_stock_id.id,
             }
         )
         run = store._ecommerce_start_run("product", "import", total=2)
