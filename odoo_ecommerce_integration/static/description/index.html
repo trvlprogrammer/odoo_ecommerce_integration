@@ -1,196 +1,268 @@
-<section class="eic">
+<section class="ecom-core">
 <style>
-.eic{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1f2330;max-width:1100px;margin:0 auto;line-height:1.6}
-.eic h1,.eic h2,.eic h3{color:#241d48;line-height:1.25;margin:0 0 14px}
-.eic h1{font-size:40px;letter-spacing:-.8px}
-.eic h2{font-size:28px;letter-spacing:-.3px;margin-top:0}
-.eic h3{font-size:19px}
-.eic p{margin:0 0 14px}
-.eic a{color:#7150b8;text-decoration:none}
-.eic .hero{padding:8px 0 16px}
-.eic .hero img{width:100%;display:block;border-radius:18px}
-.eic .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0 0}
-.eic .chip{display:inline-block;padding:6px 13px;border-radius:999px;background:#f0ecfb;color:#5b3ca0;font-size:13px;font-weight:600}
-.eic .chip.orange{background:#fff1e8;color:#b04a12}
-.eic .section{padding:44px 0 8px}
-.eic .lead{font-size:18px;color:#555c70;max-width:850px}
-.eic .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.eic .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.eic .card{background:#fff;border:1px solid #e7e3f2;border-radius:14px;padding:20px 22px}
-.eic .card h3{margin-bottom:8px;font-size:17px}
-.eic .card p{color:#555c70;font-size:14px;margin:0}
-.eic .kicker{text-transform:uppercase;letter-spacing:1.4px;font-size:12px;font-weight:800;color:#7150b8;margin-bottom:8px}
-.eic .note{background:#f7f4ff;border-left:4px solid #7150b8;border-radius:0 10px 10px 0;padding:16px 20px;margin:18px 0;color:#40375c;font-size:15px}
-.eic .warn{background:#fff8ef;border-left:4px solid #f37021;border-radius:0 10px 10px 0;padding:16px 20px;margin:18px 0;color:#5e351a;font-size:15px}
-.eic figure{margin:0 0 22px}
-.eic figure img{width:100%;display:block;border:1px solid #e6e2f0;border-radius:10px;box-shadow:0 8px 24px rgba(36,29,72,.08)}
-.eic figcaption{font-size:13px;color:#666d80;margin-top:7px}
-.eic ol,.eic ul{margin:8px 0 16px;padding-left:22px}
-.eic li{margin:5px 0}
-.eic table{width:100%;border-collapse:collapse;margin:14px 0 20px;font-size:14px;table-layout:fixed}
-.eic th,.eic td{border:1px solid #e7e3f2;padding:10px 12px;text-align:left;vertical-align:top;overflow-wrap:anywhere;word-break:break-word}
-.eic th{background:#f7f4ff;color:#241d48}
-.eic code{background:#f4f2f9;border-radius:4px;padding:1px 5px;font-size:13px;overflow-wrap:anywhere;word-break:break-word}
-.eic .footer{margin:42px 0 10px;padding-top:22px;border-top:1px solid #e7e3f2;font-size:13px;color:#666d80}
-.eic .pipeline{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:18px 0;padding:18px;background:#f7f4ff;border:1px solid #e7e3f2;border-radius:14px}
-.eic .pipeline span{background:#fff;border:1px solid #e2ddf0;border-radius:10px;padding:9px 12px;font-size:14px;font-weight:700;color:#241d48}
-.eic .pipeline b{color:#7150b8;font-size:18px}
-@media(max-width:820px){.eic h1{font-size:31px}.eic .grid2,.eic .grid3{grid-template-columns:1fr}.eic .section{padding-top:32px}}
+.ecom-core{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#24323a;max-width:1120px;margin:0 auto;line-height:1.62}
+.ecom-core h1,.ecom-core h2,.ecom-core h3{color:#0b3d3a;line-height:1.22;margin:0 0 12px}
+.ecom-core h1{font-size:40px;letter-spacing:-1px}
+.ecom-core h2{font-size:28px;letter-spacing:-.4px}
+.ecom-core h3{font-size:18px}
+.ecom-core p{margin:0 0 14px}
+.ecom-core a{color:#0f766e;text-decoration:none}
+.ecom-core .hero{background:linear-gradient(135deg,#effaf7 0%,#f8fbfa 55%,#eef6f4 100%);border:1px solid #d7ebe5;border-radius:20px;padding:28px;margin:8px 0 26px}
+.ecom-core .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:center}
+.ecom-core .hero img{width:100%;display:block;border:1px solid #cfe6df;border-radius:14px;box-shadow:0 14px 30px rgba(11,61,58,.10)}
+.ecom-core .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:12px;font-weight:800;color:#0f766e;margin-bottom:8px}
+.ecom-core .lead{font-size:17px;color:#52646b;max-width:820px}
+.ecom-core .chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 18px}
+.ecom-core .chip{display:inline-block;padding:6px 12px;border-radius:999px;background:#e3f5f0;color:#0b5b54;font-size:12px;font-weight:700}
+.ecom-core .chip.dark{background:#0f3f3b;color:#fff}
+.ecom-core .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px}
+.ecom-core .btn{display:inline-block;padding:10px 17px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none}
+.ecom-core .btn.primary{background:#0f766e;color:#fff}
+.ecom-core .btn.secondary{background:#fff;color:#0b5b54;border:1px solid #b8dbd2}
+.ecom-core .section{padding:34px 0 4px}
+.ecom-core .section-head{text-align:center;max-width:820px;margin:0 auto 20px}
+.ecom-core .section-head p{margin:0 auto;color:#5c6d73}
+.ecom-core .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.ecom-core .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ecom-core .card{background:#fff;border:1px solid #dce9e5;border-radius:14px;padding:18px 20px;box-shadow:0 3px 12px rgba(15,63,59,.04)}
+.ecom-core .card h3{margin:0 0 7px}
+.ecom-core .card p{color:#5b6b71;font-size:14px;margin:0}
+.ecom-core .number{display:inline-block;background:#e3f5f0;color:#0f766e;border-radius:7px;padding:3px 9px;font-size:12px;font-weight:800;margin-bottom:9px}
+.ecom-core .note{background:#f0faf7;border-left:4px solid #0f766e;border-radius:0 10px 10px 0;padding:15px 18px;margin:18px 0;color:#31554f;font-size:15px}
+.ecom-core .warn{background:#fff8ed;border-left:4px solid #d97706;border-radius:0 10px 10px 0;padding:15px 18px;margin:18px 0;color:#65431a;font-size:15px}
+.ecom-core figure{margin:0 0 20px}
+.ecom-core figure img{width:100%;display:block;border:1px solid #dce9e5;border-radius:12px;box-shadow:0 10px 26px rgba(15,63,59,.07)}
+.ecom-core figcaption{font-size:13px;color:#66777d;margin-top:7px}
+.ecom-core .feature-row{display:grid;grid-template-columns:1fr 1.15fr;gap:24px;align-items:center;padding:24px 0;border-top:1px solid #e4efec}
+.ecom-core .feature-row.flip{grid-template-columns:1.15fr 1fr}
+.ecom-core .feature-row.flip .copy{order:2}
+.ecom-core .feature-row.flip figure{order:1}
+.ecom-core ul,.ecom-core ol{margin:8px 0 16px;padding-left:22px}
+.ecom-core li{margin:5px 0}
+.ecom-core table{width:100%;border-collapse:collapse;margin:14px 0 22px;font-size:14px}
+.ecom-core th,.ecom-core td{border:1px solid #dce9e5;padding:10px 12px;text-align:left;vertical-align:top}
+.ecom-core th{background:#f0faf7;color:#0b3d3a}
+.ecom-core code{background:#eef5f3;border-radius:4px;padding:1px 5px;font-size:13px;word-break:break-word}
+.ecom-core .pipeline{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:18px;background:#f0faf7;border:1px solid #d7ebe5;border-radius:14px;margin:18px 0}
+.ecom-core .pipeline span{background:#fff;border:1px solid #d1e5df;border-radius:9px;padding:8px 12px;font-size:13px;font-weight:700;color:#0b3d3a}
+.ecom-core .pipeline b{color:#0f766e;font-size:18px}
+.ecom-core .footer{margin:34px 0 8px;padding-top:20px;border-top:1px solid #dce9e5;font-size:13px;color:#66777d}
+@media(max-width:840px){.ecom-core h1{font-size:32px}.ecom-core .hero-grid,.ecom-core .grid2,.ecom-core .grid3,.ecom-core .feature-row,.ecom-core .feature-row.flip{grid-template-columns:1fr}.ecom-core .feature-row.flip .copy,.ecom-core .feature-row.flip figure{order:initial}.ecom-core .hero{padding:20px}}
 </style>
 
 <div class="hero">
-  <img src="banner.png" alt="eCommerce Integration Core"/>
-  <div class="chips">
-    <span class="chip">Odoo 17 &middot; 18 &middot; 19</span>
-    <span class="chip">OCA queue_job</span>
-    <span class="chip">Multi-company</span>
-    <span class="chip orange">Free</span>
-  </div>
-</div>
-
-<div class="section" id="live-demo">
-  <div class="kicker">Live demo</div>
-  <h2>Explore the Core in our live Odoo demo</h2>
-  <p class="lead">Open the public demo to review the provider-neutral Dashboard, backend and store configuration, mapping screens, queue monitoring, synchronization states, and issues.</p>
-  <div class="note">
-    <p><strong>Demo URL:</strong> <a href="https://odoo.odoointegrator.id" target="_blank" rel="noopener">https://odoo.odoointegrator.id</a></p>
-    <p><strong>Username:</strong> <code>demo</code> &nbsp; <strong>Password:</strong> <code>demo</code></p>
-    <p>The demo account is read/write for disposable demo records only. It does not expose API secrets, database access, or production data.</p>
-  </div>
-</div>
-
-<div class="section">
-  <div class="kicker">Shared foundation</div>
-  <h2>One integration core. Multiple compatible connectors.</h2>
-  <p class="lead">eCommerce Integration Core is the free, provider-neutral foundation for native Odoo eCommerce connectors. It provides the configuration, mapping, synchronization, security, and monitoring layer that connector modules build on.</p>
-  <div class="note"><strong>Important:</strong> this module does not connect to Magento, Shopify, or any other platform by itself. It is a dependency. Install a compatible connector such as <strong>Magento Connector for Odoo</strong> to synchronize external data.</div>
-</div>
-
-<div class="section">
-  <h2>What the core gives you</h2>
-  <div class="grid2">
-    <div class="card"><h3>Backend &amp; store identity</h3><p>Separate external systems, websites, store views, companies, warehouses, currencies, and job users without mixing records.</p></div>
-    <div class="card"><h3>Store-scoped mappings</h3><p>Persistent links for products, variants, attributes, categories, customers, orders, invoices, payments, shipments, refunds, carriers, payment methods, and inventory sources.</p></div>
-    <div class="card"><h3>Synchronization state</h3><p>Incremental cursors, last success, last error, and status per store and resource. Replays are designed to be safe and idempotent.</p></div>
-    <div class="card"><h3>OCA queue_job orchestration</h3><p>Slow API work runs in bounded background coordinator and child jobs with channels, retry policies, deduplication keys, progress runs, and a company-scoped integration user. A provider-neutral Sync to eCommerce product wizard queues explicit Export or Update operations, while Sync Now covers catalog, orders, inventory, shipments, and financial documents.</p></div>
-    <div class="card"><h3>Operational monitoring</h3><p>Events, actionable issues, and mapping records make synchronization observable instead of hiding failures in logs.</p></div>
-    <div class="card"><h3>Security &amp; isolation</h3><p>Role-based access, manager-only credentials, company record rules, and least-privilege queue execution.</p></div>
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">eCommerce Integration Core</div>
+      <h1>One integration foundation.<br/><span style="color:#0f766e;">Every eCommerce connector.</span></h1>
+      <p class="lead">A provider-neutral core for secure backend configuration, store-scoped mappings, queue orchestration, synchronization health, and day-to-day operations. Build on it with the Magento connector or another compatible provider.</p>
+      <div class="chips">
+        <span class="chip">Odoo 18.0</span>
+        <span class="chip">OCA queue_job</span>
+        <span class="chip">Multi-company</span>
+        <span class="chip dark">Free &middot; LGPL-3</span>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="https://odoo.odoointegrator.id" target="_blank" rel="noopener">Try Live Demo</a>
+        <a class="btn secondary" href="#setup">Installation &amp; Setup</a>
+      </div>
+    </div>
+    <figure>
+      <img src="banner.png" alt="eCommerce Integration Core banner"/>
+    </figure>
   </div>
 </div>
 
 <div class="section">
-  <h2>Designed for connector developers and administrators</h2>
-  <p class="lead">A connector adds the platform-specific API adapter and workflows. The core keeps shared behaviour consistent across connectors, so administrators learn one configuration and monitoring model.</p>
+  <div class="section-head">
+    <div class="eyebrow">The shared layer</div>
+    <h2>Architecture that keeps connectors consistent</h2>
+    <p>The Core owns the reusable integration model. A connector contributes the external API client and platform-specific workflows, while administrators work with one familiar configuration and monitoring experience.</p>
+  </div>
+  <div class="pipeline"><span>External platform</span><b>&rarr;</b><span>Provider connector</span><b>&rarr;</b><span>eCommerce Core</span><b>&rarr;</b><span>OCA queue_job</span><b>&rarr;</b><span>Odoo records</span></div>
   <div class="grid3">
-    <div class="card"><h3>Configure once</h3><p>Create a backend, one or more stores, and the mappings required by the connector.</p></div>
-    <div class="card"><h3>Run safely</h3><p>Trigger synchronization or let crons enqueue bounded jobs. Monitor every queued operation.</p></div>
-    <div class="card"><h3>Diagnose quickly</h3><p>Review sync states, events, and issues with stable fingerprints instead of duplicating the same error.</p></div>
-  </div>
-</div>
-
-<div class="section">
-  <div class="kicker">Provider architecture</div>
-  <h2>A stable core, a thin connector layer</h2>
-  <p class="lead">The Core owns configuration, mappings, synchronization state, queue orchestration, security, and monitoring. A provider connector contributes the platform API client and resource-specific workflows.</p>
-  <div class="pipeline"><span>External eCommerce platform</span><b>&rarr;</b><span>Provider connector</span><b>&rarr;</b><span>eCommerce Core</span><b>&rarr;</b><span>OCA queue_job</span><b>&rarr;</b><span>Odoo records</span></div>
-  <div class="grid3">
-    <div class="card"><h3>Backend</h3><p>One external system, one company scope, credentials, provider capabilities, and a dedicated integration user.</p></div>
+    <div class="card"><h3>Backend</h3><p>External system, company scope, credentials, provider capabilities, and a dedicated queue user.</p></div>
     <div class="card"><h3>Store</h3><p>Website, store view, warehouse, stock location, currency, automation, batch sizes, and scheduling for one sales channel.</p></div>
-    <div class="card"><h3>Mapping</h3><p>Persistent external-to-Odoo links for products, variants, customers, orders, shipments, invoices, payments, refunds, and supporting configuration.</p></div>
-    <div class="card"><h3>Sync state</h3><p>Per-store, per-resource cursors and last-success evidence. Replays are designed to be idempotent.</p></div>
-    <div class="card"><h3>Queue</h3><p>Bounded coordinator and child jobs, channels, deduplication keys, retry patterns, run progress, and company-scoped execution.</p></div>
-    <div class="card"><h3>Observe</h3><p>Dashboard KPIs, events, issues, failed-job visibility, store health, and mapping drill-down for daily operations.</p></div>
+    <div class="card"><h3>Mappings</h3><p>Persistent links for products, variants, attributes, categories, customers, orders, invoices, payments, shipments, refunds, carriers, payment methods, and inventory sources.</p></div>
+    <div class="card"><h3>Sync state</h3><p>Per-store and per-resource cursors, last success, last failure, and incremental replay controls.</p></div>
+    <div class="card"><h3>Queue orchestration</h3><p>Bounded coordinator and child jobs with channels, retry policies, deduplication keys, and progress runs.</p></div>
+    <div class="card"><h3>Observability</h3><p>Events, actionable issues, mapping status, and queue state make failures visible instead of hiding them in logs.</p></div>
+  </div>
+  <div class="note"><strong>Important:</strong> this module does not connect to an external platform by itself. It is the shared foundation and dependency for a provider connector such as <strong>Magento Connector for Odoo</strong>.</div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <div class="eyebrow">Dashboard</div>
+    <h2>Compare the whole business, then drill into the detail</h2>
+    <p>Seven responsive metric groups compare Total Odoo with each configured Store: Orders, Customers, Products, Sales / Revenue, Inventory, Finance, and Open Issues.</p>
+  </div>
+  <figure>
+    <img src="screenshots/dashboard.png" alt="eCommerce Dashboard with seven comparison chart groups" loading="lazy"/>
+    <figcaption>All Stores view: Total Odoo plus one bar per Store, with hover values and click-through to the underlying Odoo records. The layout is 4 columns on desktop, 2 on tablets, and 1 on mobile.</figcaption>
+  </figure>
+  <div class="grid3">
+    <div class="card"><h3>Provider, backend and Store filters</h3><p>Keep the active company context and narrow the Store bars without changing the Odoo baseline.</p></div>
+    <div class="card"><h3>Date-aware metrics</h3><p>Selected-period metrics use order, customer, and invoice dates. Products, inventory, and open issues are clearly marked as current snapshots.</p></div>
+    <div class="card"><h3>Click-through</h3><p>Every bar opens the relevant Odoo list with the company, Store mapping scope, and applicable date filters applied.</p></div>
   </div>
 </div>
 
 <div class="section">
-  <h2>eCommerce Dashboard</h2>
-  <figure><img src="screenshots/dashboard.png" alt="eCommerce dashboard"/><figcaption>Provider-neutral dashboard with company-scoped KPIs, mapping coverage, queue health, recent synchronization runs, failed jobs, open issues, and store health.</figcaption></figure>
-  <p>The Dashboard belongs to the free core. It works with core and OCA queue_job alone, shows honest empty states before a provider is configured, and never calls an external API. Provider connectors contribute through the generic capability and mapping contracts.</p>
-</div>
-
-<div class="section">
-  <h2>Real screens from the core</h2>
-  <figure><img src="screenshots/backend.png" alt="Backend configuration"/><figcaption>Backend configuration with connection state, credentials masked, capabilities, and a dedicated job user.</figcaption></figure>
-  <div class="grid2">
-    <figure><img src="screenshots/store.png" alt="Store configuration"/><figcaption>Store scope with three primary actions: Test / Preflight, Sync Now, and View Jobs. Configuration is grouped into General, Catalog, Orders &amp; Finance, Inventory &amp; Fulfillment, Scheduling, and Diagnostics.</figcaption></figure>
-    <figure><img src="screenshots/mappings.png" alt="Product mappings"/><figcaption>Store-scoped product mappings with external identity, SKU, Odoo template, type, and sync state.</figcaption></figure>
-    <figure><img src="screenshots/sync-state.png" alt="Synchronization state"/><figcaption>Per-resource cursors and last-success evidence for each store.</figcaption></figure>
-    <figure><img src="screenshots/queue.png" alt="Queue jobs"/><figcaption>Background jobs executed through OCA queue_job, including retries and completion evidence.</figcaption></figure>
-    <figure><img src="screenshots/product-sync-wizard.png" alt="Sync to eCommerce wizard"/><figcaption>Provider-neutral Sync to eCommerce wizard from the free core: provider, backend, target store, Export or Update, and queued execution.</figcaption></figure>
-    <figure><img src="screenshots/store-sync-wizard.png" alt="Store synchronization wizard"/><figcaption>Store Sync Now workflow: choose Import, Export, or Update; select a supported data type; confirm the provider, backend, and stores; then queue the job.</figcaption></figure>
+  <div class="section-head">
+    <div class="eyebrow">Product content</div>
+    <h2>One product record, ready for any Store</h2>
+    <p>Core adds provider-neutral content fields used by connectors: short description, URL key with manual override, SEO metadata, and per-media alt text.</p>
+  </div>
+  <div class="feature-row">
+    <div class="copy">
+      <div class="number">01</div>
+      <h3>Storefront content in the Sales workflow</h3>
+      <p>The short description is available in the Sales workflow alongside the storefront description. URL key, meta title, meta keywords, and meta description stay together in the eCommerce tab. URL keys are generated from the product name until a user edits them; manual values are preserved across renames.</p>
+      <ul>
+        <li>Short and long eCommerce descriptions</li>
+        <li>Editable SEO fields with generated URL keys</li>
+        <li>Media gallery alt text</li>
+        <li>Provider-neutral fields shared by connectors</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="screenshots/product-fields.png" alt="Product eCommerce tab showing URL key and SEO fields" loading="lazy"/>
+      <figcaption>URL key and SEO fields on the product form.</figcaption>
+    </figure>
   </div>
 </div>
 
 <div class="section">
-  <h2>Core screens</h2>
-  <div class="grid2">
-    <figure><img src="screenshots/dashboard.png" alt="eCommerce Dashboard"/><figcaption>Company-scoped eCommerce Dashboard with mapping coverage, queue status, orders, revenue, recent runs, store health, and issues.</figcaption></figure>
-    <figure><img src="screenshots/backend.png" alt="Backend management"/><figcaption>Backend list with provider, company, base URL, connection state, and last test.</figcaption></figure>
-    <figure><img src="screenshots/store.png" alt="Store configuration"/><figcaption>Store scope with company, warehouse, currency, external website/store view, and provider actions.</figcaption></figure>
-    <figure><img src="screenshots/mappings.png" alt="Product mappings"/><figcaption>Store-scoped product mappings with external identity, SKU, Odoo product, type, and sync state.</figcaption></figure>
-    <figure><img src="screenshots/customers.png" alt="Customer mappings"/><figcaption>Customer mappings linking external customers and guest identities to Odoo partners.</figcaption></figure>
-    <figure><img src="screenshots/orders.png" alt="Order mappings"/><figcaption>Order mappings with Magento increment ID, Odoo sale order, financial check, and import state.</figcaption></figure>
-    <figure><img src="screenshots/sync-state.png" alt="Sync states"/><figcaption>Per-resource cursors and last-success evidence, scoped by store.</figcaption></figure>
-    <figure><img src="screenshots/queue.png" alt="Queue jobs"/><figcaption>OCA queue_job execution with channel, state, timing, user, and UUID.</figcaption></figure>
-    <figure><img src="screenshots/product-sync-wizard.png" alt="Sync to eCommerce wizard"/><figcaption>Provider-neutral Sync to eCommerce wizard for explicit Export or Update operations. Verification capture: Odoo 19.</figcaption></figure>
-    <figure><img src="screenshots/store-sync-wizard.png" alt="Store synchronization wizard"/><figcaption>Store Sync Now wizard with operation, data type, provider, backend, and target stores.</figcaption></figure>
-    <figure><img src="screenshots/issues.png" alt="Synchronization issues"/><figcaption>Actionable synchronization issues with stable fingerprints and occurrence counts.</figcaption></figure>
-    <figure><img src="screenshots/security.png" alt="Security groups"/><figcaption>Role-based access separates users, operators, and managers; credentials remain manager-only.</figcaption></figure>
+  <div class="section-head">
+    <div class="eyebrow">Configuration</div>
+    <h2>Configure once. Operate from one place.</h2>
+  </div>
+  <div class="feature-row flip">
+    <div class="copy">
+      <div class="number">02</div>
+      <h3>Backends and Stores</h3>
+      <p>Separate external systems from the sales channels inside them. A Backend holds credentials and provider capability; a Store holds the website, store view, warehouse, stock location, currency, and automation settings.</p>
+      <ul>
+        <li>Company-scoped configuration and record rules</li>
+        <li>Manager-only credential access</li>
+        <li>Per-Store queue scheduling and batch sizes</li>
+        <li>Test Connection and Preflight from the form</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="screenshots/backend.png" alt="eCommerce backend configuration form" loading="lazy"/>
+      <figcaption>Connection, company, job user, and provider settings in a Backend.</figcaption>
+    </figure>
+  </div>
+  <div class="feature-row">
+    <div class="copy">
+      <div class="number">03</div>
+      <h3>Store synchronization</h3>
+      <p>Run supported catalog, order, inventory, shipment, and finance operations from a Store. Jobs are queued through OCA queue_job and report state back to the Store.</p>
+      <ul>
+        <li>Import, Export, and Update operations where supported</li>
+        <li>Bounded batches and deduplicated queue identities</li>
+        <li>Safe replay through existing mappings</li>
+        <li>Visible progress and structured issues</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="screenshots/store-sync-wizard.png" alt="Store synchronization wizard" loading="lazy"/>
+      <figcaption>Choose an operation and data type, then confirm the target Stores.</figcaption>
+    </figure>
   </div>
 </div>
 
 <div class="section">
-  <h2>Installation</h2>
-  <h3>1. Install OCA queue_job</h3>
-  <p>Clone the <a href="https://github.com/OCA/queue">OCA/queue</a> repository on the branch matching your Odoo version (<code>17.0</code>, <code>18.0</code>, or <code>19.0</code>). Add the repository root to <code>addons_path</code>; install <code>queue_job</code> from Apps.</p>
-  <h3>2. Add this repository to addons_path</h3>
-  <p>This repository is a container for the addon. Add the <strong>repository root</strong> (the folder containing the nested <code>odoo_ecommerce_integration</code> addon), not the nested folder itself:</p>
-  <table><tr><th>Correct</th><td><code>/opt/odoo/odoo_ecommerce_integration</code></td></tr><tr><th>Incorrect</th><td><code>/opt/odoo/odoo_ecommerce_integration/odoo_ecommerce_integration</code></td></tr></table>
-  <h3>3. Install the core</h3>
-  <p>Restart Odoo, activate developer mode if needed, select <strong>Apps &rarr; Update Apps List</strong>, then install <strong>eCommerce Integration Core</strong>.</p>
-  <h3>4. Install a connector</h3>
-  <p>The core alone does not synchronize data. Install a compatible paid connector (for example Magento Connector for Odoo) and follow its setup guide.</p>
-  <h3>5. Configure and run</h3>
-  <p>Open <strong>eCommerce &rarr; Configuration &rarr; Backends</strong> and <strong>Stores</strong>. Create mappings as required by the connector. Ensure the OCA jobrunner is running and review <strong>Job Queue &rarr; Queue</strong> for execution.</p>
-  <div class="warn"><strong>Background processing:</strong> most connector work is asynchronous. Run Odoo with OCA queue_job loaded and enough workers (or a queue_job runner) so jobs execute. Pending jobs will not process if the runner is stopped.</div>
+  <div class="section-head">
+    <div class="eyebrow">Mappings</div>
+    <h2>An auditable link between Odoo and every Store</h2>
+  </div>
+  <figure>
+    <img src="screenshots/mappings.png" alt="eCommerce product mappings list" loading="lazy"/>
+    <figcaption>Store-scoped mappings preserve the external identity used for safe repeat synchronization.</figcaption>
+  </figure>
+  <div class="grid3">
+    <div class="card"><h3>Catalog</h3><p>Products, variants, attributes, attribute options, and eCommerce categories.</p></div>
+    <div class="card"><h3>Commercial</h3><p>Customers, orders, order lines, invoices, payments, shipments, and credit notes/refunds.</p></div>
+    <div class="card"><h3>Operations</h3><p>Inventory sources, carriers, and payment methods, with Store ownership on every mapping.</p></div>
+  </div>
 </div>
 
 <div class="section">
-  <h2>Core setup and daily use</h2>
-  <p class="lead">The Core is provider-neutral, so some fields only become useful after a connector is installed. Complete these steps in order.</p>
+  <div class="section-head">
+    <div class="eyebrow">Queue &amp; reliability</div>
+    <h2>Background work designed for real operations</h2>
+  </div>
+  <div class="feature-row flip">
+    <div class="copy">
+      <div class="number">04</div>
+      <h3>OCA queue_job with a dedicated integration user</h3>
+      <p>Slow API calls do not block the web client. Coordinator jobs split long work into bounded child jobs, and deterministic identity keys prevent accidental duplicate enqueueing of the same unit of work.</p>
+      <ul>
+        <li>Separate channels for catalog, orders, inventory, shipments, and finance</li>
+        <li>Retry policies for transient external failures</li>
+        <li>Company-scoped job execution</li>
+        <li>Failed jobs and synchronization issues stay inspectable</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="screenshots/queue.png" alt="eCommerce queue jobs list" loading="lazy"/>
+      <figcaption>Queue jobs show their method, Store, state, retry information, and execution outcome.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <div class="eyebrow">Refunds</div>
+    <h2>Credit Notes with an explicit export boundary</h2>
+    <p>Posted customer credit notes can be sent to a selected Store through the provider-neutral refund wizard. The core validates the Store and mapping context, queues the operation, and only marks the credit note as refunded after the provider confirms success.</p>
+  </div>
+  <div class="grid3">
+    <div class="card"><h3>Provider-neutral wizard</h3><p>Select a company-scoped Store; the connector supplies its own return method and confirmation rules.</p></div>
+    <div class="card"><h3>Safe failure state</h3><p>A queued or failed refund never sets the refunded flag. Pending or uncertain attempts are reconciled before retry.</p></div>
+    <div class="card"><h3>Duplicate prevention</h3><p>Credit-note identity, existing mappings, and provider evidence prevent a second refund for the same document.</p></div>
+  </div>
+</div>
+
+<div class="section" id="setup">
+  <div class="section-head">
+    <div class="eyebrow">Installation</div>
+    <h2>Install the Core in six steps</h2>
+  </div>
   <ol>
-    <li><strong>Install OCA queue_job.</strong> Use the branch matching your Odoo version and load <code>queue_job</code> in the Odoo process.</li>
-    <li><strong>Install the Core.</strong> Add the repository root to <code>addons_path</code>, restart Odoo, update the Apps list, and install <strong>eCommerce Integration Core</strong>.</li>
-    <li><strong>Configure users and security.</strong> Assign <strong>eCommerce User</strong>, <strong>eCommerce Operator</strong>, or <strong>eCommerce Manager</strong> according to responsibility. Credentials are manager-only.</li>
-    <li><strong>Create a Backend.</strong> Open <strong>eCommerce &rarr; Configuration &rarr; Backends</strong>, set the external system code and owning company, and select the integration job user.</li>
-    <li><strong>Create a Store.</strong> Open <strong>eCommerce &rarr; Configuration &rarr; Stores</strong>, bind the store to the backend, company, warehouse, stock location, currency, and external store view.</li>
-    <li><strong>Install a provider connector.</strong> The Core alone does not call Magento, Shopify, or another external API. Install the connector that supplies credentials, capabilities, and resource workflows.</li>
-    <li><strong>Review product, variant, customer, and order mappings.</strong> Use <strong>eCommerce &rarr; Mappings</strong>. Mapping scope is always the store; coverage appears on the Dashboard.</li>
-    <li><strong>Verify queue processing.</strong> Open <strong>Job Queue &rarr; Queue</strong>. A pending job means the runner is stopped or channel capacity is unavailable.</li>
-    <li><strong>Configure schedules.</strong> Review the connector's scheduled actions for catalog, customers, orders, inventory, shipments, and finance. Start with conservative batch sizes.</li>
-    <li><strong>Run a small synchronization.</strong> Use the connector's <strong>Sync Now</strong> or product <strong>Sync to eCommerce</strong> wizard. Review each queue job and resulting mapping.</li>
-    <li><strong>Monitor the Dashboard.</strong> Check mapping coverage, queue health, recent synchronization runs, store health, failed jobs, and open issues. Use company and provider filters.</li>
-    <li><strong>Retry and troubleshoot safely.</strong> Fix the underlying configuration or data, inspect the mapping and remote object, then retry the failed job. Do not blindly replay a remote mutation that may have succeeded.</li>
+    <li>Install the <strong>OCA queue_job 18.0</strong> branch. Add the repository root to <code>addons_path</code>.</li>
+    <li>Install <strong>queue_job</strong> from Apps.</li>
+    <li>Place <code>odoo_ecommerce_integration</code> in your addons path and update the Apps list.</li>
+    <li>Install <strong>eCommerce Integration Core</strong>.</li>
+    <li>Enable the queue runner: <code>workers = 2</code> and <code>server_wide_modules = web,queue_job</code>, then restart Odoo.</li>
+    <li>Install a compatible connector such as <strong>Magento Connector for Odoo</strong>. The Core alone does not contact an external platform.</li>
   </ol>
-  <div class="note">The Core never stores provider business logic. If a screen has no data after install, confirm that a provider connector is installed, a Backend and Store are configured, and the relevant mappings exist.</div>
+  <div class="note"><p><strong>Demo:</strong> <a href="https://odoo.odoointegrator.id" target="_blank" rel="noopener">odoo.odoointegrator.id</a> &nbsp; <strong>User:</strong> <code>demo</code> &nbsp; <strong>Password:</strong> <code>demo</code>. The demo is read/write for disposable records only.</p></div>
 </div>
 
 <div class="section">
-  <h2>Requirements</h2>
+  <div class="section-head">
+    <div class="eyebrow">Compatibility</div>
+    <h2>Designed for supported Odoo branches</h2>
+  </div>
   <table>
-    <tr><th>Odoo</th><td>17.0, 18.0, or 19.0 on the matching branch</td></tr>
-    <tr><th>OCA dependency</th><td><code>queue_job</code> from the matching OCA/queue branch</td></tr>
-    <tr><th>Standard Odoo apps</th><td>Sales, Inventory, Accounting/Invoicing, Delivery, Website/eCommerce, Manufacturing (installed as dependencies)</td></tr>
-    <tr><th>Connector</th><td>A compatible provider connector is required for external synchronization</td></tr>
-    <tr><th>License</th><td>LGPL-3</td></tr>
+    <tr><th>Odoo</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>19.0</td><td><strong>Supported</strong></td><td>Primary development baseline.</td></tr>
+    <tr><td>18.0</td><td><strong>Supported</strong></td><td>Version-adapted views, ORM, dashboard, and queue integration.</td></tr>
+    <tr><td>17.0</td><td><strong>Supported</strong></td><td>Version-adapted form layout and queue_job API.</td></tr>
   </table>
+  <div class="warn"><strong>Limitations:</strong> the Core is not a standalone connector; external synchronization requires a provider module. Platform-specific coverage, RMA/webhooks, multi-source MSI, bundle/grouped behavior, and special-price rules depend on the connector and are documented there.</div>
 </div>
 
 <div class="section">
-  <h2>Support</h2>
-  <p>Need help with installation, configuration, or synchronization? Contact our support team at <a href="mailto:alfatihridhont@gmail.com">alfatihridhont@gmail.com</a>.</p>
-  <p>Include your Odoo version, connector version, the exact job or sync-state record, and a sanitized error message. Never send access tokens, passwords, or full customer data.</p>
-  <div class="footer">eCommerce Integration Core &middot; Free shared framework &middot; Odoo 17/18/19 &middot; Requires OCA queue_job and a compatible connector.</div>
+  <div class="section-head">
+    <div class="eyebrow">Support</div>
+    <h2>Need help with the foundation?</h2>
+    <p>Contact <a href="mailto:alfatihridhont@gmail.com">alfatihridhont@gmail.com</a> for installation, configuration, or synchronization assistance.</p>
+  </div>
+  <div class="footer">eCommerce Integration Core &middot; Free &middot; LGPL-3 &middot; Requires OCA queue_job and a compatible provider connector.</div>
 </div>
 </section>
