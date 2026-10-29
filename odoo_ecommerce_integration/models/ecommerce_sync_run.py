@@ -15,7 +15,8 @@ class EcommerceSyncRun(models.Model):
         "ecommerce.store", required=True, ondelete="restrict", index=True
     )
     backend_id = fields.Many2one(
-        "ecommerce.backend", required=True, ondelete="restrict", index=True
+        "ecommerce.backend", required=True, ondelete="restrict", index=True,
+        string="Instance",
     )
     company_id = fields.Many2one(
         "res.company",

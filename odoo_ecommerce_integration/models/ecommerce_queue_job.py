@@ -8,7 +8,8 @@ class QueueJob(models.Model):
         "ecommerce.store", readonly=True, index=True, ondelete="set null"
     )
     ecommerce_backend_id = fields.Many2one(
-        "ecommerce.backend", readonly=True, index=True, ondelete="set null"
+        "ecommerce.backend", readonly=True, index=True, ondelete="set null",
+        string="Instance",
     )
     ecommerce_provider = fields.Char(readonly=True, index=True)
 

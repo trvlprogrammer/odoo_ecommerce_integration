@@ -26,6 +26,7 @@ class EcommerceStoreSyncWizard(models.TransientModel):
     provider = fields.Selection(selection="_selection_provider", required=True)
     backend_id = fields.Many2one(
         "ecommerce.backend",
+        string="Instance",
         required=True,
         domain="[('provider', '=', provider), ('active', '=', True)]",
     )
@@ -180,7 +181,7 @@ class EcommerceStoreSyncWizard(models.TransientModel):
                 "The selected operation is not available for this data type."
             )
         if self.backend_id.provider != self.provider:
-            raise UserError("The selected backend does not match the provider.")
+            raise UserError("The selected Instance does not match the provider.")
         stores = self.store_ids.filtered(
             lambda store: store.active
             and store.backend_id == self.backend_id
@@ -188,7 +189,7 @@ class EcommerceStoreSyncWizard(models.TransientModel):
         )
         if not stores:
             raise UserError(
-                "No selected store is available for this backend and user company."
+                "No selected store is available for this Instance and user company."
             )
         unsupported = stores.filtered(
             lambda store: not store._ecommerce_supports(

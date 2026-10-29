@@ -24,9 +24,9 @@
                             </t>
                         </select>
                     </label>
-                    <label>Backend
+                    <label>Instance
                         <select t-on-change="onBackendChange" class="form-select">
-                            <option value="">All backends</option>
+                            <option value="">All Instances</option>
                             <t t-foreach="filteredBackends()" t-as="backend" t-key="backend.id">
                                 <option t-att-value="backend.id" t-att-selected="state.filters.backend_id === backend.id">
                                     <t t-esc="backend.name"/>

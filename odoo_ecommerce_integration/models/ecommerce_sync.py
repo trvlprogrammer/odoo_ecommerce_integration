@@ -7,7 +7,8 @@ class EcommerceSyncState(models.Model):
     _order = "store_id, resource, direction"
 
     backend_id = fields.Many2one(
-        "ecommerce.backend", required=True, ondelete="restrict", index=True
+        "ecommerce.backend", required=True, ondelete="restrict", index=True,
+        string="Instance",
     )
     store_id = fields.Many2one(
         "ecommerce.store", required=True, ondelete="restrict", index=True
@@ -77,7 +78,8 @@ class EcommerceSyncEvent(models.Model):
     _order = "occurred_at desc, id desc"
 
     backend_id = fields.Many2one(
-        "ecommerce.backend", required=True, ondelete="restrict", index=True
+        "ecommerce.backend", required=True, ondelete="restrict", index=True,
+        string="Instance",
     )
     store_id = fields.Many2one(
         "ecommerce.store", required=True, ondelete="restrict", index=True
@@ -129,7 +131,8 @@ class EcommerceSyncIssue(models.Model):
     _order = "last_seen_at desc, id desc"
 
     backend_id = fields.Many2one(
-        "ecommerce.backend", required=True, ondelete="restrict", index=True
+        "ecommerce.backend", required=True, ondelete="restrict", index=True,
+        string="Instance",
     )
     store_id = fields.Many2one(
         "ecommerce.store", required=True, ondelete="restrict", index=True

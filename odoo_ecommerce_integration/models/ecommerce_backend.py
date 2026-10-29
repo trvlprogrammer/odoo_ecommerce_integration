@@ -6,7 +6,7 @@ from .ecommerce_provider import CAPABILITY_DEFINITIONS
 
 class EcommerceBackend(models.Model):
     _name = "ecommerce.backend"
-    _description = "eCommerce Backend"
+    _description = "eCommerce Instance"
     _order = "name"
 
     name = fields.Char(required=True)
@@ -35,7 +35,7 @@ class EcommerceBackend(models.Model):
     allow_private_network = fields.Boolean(
         default=False,
         help="Development only: allow HTTPS endpoints that resolve to a private address. "
-        "Never enable this for a production backend.",
+        "Never enable this for a production Instance.",
     )
     verify_ssl = fields.Boolean(default=True)
     timeout_seconds = fields.Integer(default=30)
@@ -66,18 +66,18 @@ class EcommerceBackend(models.Model):
 
     _code_uniq = models.UniqueIndex(
         "(company_id, code)",
-        "Backend code must be unique per company.",
+        "Instance code must be unique per company.",
     )
     _timeout_check = models.Constraint(
         "CHECK (timeout_seconds >= 5 AND timeout_seconds <= 120)",
-        "Backend timeout must be between 5 and 120 seconds.",
+        "Instance timeout must be between 5 and 120 seconds.",
     )
 
     @api.constrains("company_id", "job_user_id")
     def _check_job_user_company(self):
         for backend in self:
             if backend.job_user_id and backend.company_id not in backend.job_user_id.company_ids:
-                raise ValidationError("The job user must have access to the backend company.")
+                raise ValidationError("The job user must have access to the Instance company.")
             if (
                 backend.job_user_id
                 and backend.job_user_id.id != 1
@@ -150,7 +150,7 @@ class EcommerceBackend(models.Model):
                     .search_count([("backend_id", "=", backend.id)])
                 ):
                     raise UserError(
-                        "The backend company cannot be changed while stores exist."
+                        "The Instance company cannot be changed while stores exist."
                     )
         return super().write(vals)
 

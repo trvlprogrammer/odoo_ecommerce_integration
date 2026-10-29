@@ -5,7 +5,7 @@
     <menuitem id="menu_ecommerce_dashboard" name="Dashboard" parent="menu_ecommerce_root" action="action_ecommerce_dashboard" groups="group_ecommerce_user" sequence="1"/>
 
     <menuitem id="menu_ecommerce_configuration" name="Configuration" parent="menu_ecommerce_root" groups="group_ecommerce_user" sequence="10"/>
-    <menuitem id="menu_ecommerce_backends" name="Backends" parent="menu_ecommerce_configuration" action="action_ecommerce_backend" groups="group_ecommerce_manager" sequence="10"/>
+    <menuitem id="menu_ecommerce_backends" name="Instances" parent="menu_ecommerce_configuration" action="action_ecommerce_backend" groups="group_ecommerce_manager" sequence="10"/>
     <menuitem id="menu_ecommerce_stores" name="Stores" parent="menu_ecommerce_configuration" action="action_ecommerce_store" groups="group_ecommerce_manager" sequence="20"/>
     <menuitem id="menu_ecommerce_inventory_source_mappings" name="Inventory Sources" parent="menu_ecommerce_configuration" action="action_ecommerce_inventory_source_mapping" groups="group_ecommerce_manager" sequence="30"/>
     <menuitem id="menu_ecommerce_payment_method_mappings" name="Payment Methods" parent="menu_ecommerce_configuration" action="action_ecommerce_payment_method_mapping" groups="group_ecommerce_manager" sequence="40"/>

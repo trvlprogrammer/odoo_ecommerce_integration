@@ -37,7 +37,7 @@
                     <div class="alert alert-success" role="status"
                          invisible="not last_preflight_at or last_preflight_error">
                         <strong>Preflight passed.</strong>
-                        The backend, store-view scope, warehouse, and inventory source are configured.
+                        The Instance, store-view scope, warehouse, and inventory source are configured.
                     </div>
                     <div class="alert alert-danger" role="alert" invisible="not last_preflight_error">
                         <strong>Preflight failed.</strong>
@@ -161,7 +161,7 @@
                 <field name="backend_id"/>
                 <filter name="active" string="Active" domain="[('active','=',True)]"/>
                 <separator/>
-                <filter name="backend" string="Backend" context="{'group_by':'backend_id'}"/>
+                <filter name="backend" string="Instance" context="{'group_by':'backend_id'}"/>
             </search>
         </field>
     </record>

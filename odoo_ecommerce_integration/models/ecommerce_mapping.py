@@ -22,7 +22,8 @@ class EcommerceStore(models.Model):
         help="Internal Odoo store code. It is not the Magento website or store-view code.",
     )
     backend_id = fields.Many2one(
-        "ecommerce.backend", required=True, ondelete="restrict", index=True
+        "ecommerce.backend", required=True, ondelete="restrict", index=True,
+        string="Instance",
     )
     company_id = fields.Many2one(
         "res.company",
@@ -119,7 +120,7 @@ class EcommerceStore(models.Model):
 
     _backend_code_uniq = models.UniqueIndex(
         "(backend_id, code)",
-        "Store code must be unique per backend.",
+        "Store code must be unique per Instance.",
     )
     _store_view_uniq = models.UniqueIndex(
         "(backend_id, external_store_view_id) WHERE external_store_view_id IS NOT NULL",
@@ -148,7 +149,7 @@ class EcommerceStore(models.Model):
     def _check_backend_company(self):
         for store in self:
             if store.backend_id.company_id != store.company_id:
-                raise ValidationError("Store and backend must belong to the same company.")
+                raise ValidationError("Store and Instance must belong to the same company.")
 
     @api.constrains(
         "company_id",
@@ -351,7 +352,7 @@ class EcommerceStore(models.Model):
                     or new_backend != store.backend_id.id
                 ) and store._ecommerce_has_dependencies():
                     raise UserError(
-                        "The store company/backend cannot be changed after "
+                        "The store company/Instance cannot be changed after "
                         "mappings, synchronization history, or transactions exist."
                     )
         return super().write(vals)
@@ -504,7 +505,8 @@ class EcommerceMappingMixin(models.AbstractModel):
     _description = "eCommerce Mapping Mixin"
 
     backend_id = fields.Many2one(
-        "ecommerce.backend", required=True, ondelete="restrict", index=True
+        "ecommerce.backend", required=True, ondelete="restrict", index=True,
+        string="Instance",
     )
     store_id = fields.Many2one(
         "ecommerce.store", required=True, ondelete="restrict", index=True
@@ -540,7 +542,7 @@ class EcommerceMappingMixin(models.AbstractModel):
     def _check_store_backend(self):
         for record in self:
             if record.store_id.backend_id != record.backend_id:
-                raise ValidationError("Mapping backend does not match the store backend.")
+                raise ValidationError("Mapping Instance does not match the store Instance.")
 
     @api.model_create_multi
     def create(self, vals_list):

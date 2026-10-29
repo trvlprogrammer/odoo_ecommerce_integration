@@ -24,6 +24,7 @@ class EcommerceProductSyncWizard(models.TransientModel):
     provider = fields.Selection(selection="_selection_provider")
     backend_id = fields.Many2one(
         "ecommerce.backend",
+        string="Instance",
         domain="[('active', '=', True)]",
     )
     store_ids = fields.Many2many(
@@ -158,7 +159,7 @@ class EcommerceProductSyncWizard(models.TransientModel):
                 )
             )
             wizard.can_queue = supported
-            wizard.existing_status = "\n".join(lines) if lines else "Select a backend and target store(s)."
+            wizard.existing_status = "\n".join(lines) if lines else "Select an Instance and target store(s)."
 
     def action_sync(self):
         self.ensure_one()
@@ -175,7 +176,7 @@ class EcommerceProductSyncWizard(models.TransientModel):
         backend = self.store_ids[0].backend_id
         for store in self.store_ids:
             if not store.backend_id.active:
-                raise UserError("The selected store backend is inactive.")
+                raise UserError("The selected store Instance is inactive.")
 
         # A configurable template is synchronized once, using a representative
         # variant; sending several variants would create the same parent twice.
@@ -195,7 +196,7 @@ class EcommerceProductSyncWizard(models.TransientModel):
         )
         if not stores:
             raise UserError(
-                "No selected store is available for this backend and user company."
+                "No selected store is available for this Instance and user company."
             )
         unsupported = stores.filtered(
             lambda store: not store._ecommerce_supports(

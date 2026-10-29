@@ -55,36 +55,34 @@
     <div>
       <div class="eyebrow">eCommerce Integration Core</div>
       <h1>One integration foundation.<br/><span style="color:#0f766e;">Every eCommerce connector.</span></h1>
-      <p class="lead">A provider-neutral core for secure backend configuration, store-scoped mappings, queue orchestration, synchronization health, and day-to-day operations. Build on it with the Magento connector or another compatible provider.</p>
+      <p class="lead">A provider-neutral operating layer for secure Instance configuration, Store-scoped mappings, queue orchestration, synchronization health, and daily eCommerce operations.</p>
       <div class="chips">
-        <span class="chip">Odoo 19.0</span>
+        <span class="chip">Provider-neutral</span>
+        <span class="chip">Store-scoped</span>
         <span class="chip">OCA queue_job</span>
-        <span class="chip">Multi-company</span>
-        <span class="chip dark">Free &middot; LGPL-3</span>
+        <span class="chip dark">Multi-company</span>
       </div>
       <div class="actions">
         <a class="btn primary" href="https://odoo.odoointegrator.id" target="_blank" rel="noopener">Try Live Demo</a>
-        <a class="btn secondary" href="#setup">Installation &amp; Setup</a>
+        <a class="btn secondary" href="#setup">Installation &amp; User Guide</a>
       </div>
     </div>
-    <figure>
-      <img src="banner.png" alt="eCommerce Integration Core banner"/>
-    </figure>
+    <figure><img src="screenshots/dashboard.png" alt="eCommerce Dashboard comparing Odoo with a connected Store"/></figure>
   </div>
 </div>
 
 <div class="section">
   <div class="section-head">
-    <div class="eyebrow">The shared layer</div>
+    <div class="eyebrow">Overview</div>
     <h2>Architecture that keeps connectors consistent</h2>
-    <p>The Core owns the reusable integration model. A connector contributes the external API client and platform-specific workflows, while administrators work with one familiar configuration and monitoring experience.</p>
+    <p>The Core owns the reusable integration model. A provider connector supplies the external API client and platform workflows, while administrators work with one familiar configuration and monitoring experience.</p>
   </div>
   <div class="pipeline"><span>External platform</span><b>&rarr;</b><span>Provider connector</span><b>&rarr;</b><span>eCommerce Core</span><b>&rarr;</b><span>OCA queue_job</span><b>&rarr;</b><span>Odoo records</span></div>
   <div class="grid3">
-    <div class="card"><h3>Backend</h3><p>External system, company scope, credentials, provider capabilities, and a dedicated queue user.</p></div>
-    <div class="card"><h3>Store</h3><p>Website, store view, warehouse, stock location, currency, automation, batch sizes, and scheduling for one sales channel.</p></div>
-    <div class="card"><h3>Mappings</h3><p>Persistent links for products, variants, attributes, categories, customers, orders, invoices, payments, shipments, refunds, carriers, payment methods, and inventory sources.</p></div>
-    <div class="card"><h3>Sync state</h3><p>Per-store and per-resource cursors, last success, last failure, and incremental replay controls.</p></div>
+    <div class="card"><h3>Instance</h3><p>External system, company scope, credentials, provider capabilities, and a dedicated queue user.</p></div>
+    <div class="card"><h3>Store</h3><p>Website, store view, warehouse, currency, automation, batch sizes, and scheduling for one sales channel.</p></div>
+    <div class="card"><h3>Mappings</h3><p>Persistent links for products, variants, categories, customers, orders, invoices, payments, shipments, refunds, carriers, payment methods, and inventory sources.</p></div>
+    <div class="card"><h3>Sync state</h3><p>Per-Store and per-resource cursors, last success, last failure, and incremental replay controls.</p></div>
     <div class="card"><h3>Queue orchestration</h3><p>Bounded coordinator and child jobs with channels, retry policies, deduplication keys, and progress runs.</p></div>
     <div class="card"><h3>Observability</h3><p>Events, actionable issues, mapping status, and queue state make failures visible instead of hiding them in logs.</p></div>
   </div>
@@ -93,176 +91,123 @@
 
 <div class="section">
   <div class="section-head">
-    <div class="eyebrow">Dashboard</div>
-    <h2>Compare the whole business, then drill into the detail</h2>
-    <p>Seven responsive metric groups compare Total Odoo with each configured Store: Orders, Customers, Products, Sales / Revenue, Inventory, Finance, and Open Issues.</p>
+    <div class="eyebrow">Features</div>
+    <h2>One operating view for every connected Store</h2>
   </div>
-  <figure>
-    <img src="screenshots/dashboard.png" alt="eCommerce Dashboard with seven comparison chart groups" loading="lazy"/>
-    <figcaption>All Stores view: Total Odoo plus one bar per Store, with hover values and click-through to the underlying Odoo records. The layout is 4 columns on desktop, 2 on tablets, and 1 on mobile.</figcaption>
-  </figure>
+  <figure><img src="screenshots/dashboard.png" alt="eCommerce Dashboard with comparison charts and filters" loading="lazy"/><figcaption>Compare Total Odoo with each connected Store across orders, customers, products, revenue, inventory, finance, and open issues.</figcaption></figure>
   <div class="grid3">
-    <div class="card"><h3>Provider, backend and Store filters</h3><p>Keep the active company context and narrow the Store bars without changing the Odoo baseline.</p></div>
-    <div class="card"><h3>Date-aware metrics</h3><p>Selected-period metrics use order, customer, and invoice dates. Products, inventory, and open issues are clearly marked as current snapshots.</p></div>
-    <div class="card"><h3>Click-through</h3><p>Every bar opens the relevant Odoo list with the company, Store mapping scope, and applicable date filters applied.</p></div>
+    <div class="card"><h3>Provider and Instance filters</h3><p>Keep the active company context and narrow dashboard results by provider, Instance, Store, and date.</p></div>
+    <div class="card"><h3>Click-through metrics</h3><p>Every bar opens the relevant Odoo records with company and Store scope applied.</p></div>
+    <div class="card"><h3>Issues and queue health</h3><p>Open issues, failed jobs, retries, and synchronization state stay visible from the dashboard.</p></div>
   </div>
 </div>
 
 <div class="section">
-  <div class="section-head">
-    <div class="eyebrow">Product content</div>
-    <h2>One product record, ready for any Store</h2>
-    <p>Core adds provider-neutral content fields used by connectors: short description, URL key with manual override, SEO metadata, and per-media alt text.</p>
-  </div>
   <div class="feature-row">
     <div class="copy">
       <div class="number">01</div>
-      <h3>Storefront content in the Sales workflow</h3>
-      <p>The short description is available in the Sales workflow alongside the storefront description. URL key, meta title, meta keywords, and meta description stay together in the eCommerce tab. URL keys are generated from the product name until a user edits them; manual values are preserved across renames.</p>
-      <ul>
-        <li>Short and long eCommerce descriptions</li>
-        <li>Editable SEO fields with generated URL keys</li>
-        <li>Media gallery alt text</li>
-        <li>Provider-neutral fields shared by connectors</li>
-      </ul>
-    </div>
-    <figure>
-      <img src="screenshots/product-fields.png" alt="Product eCommerce tab showing URL key and SEO fields" loading="lazy"/>
-      <figcaption>URL key and SEO fields on the product form.</figcaption>
-    </figure>
-  </div>
-</div>
-
-<div class="section">
-  <div class="section-head">
-    <div class="eyebrow">Configuration</div>
-    <h2>Configure once. Operate from one place.</h2>
-  </div>
-  <div class="feature-row flip">
-    <div class="copy">
-      <div class="number">02</div>
-      <h3>Backends and Stores</h3>
-      <p>Separate external systems from the sales channels inside them. A Backend holds credentials and provider capability; a Store holds the website, store view, warehouse, stock location, currency, and automation settings.</p>
+      <h3>Instances and Stores</h3>
+      <p>Separate external systems from the sales channels inside them. An <strong>Instance</strong> holds credentials and provider capability; a <strong>Store</strong> holds the external scope, warehouse, currency, automation, and scheduling settings.</p>
       <ul>
         <li>Company-scoped configuration and record rules</li>
         <li>Manager-only credential access</li>
         <li>Per-Store queue scheduling and batch sizes</li>
         <li>Test Connection and Preflight from the form</li>
       </ul>
+      <figure><img src="screenshots/instances.png" alt="eCommerce Instance list" loading="lazy"/><figcaption>Instances expose connection state and provider scope without mixing them with individual Stores.</figcaption></figure>
     </div>
-    <figure>
-      <img src="screenshots/backend.png" alt="eCommerce backend configuration form" loading="lazy"/>
-      <figcaption>Connection, company, job user, and provider settings in a Backend.</figcaption>
-    </figure>
-  </div>
-  <div class="feature-row">
     <div class="copy">
-      <div class="number">03</div>
+      <div class="number">02</div>
       <h3>Store synchronization</h3>
-      <p>Run supported catalog, order, inventory, shipment, and finance operations from a Store. Jobs are queued through OCA queue_job and report state back to the Store.</p>
+      <p>Run supported catalog, order, inventory, shipment, and finance operations from a Store. Work is queued through OCA queue_job and reports progress back to the Store.</p>
       <ul>
         <li>Import, Export, and Update operations where supported</li>
         <li>Bounded batches and deduplicated queue identities</li>
         <li>Safe replay through existing mappings</li>
         <li>Visible progress and structured issues</li>
       </ul>
+      <figure><img src="screenshots/store-sync-wizard.png" alt="Store synchronization wizard with Instance and target Store" loading="lazy"/><figcaption>Choose an operation and data type, then confirm the target Stores.</figcaption></figure>
     </div>
-    <figure>
-      <img src="screenshots/store-sync-wizard.png" alt="Store synchronization wizard" loading="lazy"/>
-      <figcaption>Choose an operation and data type, then confirm the target Stores.</figcaption>
-    </figure>
   </div>
 </div>
 
 <div class="section">
-  <div class="section-head">
-    <div class="eyebrow">Mappings</div>
-    <h2>An auditable link between Odoo and every Store</h2>
-  </div>
-  <figure>
-    <img src="screenshots/mappings.png" alt="eCommerce product mappings list" loading="lazy"/>
-    <figcaption>Store-scoped mappings preserve the external identity used for safe repeat synchronization.</figcaption>
-  </figure>
-  <div class="grid3">
-    <div class="card"><h3>Catalog</h3><p>Products, variants, attributes, attribute options, and eCommerce categories.</p></div>
-    <div class="card"><h3>Commercial</h3><p>Customers, orders, order lines, invoices, payments, shipments, and credit notes/refunds.</p></div>
-    <div class="card"><h3>Operations</h3><p>Inventory sources, carriers, and payment methods, with Store ownership on every mapping.</p></div>
-  </div>
-</div>
-
-<div class="section">
-  <div class="section-head">
-    <div class="eyebrow">Queue &amp; reliability</div>
-    <h2>Background work designed for real operations</h2>
-  </div>
   <div class="feature-row flip">
     <div class="copy">
-      <div class="number">04</div>
-      <h3>OCA queue_job with a dedicated integration user</h3>
-      <p>Slow API calls do not block the web client. Coordinator jobs split long work into bounded child jobs, and deterministic identity keys prevent accidental duplicate enqueueing of the same unit of work.</p>
-      <ul>
-        <li>Separate channels for catalog, orders, inventory, shipments, and finance</li>
-        <li>Retry policies for transient external failures</li>
-        <li>Company-scoped job execution</li>
-        <li>Failed jobs and synchronization issues stay inspectable</li>
-      </ul>
+      <div class="number">03</div>
+      <h3>Product content and Storefront fields</h3>
+      <p>Core adds provider-neutral content fields used by connectors: short description, URL key with manual override, SEO metadata, and per-media alt text. URL keys are generated from the product name until a user edits them; manual values are preserved across renames.</p>
+      <ul><li>Short and long eCommerce descriptions</li><li>Editable SEO fields with generated URL keys</li><li>Media gallery alt text</li><li>Provider-neutral fields shared by connectors</li></ul>
     </div>
-    <figure>
-      <img src="screenshots/queue.png" alt="eCommerce queue jobs list" loading="lazy"/>
-      <figcaption>Queue jobs show their method, Store, state, retry information, and execution outcome.</figcaption>
-    </figure>
+    <figure><img src="screenshots/product-fields.png" alt="Product eCommerce tab with URL key and SEO fields" loading="lazy"/><figcaption>URL key and SEO fields on the product form.</figcaption></figure>
   </div>
-</div>
-
-<div class="section">
-  <div class="section-head">
-    <div class="eyebrow">Refunds</div>
-    <h2>Credit Notes with an explicit export boundary</h2>
-    <p>Posted customer credit notes can be sent to a selected Store through the provider-neutral refund wizard. The core validates the Store and mapping context, queues the operation, and only marks the credit note as refunded after the provider confirms success.</p>
+  <div class="feature-row">
+    <div class="copy">
+      <div class="number">04</div>
+      <h3>Auditable mappings</h3>
+      <p>Store-scoped mappings preserve the external identity required for safe repeat synchronization. A single mapping layer links catalog, commercial, and operational records.</p>
+      <figure><img src="screenshots/mappings.png" alt="eCommerce product mappings list" loading="lazy"/><figcaption>Product mappings retain Store, external identity, target record, sync state, and last synchronization time.</figcaption></figure>
+    </div>
+    <div class="copy">
+      <div class="number">05</div>
+      <h3>Background work built for operations</h3>
+      <p>Slow API calls do not block the web client. Coordinator jobs split long work into bounded child jobs, while deterministic identity keys prevent accidental duplicate enqueueing.</p>
+      <figure><img src="screenshots/queue.png" alt="eCommerce queue jobs list" loading="lazy"/><figcaption>Queue jobs expose method, model, state, execution time, UUID, channel, and company.</figcaption></figure>
+    </div>
   </div>
   <div class="grid3">
-    <div class="card"><h3>Provider-neutral wizard</h3><p>Select a company-scoped Store; the connector supplies its own return method and confirmation rules.</p></div>
-    <div class="card"><h3>Safe failure state</h3><p>A queued or failed refund never sets the refunded flag. Pending or uncertain attempts are reconciled before retry.</p></div>
-    <div class="card"><h3>Duplicate prevention</h3><p>Credit-note identity, existing mappings, and provider evidence prevent a second refund for the same document.</p></div>
+    <figure><img src="screenshots/issues.png" alt="eCommerce sync issues list" loading="lazy"/><figcaption>Actionable issues capture failures with severity and Store scope.</figcaption></figure>
+    <figure><img src="screenshots/sync-state.png" alt="eCommerce synchronization state list" loading="lazy"/><figcaption>Per-Store resource state records the last run, cursor, and outcome.</figcaption></figure>
+    <figure><img src="screenshots/security.png" alt="eCommerce Manager access group" loading="lazy"/><figcaption>Role-based access keeps credentials and operations behind manager permissions.</figcaption></figure>
   </div>
 </div>
 
 <div class="section" id="setup">
   <div class="section-head">
-    <div class="eyebrow">Installation</div>
-    <h2>Install the Core in six steps</h2>
+    <div class="eyebrow">User Guide</div>
+    <h2>From installation to the first synchronization</h2>
   </div>
   <ol>
-    <li>Install the <strong>OCA queue_job 19.0</strong> branch. Add the repository root to <code>addons_path</code>.</li>
-    <li>Install <strong>queue_job</strong> from Apps.</li>
-    <li>Place <code>odoo_ecommerce_integration</code> in your addons path and update the Apps list.</li>
-    <li>Install <strong>eCommerce Integration Core</strong>.</li>
-    <li>Enable the queue runner: <code>workers = 2</code> and <code>server_wide_modules = web,queue_job</code>, then restart Odoo.</li>
-    <li>Install a compatible connector such as <strong>Magento Connector for Odoo</strong>. The Core alone does not contact an external platform.</li>
+    <li><strong>Configure an Instance.</strong> Open <code>eCommerce &rarr; Configuration &rarr; Instances</code>. Enter the external URL, credentials, company, and queue user, then click <strong>Test Connection</strong>.</li>
+    <li><strong>Create a Store.</strong> Open <code>eCommerce &rarr; Configuration &rarr; Stores</code>. Select the Instance, external scope, warehouse, company, currency, and automation settings. Run <strong>Test / Preflight</strong>.</li>
+    <li><strong>Set synchronization intervals.</strong> Open the Store's <strong>Scheduling</strong> tab and configure order, customer, catalog, category, inventory, shipment, and finance intervals plus batch sizes.</li>
+    <li><strong>Configure initial mappings.</strong> Use <code>eCommerce &rarr; Configuration</code> for inventory sources, payment methods, delivery carriers, and provider-specific mappings. Use <strong>Sync Now</strong> for connector-supported operations.</li>
+    <li><strong>Import data.</strong> Run provider actions for categories and catalog, then customers, orders, inventory reconciliation, shipments, and finance as supported. Review events, issues, and queue states after each run.</li>
+    <li><strong>Export and update categories and products.</strong> Use the Store synchronization wizard or the product form's <strong>Sync to eCommerce</strong> action. Choose Export for the first synchronization and Update for existing mappings.</li>
   </ol>
-  <div class="note"><p><strong>Demo:</strong> <a href="https://odoo.odoointegrator.id" target="_blank" rel="noopener">odoo.odoointegrator.id</a> &nbsp; <strong>User:</strong> <code>demo</code> &nbsp; <strong>Password:</strong> <code>demo</code>. The demo is read/write for disposable records only.</p></div>
+  <figure><img src="screenshots/product-sync-wizard.png" alt="Product Sync to eCommerce wizard" loading="lazy"/><figcaption>Export a new product or update an existing mapping directly from the product form.</figcaption></figure>
+  <div class="note"><strong>Retry-safe by design:</strong> mappings, queue identity keys, and synchronization state let the same operation be repeated without creating duplicate external records.</div>
 </div>
 
 <div class="section">
   <div class="section-head">
-    <div class="eyebrow">Compatibility</div>
-    <h2>Designed for supported Odoo branches</h2>
+    <div class="eyebrow">System Requirements</div>
+    <h2>Prepare the Odoo environment</h2>
   </div>
   <table>
-    <tr><th>Odoo</th><th>Status</th><th>Notes</th></tr>
-    <tr><td>19.0</td><td><strong>Supported</strong></td><td>Primary development baseline.</td></tr>
-    <tr><td>18.0</td><td><strong>Supported</strong></td><td>Version-adapted views, ORM, dashboard, and queue integration.</td></tr>
-    <tr><td>17.0</td><td><strong>Supported</strong></td><td>Version-adapted form layout and queue_job API.</td></tr>
+    <tr><th>Component</th><th>Requirement</th></tr>
+    <tr><td>Odoo modules</td><td>Base, Mail, Sales Management, Stock, Accounting, Delivery, Website Sale, and Queue Job.</td></tr>
+    <tr><td>OCA queue_job</td><td>Download from <a href="https://github.com/OCA/queue" target="_blank" rel="noopener">github.com/OCA/queue</a>. Add the repository root to <code>addons_path</code>, update the Apps list, then install <strong>Queue Job</strong>.</td></tr>
+    <tr><td>Queue configuration</td><td>Run a queue runner with at least <code>workers = 2</code>. Load <code>server_wide_modules = web,queue_job</code>, restart Odoo, and verify pending jobs move to Done.</td></tr>
+    <tr><td>Provider connector</td><td>Install a compatible connector such as <strong>Magento Connector for Odoo</strong>. Magento-specific setup is documented in that module.</td></tr>
+    <tr><td>Permissions</td><td>Assign eCommerce User, Operator, or Manager access as appropriate. Configure a dedicated queue user with access to the Instance company.</td></tr>
   </table>
-  <div class="warn"><strong>Limitations:</strong> the Core is not a standalone connector; external synchronization requires a provider module. Platform-specific coverage, RMA/webhooks, multi-source MSI, bundle/grouped behavior, and special-price rules depend on the connector and are documented there.</div>
+  <div class="warn"><strong>Core is not a standalone connector:</strong> it does not contact an external platform without an installed provider module.</div>
+  <ol>
+    <li>Place <code>odoo_ecommerce_integration</code> in your addons path and update the Apps list.</li>
+    <li>Install <strong>eCommerce Integration Core</strong>.</li>
+    <li>Install and configure OCA <strong>Queue Job</strong>.</li>
+    <li>Install a compatible provider connector.</li>
+  </ol>
 </div>
 
 <div class="section">
   <div class="section-head">
-    <div class="eyebrow">Support</div>
-    <h2>Need help with the foundation?</h2>
-    <p>Contact <a href="mailto:alfatihridhont@gmail.com">alfatihridhont@gmail.com</a> for installation, configuration, or synchronization assistance.</p>
+    <div class="eyebrow">Support &amp; Demo</div>
+    <h2>Explore the workflow or ask for help</h2>
+    <p>Email <a href="mailto:alfatihridhont@gmail.com">alfatihridhont@gmail.com</a> or visit <a href="https://odoo.odoointegrator.id" target="_blank" rel="noopener">odoo.odoointegrator.id</a>.</p>
   </div>
-  <div class="footer">eCommerce Integration Core &middot; Free &middot; LGPL-3 &middot; Requires OCA queue_job and a compatible provider connector.</div>
+  <div class="note"><strong>Demo login:</strong> username <code>demo</code> &middot; password <code>demo</code>. Use disposable records for testing.</div>
+  <div class="footer">eCommerce Integration Core &middot; provider-neutral foundation &middot; requires OCA queue_job and a compatible connector.</div>
 </div>
 </section>
