@@ -17,6 +17,7 @@
         "static/description/screenshots/mappings.png",
         "static/description/screenshots/store-sync-wizard.png",
         "static/description/screenshots/product-sync-wizard.png",
+        "static/description/screenshots/store-scheduling.png",
         "static/description/screenshots/queue.png",
         "static/description/screenshots/sync-state.png",
         "static/description/screenshots/issues.png",
