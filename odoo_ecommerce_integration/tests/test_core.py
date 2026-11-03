@@ -107,7 +107,7 @@ class TestCore(TransactionCase):
                 "company_id": self.company.id,
                 "company_ids": [(6, 0, [self.company.id])],
                 "groups_id": [
-                    (6, 0, [self.env.ref("base.group_user").id, self.env.ref("odoo_ecommerce_integration.group_ecommerce_user").id])
+                    (6, 0, [self.env.ref("base.group_user").id, self.env.ref("odoo_ecommerce_integration.group_ecommerce_operator").id])
                 ],
             }
         )

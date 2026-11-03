@@ -1,6 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-acl_user_1,ecommerce.backend_user,model_ecommerce_backend,group_ecommerce_user,1,0,0,0
-acl_user_2,ecommerce.store_user,model_ecommerce_store,group_ecommerce_user,1,0,0,0
 acl_user_3,ecommerce.product.mapping_user,model_ecommerce_product_mapping,group_ecommerce_user,1,0,0,0
 acl_user_4,ecommerce.variant.mapping_user,model_ecommerce_variant_mapping,group_ecommerce_user,1,0,0,0
 acl_user_5,ecommerce.attribute.mapping_user,model_ecommerce_attribute_mapping,group_ecommerce_user,1,0,0,0
@@ -19,6 +17,9 @@ acl_user_16,ecommerce.payment.method.mapping_user,model_ecommerce_payment_method
 acl_user_17,ecommerce.sync.state_user,model_ecommerce_sync_state,group_ecommerce_user,1,0,0,0
 acl_user_18,ecommerce.sync.event_user,model_ecommerce_sync_event,group_ecommerce_user,1,0,0,0
 acl_user_19,ecommerce.sync.issue_user,model_ecommerce_sync_issue,group_ecommerce_user,1,0,0,0
+acl_operator_backend,ecommerce.backend_operator,model_ecommerce_backend,group_ecommerce_operator,1,0,0,0
+acl_operator_store,ecommerce.store_operator,model_ecommerce_store,group_ecommerce_operator,1,0,0,0
+acl_operator_queue_job,ecommerce.queue.job_operator,queue_job.model_queue_job,group_ecommerce_operator,1,0,0,0
 acl_operator_1,ecommerce.product.mapping_operator,model_ecommerce_product_mapping,group_ecommerce_operator,1,1,1,1
 acl_operator_2,ecommerce.variant.mapping_operator,model_ecommerce_variant_mapping,group_ecommerce_operator,1,1,1,1
 acl_operator_3,ecommerce.attribute.mapping_operator,model_ecommerce_attribute_mapping,group_ecommerce_operator,1,1,1,1
