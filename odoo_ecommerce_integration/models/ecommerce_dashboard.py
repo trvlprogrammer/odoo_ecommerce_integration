@@ -25,17 +25,21 @@ class EcommerceDashboard(models.TransientModel):
             end,
         )
 
+    def _require_dashboard_access(self):
+        self.browse().check_access_rights("read")
+
     @api.model
     def get_filters(self):
+        self._require_dashboard_access()
         companies = self.env.companies
         providers = {}
         for item in self.env["ecommerce.backend"]._ecommerce_provider_registry():
             if item.get("code") and item.get("label"):
                 providers[item["code"]] = item["label"]
-        backends = self.env["ecommerce.backend"].search(
+        backends = self.env["ecommerce.backend"].sudo().search(
             [("company_id", "in", companies.ids)], order="name"
         )
-        stores = self.env["ecommerce.store"].search(
+        stores = self.env["ecommerce.store"].sudo().search(
             [("active", "=", True), ("company_id", "in", companies.ids)], order="name"
         )
         return {
@@ -60,7 +64,7 @@ class EcommerceDashboard(models.TransientModel):
                     "id": store.id,
                     "name": store.display_name,
                     "backend_id": store.backend_id.id,
-                    "provider": store.backend_id.provider,
+                    "provider": store.sudo().backend_id.sudo().provider,
                     "company_id": store.company_id.id,
                 }
                 for store in stores
@@ -73,7 +77,7 @@ class EcommerceDashboard(models.TransientModel):
     def _scoped_stores(self, filters):
         company_ids = self._company_ids(filters)
         if not company_ids:
-            return self.env["ecommerce.store"]
+            return self.env["ecommerce.store"].sudo()
         domain = [("active", "=", True), ("company_id", "in", company_ids)]
         provider = filters.get("provider")
         backend_id = filters.get("backend_id")
@@ -84,7 +88,7 @@ class EcommerceDashboard(models.TransientModel):
             domain.append(("backend_id", "=", int(backend_id)))
         if store_id:
             domain.append(("id", "=", int(store_id)))
-        return self.env["ecommerce.store"].search(domain)
+        return self.env["ecommerce.store"].sudo().search(domain)
 
     @api.model
     def _mapping_domain(self, store_ids, active=True):
@@ -178,12 +182,12 @@ class EcommerceDashboard(models.TransientModel):
 
     @api.model
     def _read_sum(self, model, domain, field_name):
-        rows = self.env[model]._read_group(domain, [], [f"{field_name}:sum"])
+        rows = self.env[model].sudo()._read_group(domain, [], [f"{field_name}:sum"])
         return float(rows[0][0] or 0.0) if rows else 0.0
 
     @api.model
     def _distinct_mapping_ids(self, model, field_name, domain):
-        groups = self.env[model]._read_group(domain, [field_name], [])
+        groups = self.env[model].sudo()._read_group(domain, [field_name], [])
         ids = set()
         for group in groups:
             value = group[0]
@@ -263,7 +267,7 @@ class EcommerceDashboard(models.TransientModel):
             ("state", "in", ("sale", "done")),
         ]
 
-        odoo_orders = self.env["sale.order"].search_count(sale_domain)
+        odoo_orders = self.env["sale.order"].sudo().search_count(sale_domain)
         order_values = []
         for store in stores:
             order_ids = self._distinct_mapping_ids(
@@ -287,7 +291,7 @@ class EcommerceDashboard(models.TransientModel):
             ("create_date", ">=", start_dt),
             ("create_date", "<", end_dt),
         ]
-        odoo_customers = self.env["res.partner"].search_count(customer_domain)
+        odoo_customers = self.env["res.partner"].sudo().search_count(customer_domain)
         customer_values = []
         for store in stores:
             customer_ids = self._distinct_mapping_ids(
@@ -306,7 +310,7 @@ class EcommerceDashboard(models.TransientModel):
             )
             customer_values.append((store, len(customer_ids)))
 
-        odoo_products = self.env["product.template"].search_count(
+        odoo_products = self.env["product.template"].sudo().search_count(
             [("sale_ok", "=", True)] + product_company_domain
         )
         product_values = []
@@ -391,7 +395,7 @@ class EcommerceDashboard(models.TransientModel):
             ("invoice_date", ">=", start_date),
             ("invoice_date", "<=", end_date),
         ]
-        odoo_invoices = self.env["account.move"].search_count(invoice_domain)
+        odoo_invoices = self.env["account.move"].sudo().search_count(invoice_domain)
         invoice_values = []
         for store in stores:
             move_ids = self._distinct_mapping_ids(
@@ -500,6 +504,7 @@ class EcommerceDashboard(models.TransientModel):
 
     @api.model
     def get_dashboard_data(self, filters=None):
+        self._require_dashboard_access()
         filters = filters or {}
         company_ids = self._company_ids(filters)
         start_dt, end_dt, start_date, end_date = self._dates(filters)
@@ -674,6 +679,7 @@ class EcommerceDashboard(models.TransientModel):
 
     @api.model
     def get_metric_drilldown(self, metric, scope="odoo", store_id=None, filters=None):
+        self._require_dashboard_access()
         filters = filters or {}
         company_ids = self._company_ids(filters)
         start_dt, end_dt, start_date, end_date = self._dates(filters)
@@ -828,6 +834,7 @@ class EcommerceDashboard(models.TransientModel):
 
     @api.model
     def get_drilldown(self, key, filters=None):
+        self._require_dashboard_access()
         filters = filters or {}
         stores = self._scoped_stores(filters)
         store_ids = stores.ids
@@ -936,7 +943,12 @@ class EcommerceDashboard(models.TransientModel):
             action["domain"] = [("store_id", "in", store_ids)]
             return action
         if key in ("pending_jobs", "running_jobs", "failed_jobs"):
-            if not self.env.user.has_group("queue_job.group_queue_job_manager"):
+            if not (
+                self.env.user.has_group("queue_job.group_queue_job_manager")
+                or self.env.user.has_group(
+                    "odoo_ecommerce_integration.group_ecommerce_operator"
+                )
+            ):
                 return False
             action = self.env["ir.actions.act_window"]._for_xml_id(
                 "queue_job.action_queue_job"
