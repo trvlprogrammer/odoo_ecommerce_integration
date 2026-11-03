@@ -24,7 +24,7 @@
 
     <menuitem id="menu_ecommerce_monitoring" name="Monitoring" parent="menu_ecommerce_root" groups="group_ecommerce_user" sequence="30"/>
     <menuitem id="menu_ecommerce_issues" name="Synchronization Issues" parent="menu_ecommerce_monitoring" action="action_ecommerce_sync_issue" sequence="10"/>
-    <menuitem id="menu_ecommerce_queue_jobs" name="Queue Jobs" parent="menu_ecommerce_monitoring" action="queue_job.action_queue_job" groups="group_ecommerce_manager" sequence="20"/>
+    <menuitem id="menu_ecommerce_queue_jobs" name="Queue Jobs" parent="menu_ecommerce_monitoring" action="queue_job.action_queue_job" groups="group_ecommerce_operator" sequence="20"/>
     <menuitem id="menu_ecommerce_events" name="Synchronization History" parent="menu_ecommerce_monitoring" action="action_ecommerce_sync_event" sequence="30"/>
     <menuitem id="menu_ecommerce_sync_states" name="Synchronization States" parent="menu_ecommerce_monitoring" action="action_ecommerce_sync_state" sequence="40"/>
 </odoo>

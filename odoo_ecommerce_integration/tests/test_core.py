@@ -1,6 +1,7 @@
 from psycopg2 import IntegrityError
 
-from odoo.exceptions import UserError, ValidationError
+from odoo import Command
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests.common import TransactionCase
 
 
@@ -87,6 +88,125 @@ class TestCore(TransactionCase):
         self.assertEqual(source.warehouse_id, self.warehouse)
         self.assertEqual(source.stock_location_id, self.warehouse.lot_stock_id)
 
+    def test_ecommerce_native_group_privilege_and_hierarchy(self):
+        category = self.env.ref(
+            "odoo_ecommerce_integration.module_category_ecommerce_integration"
+        )
+        privilege = self.env.ref(
+            "odoo_ecommerce_integration.res_groups_privilege_ecommerce_integration"
+        )
+        user_group = self.env.ref(
+            "odoo_ecommerce_integration.group_ecommerce_user"
+        )
+        operator_group = self.env.ref(
+            "odoo_ecommerce_integration.group_ecommerce_operator"
+        )
+        manager_group = self.env.ref(
+            "odoo_ecommerce_integration.group_ecommerce_manager"
+        )
+        self.assertEqual(category.name, "E-Commerce Integration")
+        self.assertEqual(privilege.category_id, category)
+        self.assertFalse(privilege.placeholder)
+        self.assertEqual(privilege.group_ids, user_group | operator_group | manager_group)
+        self.assertEqual(
+            [group.name for group in privilege.group_ids.sorted("sequence")],
+            ["User", "Operator", "Manager"],
+        )
+        self.assertEqual(operator_group.implied_ids, user_group)
+        self.assertIn(operator_group, manager_group.implied_ids)
+        self.assertIn(user_group, manager_group.all_implied_ids)
+        hierarchy = self.env["res.groups"]._get_view_group_hierarchy()
+        category_ids = [item["id"] for item in hierarchy["categories"]]
+        website = self.env.ref("base.module_category_website")
+        self.assertEqual(
+            category_ids.index(category.id), category_ids.index(website.id) + 1
+        )
+
+    def test_ecommerce_access_levels(self):
+        base_user = self.env.ref("base.group_user")
+        user_group = self.env.ref("odoo_ecommerce_integration.group_ecommerce_user")
+        operator_group = self.env.ref(
+            "odoo_ecommerce_integration.group_ecommerce_operator"
+        )
+        manager_group = self.env.ref(
+            "odoo_ecommerce_integration.group_ecommerce_manager"
+        )
+        mapping = self.env["ecommerce.product.mapping"].create(
+            self._mapping_values("security-levels")
+        )
+
+        def make_user(login, groups):
+            return self.env["res.users"].create(
+                {
+                    "name": login,
+                    "login": login,
+                    "group_ids": [Command.set([base_user.id] + [g.id for g in groups])],
+                }
+            )
+
+        none_user = make_user("ecom-none-user", self.env["res.groups"])
+        user_only = make_user("ecom-user-only", user_group)
+        operator = make_user("ecom-operator-only", operator_group)
+        manager = make_user("ecom-manager-only", manager_group)
+        self.assertFalse(none_user.has_group("odoo_ecommerce_integration.group_ecommerce_user"))
+        with self.assertRaises(AccessError):
+            mapping.with_user(none_user).read(["external_id"])
+        self.assertEqual(mapping.with_user(user_only).read(["external_id"])[0]["external_id"], "security-levels")
+        with self.assertRaises(AccessError):
+            mapping.with_user(user_only).write({"external_id": "user-denied"})
+        mapping.with_user(operator).write({"external_id": "operator-allowed"})
+        self.assertTrue(operator.has_group("odoo_ecommerce_integration.group_ecommerce_user"))
+        self.assertFalse(operator.has_group("odoo_ecommerce_integration.group_ecommerce_manager"))
+        self.assertTrue(manager.has_group("odoo_ecommerce_integration.group_ecommerce_operator"))
+        self.assertTrue(manager.has_group("odoo_ecommerce_integration.group_ecommerce_user"))
+        self.backend.with_user(manager).write({"notes": "Manager allowed"})
+        with self.assertRaises(AccessError):
+            self.backend.with_user(user_only).write({"notes": "User denied"})
+        with self.assertRaises(AccessError):
+            self.env["ecommerce.backend"].with_user(user_only).search([])
+        with self.assertRaises(AccessError):
+            self.env["ecommerce.store"].with_user(user_only).search([])
+        self.assertEqual(
+            self.env["ecommerce.backend"].with_user(operator).search(
+                [("id", "=", self.backend.id)]
+            ),
+            self.backend,
+        )
+        self.assertEqual(
+            self.env["ecommerce.store"].with_user(operator).search(
+                [("id", "=", self.store.id)]
+            ),
+            self.store,
+        )
+        with self.assertRaises(AccessError):
+            self.env["ecommerce.dashboard"].with_user(none_user).get_filters()
+        filters = self.env["ecommerce.dashboard"].with_user(user_only).get_filters()
+        self.assertTrue(filters["backends"])
+        self.assertTrue(filters["stores"])
+        mapping_data = mapping.with_user(user_only).read(["store_id", "backend_id"])[0]
+        self.assertEqual(mapping_data["store_id"][0], self.store.id)
+        self.assertEqual(mapping_data["store_id"][1], self.store.display_name)
+        self.assertEqual(mapping_data["backend_id"][0], self.backend.id)
+        self.assertFalse(
+            self.env["queue.job"].with_user(user_only).browse().has_access("read")
+        )
+        self.store._ecommerce_enqueue_job(
+            "action_view_jobs",
+            channel="ecommerce.catalog",
+            identity_key="audit:operator-queue",
+        )
+        operator_jobs = self.env["queue.job"].with_user(operator).search([])
+        self.assertTrue(operator_jobs)
+        self.assertTrue(
+            all(
+                str(channel).startswith("ecommerce")
+                for channel in operator_jobs.mapped("channel")
+            )
+        )
+        self.assertTrue(
+            self.env["queue.job"].with_user(manager).browse().has_access("read")
+        )
+
     def test_mapping_company_is_derived(self):
         mapping = self.env["ecommerce.product.mapping"].create(self._mapping_values())
         self.assertEqual(mapping.company_id, self.company)
@@ -132,7 +252,7 @@ class TestCore(TransactionCase):
                 "company_id": self.company.id,
                 "company_ids": [(6, 0, [self.company.id])],
                 "group_ids": [
-                    (6, 0, [self.env.ref("base.group_user").id, self.env.ref("odoo_ecommerce_integration.group_ecommerce_user").id])
+                    (6, 0, [self.env.ref("base.group_user").id, self.env.ref("odoo_ecommerce_integration.group_ecommerce_operator").id])
                 ],
             }
         )
