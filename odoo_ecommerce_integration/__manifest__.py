@@ -3,7 +3,7 @@
     "summary": "Provider-neutral eCommerce integration foundation for mappings, queues, security, and operations",
     "version": "18.0.1.5.0",
     "category": "Sales/Integration",
-    "author": "trvlprogrammer",
+    "author": "Alfatih Ridho NT",
     "website": "alfatihridhont@gmail.com",
     "license": "LGPL-3",
     "application": False,
