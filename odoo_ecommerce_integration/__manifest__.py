@@ -4,7 +4,7 @@
     "version": "18.0.1.5.0",
     "category": "Sales/Integration",
     "author": "trvlprogrammer",
-    "website": "https://github.com/trvlprogrammer/odoo_ecommerce_integration",
+    "website": "alfatihridhont@gmail.com",
     "license": "LGPL-3",
     "application": False,
     "installable": True,
