@@ -85,6 +85,7 @@
                         <page string="Orders &amp; Finance" name="orders_finance">
                             <group>
                                 <group>
+                                    <field name="sale_order_prefix" placeholder="Platform order number"/>
                                     <field name="auto_confirm_orders"/>
                                     <field name="auto_post_invoice"/>
                                     <field name="auto_register_payment"/>

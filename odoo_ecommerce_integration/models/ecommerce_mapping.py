@@ -25,6 +25,11 @@ class EcommerceStore(models.Model):
         "ecommerce.backend", required=True, ondelete="restrict", index=True,
         string="Instance",
     )
+    provider = fields.Char(
+        related="backend_id.provider",
+        string="Provider Code",
+        help="Provider code of the Instance; used to show provider-specific controls.",
+    )
     company_id = fields.Many2one(
         "res.company",
         required=True,
@@ -89,6 +94,13 @@ class EcommerceStore(models.Model):
     order_import_cutoff_date = fields.Date(
         string="Order Import Cutoff",
         help="Never import Magento orders created before this date. Leave empty to import all available orders.",
+    )
+    sale_order_prefix = fields.Char(
+        string="Sale Order Prefix",
+        help="Text placed before the eCommerce order number in Odoo sale order names, "
+        "for example SHOP- gives SHOP-1027. Leave empty to use the order number of the "
+        "eCommerce platform unchanged. Set a prefix when several Stores of one company "
+        "could produce the same order number.",
     )
     auto_confirm_orders = fields.Boolean(default=False)
     auto_post_invoice = fields.Boolean(default=True)
@@ -229,6 +241,12 @@ class EcommerceStore(models.Model):
             "The installed connector does not implement %s method import." % resource
         )
 
+    def _ecommerce_sale_order_name(self, number):
+        """Odoo sale order name for an eCommerce order number."""
+        self.ensure_one()
+        number = str(number or "").strip()
+        return f"{self.sale_order_prefix}{number}" if self.sale_order_prefix else number
+
     def _ecommerce_tax_for_country(self, country):
         """Return the configured tax for a delivery country, if any.
 
@@ -270,6 +288,7 @@ class EcommerceStore(models.Model):
                     "shipments": "shipment",
                     "finance": "payment",
                     "inventory": "inventory",
+                    "returns": "return",
                 }.get(resource, resource)
                 state = self.env["ecommerce.sync.state"].sudo().search(
                     [("store_id", "=", store.id), ("resource", "=", state_resource)],

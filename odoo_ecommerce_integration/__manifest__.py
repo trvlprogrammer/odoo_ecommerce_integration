@@ -1,7 +1,7 @@
 {
     "name": "eCommerce Integration Core",
     "summary": "Provider-neutral eCommerce integration foundation for mappings, queues, security, and operations",
-    "version": "19.0.1.12.0",
+    "version": "19.0.1.14.0",
     "category": "Sales/Integration",
     "author": "Alfatih Ridho NT",
     "website": "alfatihridhont@gmail.com",

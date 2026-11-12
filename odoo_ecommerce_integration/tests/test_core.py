@@ -379,6 +379,33 @@ class TestGenericProviderContract(TransactionCase):
             patch.object(EcommerceStore, "_ecommerce_enqueue_sync", enqueue),
         )
 
+    def test_sale_order_prefix_is_optional(self):
+        self.assertEqual(self.store._ecommerce_sale_order_name("000000043"), "000000043")
+        self.store.sale_order_prefix = "MAG-"
+        self.assertEqual(self.store._ecommerce_sale_order_name("000000043"), "MAG-000000043")
+
+    def test_instance_form_creates_and_edits_with_the_provider_selection(self):
+        # The form edits ``provider_ui`` and sends ``provider`` empty.
+        patches = self._patch_provider()
+        with patches[0], patches[1]:
+            Backend = self.env["ecommerce.backend"]
+            spec = {"provider": {}, "provider_ui": {}, "name": {}}
+            changed = Backend.onchange({"provider": False, "provider_ui": "fake"}, ["provider_ui"], spec)
+            self.assertEqual(changed["value"]["provider"], "fake")
+            values = {
+                "name": "Form Instance",
+                "code": "form-fake",
+                "base_url": "https://form.example.test",
+                "job_user_id": self.env.user.id,
+            }
+            for sent in ({"provider": False, "provider_ui": "fake"}, {"provider_ui": "fake"}):
+                with self.subTest(sent=sent):
+                    saved = Backend.web_save({**values, **sent, "code": f"form-{len(sent)}"}, spec)
+                    backend = Backend.browse(saved[0]["id"])
+                    self.assertEqual((backend.provider, backend.provider_ui), ("fake", "fake"))
+                    backend.web_save({"name": "Form Instance Renamed", "provider": False, "provider_ui": "fake"}, spec)
+                    self.assertEqual((backend.name, backend.provider), ("Form Instance Renamed", "fake"))
+
     def test_fake_provider_is_discoverable_and_capability_filtered(self):
         patches = self._patch_provider()
         with patches[0], patches[1]:

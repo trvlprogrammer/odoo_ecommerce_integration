@@ -34,6 +34,7 @@ class EcommerceSyncState(models.Model):
             ("payment_method", "Payment Method"),
             ("shipment", "Shipment"),
             ("refund", "Refund"),
+            ("return", "Return"),
             ("health", "Health"),
         ],
         required=True,

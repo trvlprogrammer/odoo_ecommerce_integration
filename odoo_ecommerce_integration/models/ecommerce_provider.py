@@ -12,6 +12,7 @@ CAPABILITY_DEFINITIONS = {
     "finance.import": "Import financial documents and payment evidence",
     "delivery.import": "Import delivery methods",
     "payment.import": "Import payment methods",
+    "return.import": "Import physical returns",
 }
 
 SYNC_OPERATIONS = [
@@ -28,6 +29,7 @@ SYNC_DATA_TYPES = [
     ("inventory", "Inventory"),
     ("shipments", "Shipments"),
     ("finance", "Financial Documents"),
+    ("returns", "Returns"),
 ]
 
 SYNC_CAPABILITY_MAP = {
@@ -42,4 +44,5 @@ SYNC_CAPABILITY_MAP = {
     ("reconcile", "inventory"): "inventory.export",
     ("export", "shipments"): "shipment.export",
     ("import", "finance"): "finance.import",
+    ("import", "returns"): "return.import",
 }
