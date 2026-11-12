@@ -20,7 +20,7 @@ def migrate(cr, version):
     )
     if not cr.fetchone():
         cr.execute("DROP TABLE ecommerce_legacy_shipping_product")
-    cr.execute("ALTER TABLE ecommerce_store DROP COLUMN IF EXISTS shipping_product_id")
+        cr.execute("ALTER TABLE ecommerce_store DROP COLUMN IF EXISTS shipping_product_id")
         return
     cr.execute(
         """
