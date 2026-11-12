@@ -24,6 +24,11 @@ class EcommerceStore(models.Model):
     backend_id = fields.Many2one(
         "ecommerce.backend", required=True, ondelete="restrict", index=True
     )
+    provider = fields.Char(
+        related="backend_id.provider",
+        string="Provider Code",
+        help="Provider code of the Instance; used to show provider-specific controls.",
+    )
     company_id = fields.Many2one(
         "res.company",
         required=True,
@@ -46,26 +51,30 @@ class EcommerceStore(models.Model):
     )
     external_store_view_code = fields.Char(
         string="Magento Store View Code",
-        required=True,
         help="Magento store-view code used in API calls and order synchronization.",
     )
     warehouse_id = fields.Many2one(
         "stock.warehouse", required=True, ondelete="restrict", check_company=True
     )
-    stock_location_id = fields.Many2one(
-        "stock.location", required=True, ondelete="restrict", check_company=True
-    )
     pricelist_id = fields.Many2one("product.pricelist", ondelete="restrict")
+    default_sales_tax_id = fields.Many2one(
+        "account.tax",
+        string="Default Sales Tax",
+        ondelete="restrict",
+        check_company=True,
+        domain="[('type_tax_use', '=', 'sale')]",
+        help="Sale tax applied to domestic web orders. Leave empty to use Magento line taxes.",
+    )
+    default_international_tax_id = fields.Many2one(
+        "account.tax",
+        string="Default International Tax",
+        ondelete="restrict",
+        check_company=True,
+        domain="[('type_tax_use', '=', 'sale')]",
+        help="Sale tax applied when the delivery country differs from the company country. Leave empty to use Magento line taxes.",
+    )
     currency_id = fields.Many2one("res.currency", ondelete="restrict")
     website_id = fields.Many2one("website", ondelete="set null", index=True)
-    shipping_product_id = fields.Many2one(
-        "product.product",
-        string="Shipping Product",
-        ondelete="restrict",
-        domain="[('type', '=', 'service')]",
-        check_company=True,
-        help="Service product used for the Magento shipping order line.",
-    )
     default_delivery_carrier_id = fields.Many2one(
         "delivery.carrier",
         string="Default Delivery Carrier",
@@ -84,6 +93,13 @@ class EcommerceStore(models.Model):
     order_import_cutoff_date = fields.Date(
         string="Order Import Cutoff",
         help="Never import Magento orders created before this date. Leave empty to import all available orders.",
+    )
+    sale_order_prefix = fields.Char(
+        string="Sale Order Prefix",
+        help="Text placed before the eCommerce order number in Odoo sale order names, "
+        "for example SHOP- gives SHOP-1027. Leave empty to use the order number of the "
+        "eCommerce platform unchanged. Set a prefix when several Stores of one company "
+        "could produce the same order number.",
     )
     auto_confirm_orders = fields.Boolean(default=False)
     auto_post_invoice = fields.Boolean(default=True)
@@ -120,13 +136,18 @@ class EcommerceStore(models.Model):
             if store.backend_id.company_id != store.company_id:
                 raise ValidationError("Store and backend must belong to the same company.")
 
-    @api.constrains("company_id", "warehouse_id", "stock_location_id", "currency_id", "pricelist_id")
+    @api.constrains(
+        "company_id",
+        "warehouse_id",
+        "currency_id",
+        "pricelist_id",
+        "default_sales_tax_id",
+        "default_international_tax_id",
+    )
     def _check_company_records(self):
         for store in self:
             if store.warehouse_id.company_id != store.company_id:
                 raise ValidationError("Warehouse must belong to the store company.")
-            if store.stock_location_id.company_id not in (False, store.company_id):
-                raise ValidationError("Stock location must belong to the store company.")
             if store.pricelist_id and store.pricelist_id.company_id not in (False, store.company_id):
                 raise ValidationError("Pricelist must belong to the store company.")
             if store.website_id and store.website_id.company_id != store.company_id:
@@ -142,6 +163,73 @@ class EcommerceStore(models.Model):
                     raise ValidationError("Default payment journal must belong to the store company.")
                 if store.default_payment_journal_id.type not in ("bank", "cash"):
                     raise ValidationError("Default payment journal must be a bank or cash journal.")
+            for tax in (store.default_sales_tax_id, store.default_international_tax_id):
+                if tax and tax.company_id not in (False, store.company_id):
+                    raise ValidationError("Default taxes must belong to the store company.")
+                if tax and tax.type_tax_use != "sale":
+                    raise ValidationError("Default taxes must be sale taxes.")
+
+    def _ecommerce_price_for(self, product, quantity=1.0, uom=None, date=None):
+        """Return the Store pricelist price, falling back to the product Sales Price."""
+        self.ensure_one()
+        variant = (
+            product
+            if product._name == "product.product"
+            else product.product_variant_id
+        )
+        if not variant:
+            return 0.0
+        if not self.pricelist_id:
+            return variant.lst_price
+        currency = (
+            self.currency_id
+            or self.pricelist_id.currency_id
+            or self.company_id.currency_id
+        )
+        price, rule = self.pricelist_id._get_product_price_rule(
+            variant,
+            quantity or 1.0,
+            currency=currency,
+            uom=uom or variant.uom_id,
+            date=date or fields.Date.context_today(self),
+        )
+        return price if rule else variant.lst_price
+
+    def action_import_delivery_methods(self):
+        self.ensure_one()
+        self._ecommerce_require_operator()
+        self._ecommerce_enqueue_method_import("delivery")
+        return True
+
+    def action_import_payment_methods(self):
+        self.ensure_one()
+        self._ecommerce_require_operator()
+        self._ecommerce_enqueue_method_import("payment")
+        return True
+
+    def _ecommerce_enqueue_method_import(self, resource):
+        """Connector hook: enqueue provider delivery or payment method import."""
+        self.ensure_one()
+        raise UserError(
+            "The installed connector does not implement %s method import." % resource
+        )
+
+    def _ecommerce_sale_order_name(self, number):
+        """Odoo sale order name for an eCommerce order number."""
+        self.ensure_one()
+        number = str(number or "").strip()
+        return f"{self.sale_order_prefix}{number}" if self.sale_order_prefix else number
+
+    def _ecommerce_tax_for_country(self, country):
+        """Return the configured tax for a delivery country, if any.
+
+        A missing delivery country is treated as domestic, never international.
+        """
+        self.ensure_one()
+        company_country = self.company_id.country_id
+        if not country or not company_country or country == company_country:
+            return self.default_sales_tax_id
+        return self.default_international_tax_id
 
     _sql_constraints = [
         ('backend_code_uniq', 'UNIQUE (backend_id, code)', 'Store code must be unique per backend.'),
@@ -180,6 +268,7 @@ class EcommerceStore(models.Model):
                     "shipments": "shipment",
                     "finance": "payment",
                     "inventory": "inventory",
+                    "returns": "return",
                 }.get(resource, resource)
                 state = self.env["ecommerce.sync.state"].sudo().search(
                     [("store_id", "=", store.id), ("resource", "=", state_resource)],
@@ -477,6 +566,7 @@ class EcommerceMappingMixin(models.AbstractModel):
             "odoo_credit_note_id",
             "journal_id",
             "delivery_carrier_id",
+            "shipping_product_id",
             "warehouse_id",
             "stock_location_id",
             "product_mapping_id",
@@ -667,7 +757,7 @@ class EcommerceInventorySourceMapping(models.Model):
             if record.store_id:
                 record.backend_id = record.store_id.backend_id
                 record.warehouse_id = record.store_id.warehouse_id
-                record.stock_location_id = record.store_id.stock_location_id
+                record.stock_location_id = record.store_id.warehouse_id.lot_stock_id
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -705,13 +795,29 @@ class EcommerceCarrierMapping(models.Model):
     _order = "store_id, external_id"
 
     delivery_carrier_id = fields.Many2one(
-        "delivery.carrier", required=True, ondelete="restrict", check_company=True
+        "delivery.carrier", required=False, ondelete="restrict", check_company=True
+    )
+    shipping_product_id = fields.Many2one(
+        "product.product",
+        string="Shipping Product",
+        ondelete="restrict",
+        check_company=True,
+        domain="[('type', '=', 'service')]",
+        help="Optional service product override. The delivery carrier product is used when empty.",
     )
     external_label = fields.Char()
     mapping_method = fields.Selection(
         [("manual", "Manual"), ("import", "Import"), ("export", "Export")],
         default="manual",
         required=True,
+    )
+    external_active = fields.Boolean(
+        string="Provider Active",
+        default=True,
+        help="Whether the method is currently active at the provider.",
+    )
+    external_scope = fields.Char(
+        help="Provider scope, such as website or store-view code.",
     )
 
 
@@ -723,12 +829,20 @@ class EcommercePaymentMethodMapping(models.Model):
     _order = "store_id, external_id"
 
     journal_id = fields.Many2one(
-        "account.journal", required=True, ondelete="restrict", check_company=True
+        "account.journal", required=False, ondelete="restrict", check_company=True
     )
     external_label = fields.Char()
     mapping_method = fields.Selection(
         [("manual", "Manual"), ("import", "Import"), ("export", "Export")],
         default="manual",
         required=True,
+    )
+    external_active = fields.Boolean(
+        string="Provider Active",
+        default=True,
+        help="Whether the method is currently active at the provider.",
+    )
+    external_scope = fields.Char(
+        help="Provider scope, such as website or store-view code.",
     )
 
