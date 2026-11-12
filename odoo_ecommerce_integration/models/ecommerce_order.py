@@ -21,6 +21,18 @@ class EcommerceOrderMapping(models.Model):
     currency_id = fields.Many2one("res.currency", ondelete="restrict")
     external_grand_total = fields.Monetary(currency_field="currency_id")
     odoo_amount_total = fields.Monetary(currency_field="currency_id")
+    external_tax_total = fields.Monetary(currency_field="currency_id")
+    odoo_tax_total = fields.Monetary(currency_field="currency_id")
+    tax_check = fields.Selection(
+        [
+            ("unverified", "Unverified"),
+            ("matched", "Matched"),
+            ("rounding", "Rounding Difference"),
+            ("mismatch", "Mismatch"),
+        ],
+        default="unverified",
+        required=True,
+    )
     financial_check = fields.Selection(
         [
             ("unverified", "Unverified"),

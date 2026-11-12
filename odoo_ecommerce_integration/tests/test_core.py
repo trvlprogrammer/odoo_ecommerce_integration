@@ -1,8 +1,20 @@
 from psycopg2 import IntegrityError
 
-from odoo.exceptions import ValidationError
+from odoo import Command
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests.common import TransactionCase
 
+
+
+def has_access(records, mode):
+    """Odoo 17 equivalent of BaseModel.has_access (Odoo 18+)."""
+    if not records.check_access_rights(mode, raise_exception=False):
+        return False
+    try:
+        records.check_access_rule(mode)
+    except AccessError:
+        return False
+    return True
 
 class TestCore(TransactionCase):
     @classmethod
@@ -32,7 +44,6 @@ class TestCore(TransactionCase):
                 "external_website_id": "1",
                 "external_store_view_id": "1",
                 "warehouse_id": cls.warehouse.id,
-                "stock_location_id": cls.warehouse.lot_stock_id.id,
             }
         )
         cls.template = cls.env["product.template"].create(
@@ -47,6 +58,13 @@ class TestCore(TransactionCase):
             "odoo_template_id": self.template.id,
             "external_product_type": "simple",
         }
+
+    def test_method_import_hooks_are_provider_neutral(self):
+        self.assertNotIn("shipping_product_id", self.store._fields)
+        with self.assertRaises(UserError):
+            self.store.action_import_delivery_methods()
+        with self.assertRaises(UserError):
+            self.store.action_import_payment_methods()
 
     def test_backend_store_scope(self):
         self.assertEqual(self.store.company_id, self.company)
@@ -67,6 +85,19 @@ class TestCore(TransactionCase):
         template.write({"ecommerce_url_key": False})
         self.assertEqual(template.ecommerce_url_key, "another-product-name")
         self.assertFalse(template.ecommerce_url_key_manual)
+
+    def test_store_stock_location_is_replaced_by_inventory_source(self):
+        self.assertNotIn("stock_location_id", self.store._fields)
+        source = self.env["ecommerce.inventory.source.mapping"].new(
+            {
+                "store_id": self.store.id,
+                "external_id": "default",
+                "external_code": "default",
+            }
+        )
+        source._onchange_store_scope()
+        self.assertEqual(source.warehouse_id, self.warehouse)
+        self.assertEqual(source.stock_location_id, self.warehouse.lot_stock_id)
 
     def test_mapping_company_is_derived(self):
         mapping = self.env["ecommerce.product.mapping"].create(self._mapping_values())
@@ -162,6 +193,91 @@ class TestCore(TransactionCase):
         second = self.env["ecommerce.product.mapping"].create(self._mapping_values())
         self.assertNotEqual(first.id, second.id)
 
+    def test_ecommerce_access_levels(self):
+        base_user = self.env.ref("base.group_user")
+        user_group = self.env.ref("odoo_ecommerce_integration.group_ecommerce_user")
+        operator_group = self.env.ref(
+            "odoo_ecommerce_integration.group_ecommerce_operator"
+        )
+        manager_group = self.env.ref(
+            "odoo_ecommerce_integration.group_ecommerce_manager"
+        )
+        mapping = self.env["ecommerce.product.mapping"].create(
+            self._mapping_values("security-levels")
+        )
+
+        def make_user(login, groups):
+            return self.env["res.users"].create(
+                {
+                    "name": login,
+                    "login": login,
+                    "groups_id": [Command.set([base_user.id] + [g.id for g in groups])],
+                }
+            )
+
+        none_user = make_user("ecom-none-user", self.env["res.groups"])
+        user_only = make_user("ecom-user-only", user_group)
+        operator = make_user("ecom-operator-only", operator_group)
+        manager = make_user("ecom-manager-only", manager_group)
+        self.assertFalse(none_user.has_group("odoo_ecommerce_integration.group_ecommerce_user"))
+        with self.assertRaises(AccessError):
+            mapping.with_user(none_user).read(["external_id"])
+        self.assertEqual(mapping.with_user(user_only).read(["external_id"])[0]["external_id"], "security-levels")
+        with self.assertRaises(AccessError):
+            mapping.with_user(user_only).write({"external_id": "user-denied"})
+        mapping.with_user(operator).write({"external_id": "operator-allowed"})
+        self.assertTrue(operator.has_group("odoo_ecommerce_integration.group_ecommerce_user"))
+        self.assertFalse(operator.has_group("odoo_ecommerce_integration.group_ecommerce_manager"))
+        self.assertTrue(manager.has_group("odoo_ecommerce_integration.group_ecommerce_operator"))
+        self.assertTrue(manager.has_group("odoo_ecommerce_integration.group_ecommerce_user"))
+        self.backend.with_user(manager).write({"notes": "Manager allowed"})
+        with self.assertRaises(AccessError):
+            self.backend.with_user(user_only).write({"notes": "User denied"})
+        with self.assertRaises(AccessError):
+            self.env["ecommerce.backend"].with_user(user_only).search([])
+        with self.assertRaises(AccessError):
+            self.env["ecommerce.store"].with_user(user_only).search([])
+        self.assertEqual(
+            self.env["ecommerce.backend"].with_user(operator).search(
+                [("id", "=", self.backend.id)]
+            ),
+            self.backend,
+        )
+        self.assertEqual(
+            self.env["ecommerce.store"].with_user(operator).search(
+                [("id", "=", self.store.id)]
+            ),
+            self.store,
+        )
+        with self.assertRaises(AccessError):
+            self.env["ecommerce.dashboard"].with_user(none_user).get_filters()
+        filters = self.env["ecommerce.dashboard"].with_user(user_only).get_filters()
+        self.assertTrue(filters["backends"])
+        self.assertTrue(filters["stores"])
+        mapping_data = mapping.with_user(user_only).read(["store_id", "backend_id"])[0]
+        self.assertEqual(mapping_data["store_id"][0], self.store.id)
+        self.assertEqual(mapping_data["store_id"][1], self.store.display_name)
+        self.assertEqual(mapping_data["backend_id"][0], self.backend.id)
+        self.assertFalse(
+            has_access(self.env["queue.job"].with_user(user_only).browse(), "read")
+        )
+        self.store._ecommerce_enqueue_job(
+            "action_view_jobs",
+            channel="ecommerce.catalog",
+            identity_key="audit:operator-queue",
+        )
+        operator_jobs = self.env["queue.job"].with_user(operator).search([])
+        self.assertTrue(operator_jobs)
+        self.assertTrue(
+            all(
+                str(channel).startswith("ecommerce")
+                for channel in operator_jobs.mapped("channel")
+            )
+        )
+        self.assertTrue(
+            has_access(self.env["queue.job"].with_user(manager).browse(), "read")
+        )
+
 
 class FakeProviderAdapter:
     """Test-only provider adapter; never installed in production."""
@@ -209,7 +325,6 @@ class TestGenericProviderContract(TransactionCase):
                 "company_id": cls.company.id,
                 "external_store_view_code": "default",
                 "warehouse_id": cls.warehouse.id,
-                "stock_location_id": cls.warehouse.lot_stock_id.id,
             }
         )
         cls.template = cls.env["product.template"].create(
@@ -240,6 +355,33 @@ class TestGenericProviderContract(TransactionCase):
             patch.object(EcommerceBackend, "_ecommerce_provider_registry", registry),
             patch.object(EcommerceStore, "_ecommerce_enqueue_sync", enqueue),
         )
+
+    def test_sale_order_prefix_is_optional(self):
+        self.assertEqual(self.store._ecommerce_sale_order_name("000000043"), "000000043")
+        self.store.sale_order_prefix = "MAG-"
+        self.assertEqual(self.store._ecommerce_sale_order_name("000000043"), "MAG-000000043")
+
+    def test_instance_form_creates_and_edits_with_the_provider_selection(self):
+        # The form edits ``provider_ui`` and sends ``provider`` empty.
+        patches = self._patch_provider()
+        with patches[0], patches[1]:
+            Backend = self.env["ecommerce.backend"]
+            spec = {"provider": {}, "provider_ui": {}, "name": {}}
+            changed = Backend.onchange({"provider": False, "provider_ui": "fake"}, ["provider_ui"], spec)
+            self.assertEqual(changed["value"]["provider"], "fake")
+            values = {
+                "name": "Form Instance",
+                "code": "form-fake",
+                "base_url": "https://form.example.test",
+                "job_user_id": self.env.user.id,
+            }
+            for sent in ({"provider": False, "provider_ui": "fake"}, {"provider_ui": "fake"}):
+                with self.subTest(sent=sent):
+                    saved = Backend.web_save({**values, **sent, "code": f"form-{len(sent)}"}, spec)
+                    backend = Backend.browse(saved[0]["id"])
+                    self.assertEqual((backend.provider, backend.provider_ui), ("fake", "fake"))
+                    backend.web_save({"name": "Form Instance Renamed", "provider": False, "provider_ui": "fake"}, spec)
+                    self.assertEqual((backend.name, backend.provider), ("Form Instance Renamed", "fake"))
 
     def test_fake_provider_is_discoverable_and_capability_filtered(self):
         patches = self._patch_provider()
@@ -354,7 +496,6 @@ class TestGenericNavigation(TransactionCase):
                 "company_id": company.id,
                 "external_store_view_code": "default",
                 "warehouse_id": warehouse.id,
-                "stock_location_id": warehouse.lot_stock_id.id,
             }
         )
         action = store.action_view_jobs()
@@ -387,7 +528,6 @@ class TestHardening(TransactionCase):
                 "company_id": cls.company.id,
                 "external_store_view_code": "default",
                 "warehouse_id": cls.warehouse.id,
-                "stock_location_id": cls.warehouse.lot_stock_id.id,
             }
         )
         cls.template = cls.env["product.template"].create(
@@ -457,7 +597,7 @@ class TestHardening(TransactionCase):
             self.store.backend_id = other_backend
 
     def test_mapping_rejects_cross_company_template(self):
-        from odoo.exceptions import ValidationError
+        from odoo.exceptions import UserError, ValidationError
 
         other_company = self.env["res.company"].create({"name": "Hardening Other Co"})
         other_template = self.env["product.template"].create(
@@ -536,7 +676,6 @@ class TestSyncRunProgress(TransactionCase):
                 "company_id": company.id,
                 "external_store_view_code": "default",
                 "warehouse_id": warehouse.id,
-                "stock_location_id": warehouse.lot_stock_id.id,
             }
         )
         run = store._ecommerce_start_run("product", "import", total=2)

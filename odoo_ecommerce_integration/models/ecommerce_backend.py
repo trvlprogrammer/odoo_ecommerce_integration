@@ -91,6 +91,30 @@ class EcommerceBackend(models.Model):
             if backend.provider_ui:
                 backend.provider = backend.provider_ui
 
+    @api.onchange("provider_ui")
+    def _onchange_provider_ui(self):
+        # Provider-specific form sections depend on ``provider`` before saving.
+        for backend in self:
+            if backend.provider_ui:
+                backend.provider = backend.provider_ui
+
+    @api.model
+    def _ecommerce_provider_from_ui(self, vals):
+        """Copy ``provider_ui`` into the required ``provider`` column.
+
+        The inverse of ``provider_ui`` only runs after the INSERT, while the
+        form sends ``provider`` empty or not at all.
+        """
+        if vals.get("provider_ui") and not vals.get("provider"):
+            vals["provider"] = vals["provider_ui"]
+        return vals
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            self._ecommerce_provider_from_ui(vals)
+        return super().create(vals_list)
+
     @api.model
     def _ecommerce_provider_registry(self):
         return []
@@ -128,6 +152,7 @@ class EcommerceBackend(models.Model):
             )
 
     def write(self, vals):
+        vals = self._ecommerce_provider_from_ui(dict(vals))
         if "company_id" in vals:
             for backend in self:
                 if (

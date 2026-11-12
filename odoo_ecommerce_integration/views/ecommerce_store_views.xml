@@ -62,11 +62,11 @@
                                 </group>
                                 <group>
                                     <field name="warehouse_id"/>
-                                    <field name="stock_location_id"/>
                                     <field name="pricelist_id"/>
                                     <field name="currency_id"/>
+                                    <field name="default_sales_tax_id"/>
+                                    <field name="default_international_tax_id"/>
                                     <field name="website_id" options="{'no_create': True}"/>
-                                    <field name="shipping_product_id"/>
                                 </group>
                             </group>
                         </page>
@@ -85,6 +85,7 @@
                         <page string="Orders &amp; Finance" name="orders_finance">
                             <group>
                                 <group>
+                                    <field name="sale_order_prefix" placeholder="Platform order number"/>
                                     <field name="auto_confirm_orders"/>
                                     <field name="auto_post_invoice"/>
                                     <field name="auto_register_payment"/>
@@ -96,6 +97,18 @@
                                     <field name="default_delivery_carrier_id" options="{'no_create': True}"/>
                                     <field name="default_payment_journal_id" options="{'no_create': True}"/>
                                 </group>
+                            </group>
+                            <group string="Method Mapping">
+                                <div colspan="2" class="d-flex flex-wrap gap-2">
+                                    <button name="action_import_delivery_methods" type="object"
+                                            string="Import Delivery Methods"
+                                            class="btn-secondary"
+                                            groups="odoo_ecommerce_integration.group_ecommerce_operator"/>
+                                    <button name="action_import_payment_methods" type="object"
+                                            string="Import Payment Methods"
+                                            class="btn-secondary"
+                                            groups="odoo_ecommerce_integration.group_ecommerce_operator"/>
+                                </div>
                             </group>
                         </page>
                         <page string="Inventory &amp; Fulfillment" name="inventory_fulfillment">
